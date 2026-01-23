@@ -1,0 +1,39 @@
+name: CD - Deploy Platform
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/github-deploy
+          aws-region: us-east-1
+
+      - name: Build Docker images
+        run: |
+          docker build -t eviction-backend ./backend
+          docker build -t eviction-frontend ./frontend
+
+      - name: Push to ECR
+        run: |
+          aws ecr get-login-password | docker login --username AWS --password-stdin $ECR_REGISTRY
+          docker tag eviction-backend $ECR_REGISTRY/eviction-backend:latest
+          docker push $ECR_REGISTRY/eviction-backend:latest
+
+      - name: Deploy via Terraform
+        run: |
+          cd infra/terraform
+          terraform init
+          terraform apply -auto-approve
