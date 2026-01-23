@@ -1,0 +1,28 @@
+name: Eviction - Notary Callback
+
+on:
+  repository_dispatch:
+    types: [ notarization_complete ]
+
+jobs:
+  file-court:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate notarization
+        run: |
+          python scripts/notarization_callback.py \
+            --case-id "${{ github.event.client_payload.case_id }}"
+
+      - name: Prepare court filing packet
+        run: |
+          python scripts/prepare_filing.py \
+            --court "Houston County Magistrate Court"
+
+      - name: Audit log
+        run: |
+          python scripts/audit_log.py \
+            --event "FILED_WITH_COURT" \
+            --case-id "${{ github.event.client_payload.case_id }}"
