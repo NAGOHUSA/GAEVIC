@@ -1,0 +1,16 @@
+name: Eviction - Notarization Required
+
+on:
+  repository_dispatch:
+    types: [ documents_ready_for_notary ]
+
+jobs:
+  notarize:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send docs to RON provider
+        run: |
+          curl -X POST https://api.notarize.com/v1/transactions \
+            -H "Authorization: Bearer ${{ secrets.NOTARY_API_KEY }}" \
+            -d @documents/notary_packet.json
