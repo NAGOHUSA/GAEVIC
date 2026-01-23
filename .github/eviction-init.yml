@@ -1,0 +1,36 @@
+name: Eviction - Initiate Case
+
+on:
+  repository_dispatch:
+    types: [ eviction_initiated ]
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Run SCRA check
+        run: |
+          python scripts/scra_check.py \
+            --tenant-id "${{ github.event.client_payload.tenant_id }}"
+
+      - name: Generate eviction notice & affidavit
+        run: |
+          python scripts/generate_docs.py \
+            --case-id "${{ github.event.client_payload.case_id }}"
+
+      - name: Audit log
+        run: |
+          python scripts/audit_log.py \
+            --event "DOCUMENTS_GENERATED" \
+            --case-id "${{ github.event.client_payload.case_id }}"
