@@ -1,0 +1,20 @@
+name: Eviction - Case Timers
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+
+jobs:
+  deadlines:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check statutory deadlines
+        run: |
+          python scripts/check_deadlines.py
+
+      - name: Notify users
+        run: |
+          python scripts/send_notifications.py
