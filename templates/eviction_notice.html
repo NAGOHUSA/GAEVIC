@@ -1,1 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>7-Day Demand for Possession - Houston County, GA</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; margin: 2cm; }
+        .header { text-align: center; margin-bottom: 2em; }
+        .court-name { font-size: 16pt; font-weight: bold; }
+        .case-info { margin: 2em 0; }
+        .section { margin: 1.5em 0; }
+        .signature-line { margin-top: 3em; border-top: 1px solid black; width: 50%; }
+        .notice { background-color: #f8f9fa; padding: 1em; border-left: 4px solid #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="court-name">STATE OF GEORGIA</div>
+        <div class="court-name">COUNTY OF HOUSTON</div>
+        <div style="margin-top: 1em;">
+            <strong>7-DAY DEMAND FOR POSSESSION OF PREMISES</strong><br>
+            <em>(Pursuant to O.C.G.A. § 44-7-50)</em>
+        </div>
+    </div>
 
+    <div class="case-info">
+        <p><strong>TO:</strong> {{ case.tenant_name }}</p>
+        <p><strong>PROPERTY ADDRESS:</strong> {{ case.property_address }}, Warner Robins, GA {{ case.property_zip }}</p>
+    </div>
+
+    <div class="section">
+        <p>You are hereby notified that you are in arrears in the payment of rent for the premises 
+        located at the above address in the amount of <strong>${{ "%.2f"|format(case.amount_owed) }}</strong>.</p>
+        
+        <p>You are further notified that unless said rent is paid in full within <strong>seven (7) days</strong> 
+        from the date of service of this notice, your lease will be terminated and dispossessory 
+        proceedings will be instituted against you.</p>
+    </div>
+
+    <div class="section">
+        <p><strong>RENT DETAILS:</strong></p>
+        <ul>
+            <li>Monthly Rent: ${{ "%.2f"|format(case.rent_amount) }}</li>
+            <li>Amount Due: ${{ "%.2f"|format(case.amount_owed) }}</li>
+            <li>Late Fees: ${{ "%.2f"|format(case.late_fees or 0) }}</li>
+            <li>Last Payment Received: {{ case.last_payment_date }}</li>
+        </ul>
+    </div>
+
+    <div class="notice">
+        <p><strong>IMPORTANT NOTICE UNDER GEORGIA LAW:</strong></p>
+        <p>If you fail to answer this claim within seven (7) days of service, a default judgment 
+        may be entered against you for the relief demanded in the complaint.</p>
+        <p>You have the right to file an answer setting out any defense you may have to this action.</p>
+    </div>
+
+    <div class="signature-section">
+        <p>Date: {{ generated_date }}</p>
+        <div class="signature-line"></div>
+        <p>{{ case.landlord_name }}<br>
+        Landlord/Agent</p>
+        
+        <p><strong>Served on Tenant:</strong> {{ case.notice_served_date }}</p>
+        <p><strong>Method of Service:</strong> □ Personal □ Posting □ Mail</p>
+    </div>
+
+    <div style="margin-top: 3em; font-size: 10pt; text-align: center;">
+        <p>This form complies with Houston County Magistrate Court requirements<br>
+        For information contact: {{ court.phone }} | {{ court.address }}</p>
+    </div>
+</body>
+</html>
