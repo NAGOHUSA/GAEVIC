@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Houston County Eviction Automation Platform</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: #f4f6f9;
+      color: #333;
+    }
+    header {
+      background-color: #1f3a5f;
+      color: #fff;
+      padding: 16px 24px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+    header p {
+      margin: 4px 0 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: calc(100vh - 72px);
+    }
+    nav {
+      background-color: #ffffff;
+      border-right: 1px solid #ddd;
+      padding: 16px;
+    }
+    nav h3 {
+      margin-top: 0;
+      font-size: 14px;
+      text-transform: uppercase;
+      color: #666;
+    }
+    nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    nav li {
+      margin: 12px 0;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    nav li:hover {
+      text-decoration: underline;
+    }
+    main {
+      padding: 24px;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 16px;
+    }
+    .card h4 {
+      margin-top: 0;
+      font-size: 16px;
+    }
+    .status {
+      font-weight: bold;
+    }
+    .status.pending { color: #b36b00; }
+    .status.complete { color: #1b7f3a; }
+    .status.blocked { color: #b00020; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      background-color: #fff;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      font-size: 13px;
+      text-align: left;
+    }
+    th {
+      background-color: #f0f2f5;
+    }
+    footer {
+      background-color: #ffffff;
+      border-top: 1px solid #ddd;
+      padding: 12px 24px;
+      font-size: 12px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Houston County Eviction Automation Platform</h1>
+  <p>Georgia-Compliant | SCRA-Aware | Court-Ready</p>
+</header>
+
+<div class="container">
+  <nav>
+    <h3>Navigation</h3>
+    <ul>
+      <li>Dashboard</li>
+      <li>Create New Case</li>
+      <li>Active Evictions</li>
+      <li>SCRA Review</li>
+      <li>Notarization Queue</li>
+      <li>Court Filings</li>
+      <li>Audit Logs</li>
+      <li>Settings</li>
+    </ul>
+  </nav>
+
+  <main>
+    <h2>System Overview (Simulation)</h2>
+
+    <div class="cards">
+      <div class="card">
+        <h4>Case Status</h4>
+        <p>Active Evictions: <strong>12</strong></p>
+        <p>Pending Notices: <strong>3</strong></p>
+        <p>Awaiting Filing: <strong>4</strong></p>
+      </div>
+
+      <div class="card">
+        <h4>Legal Compliance</h4>
+        <p>SCRA Holds: <span class="status blocked">1 Active</span></p>
+        <p>Notary Required: <span class="status pending">2 Cases</span></p>
+        <p>Ready for Court: <span class="status complete">5 Cases</span></p>
+      </div>
+
+      <div class="card">
+        <h4>Automation Health</h4>
+        <p>GitHub Actions: <span class="status complete">Operational</span></p>
+        <p>Document Engine: <span class="status complete">Online</span></p>
+        <p>Notifications: <span class="status complete">Online</span></p>
+      </div>
+    </div>
+
+    <h3>Recent Eviction Cases</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Case ID</th>
+          <th>Tenant</th>
+          <th>Property</th>
+          <th>Status</th>
+          <th>Next Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>HC-2026-0142</td>
+          <td>J. Smith</td>
+          <td>Warner Robins</td>
+          <td><span class="status pending">Notary Pending</span></td>
+          <td>Send to RON</td>
+        </tr>
+        <tr>
+          <td>HC-2026-0139</td>
+          <td>A. Johnson</td>
+          <td>Perry</td>
+          <td><span class="status blocked">SCRA Hold</span></td>
+          <td>Await Stay Resolution</td>
+        </tr>
+        <tr>
+          <td>HC-2026-0134</td>
+          <td>M. Davis</td>
+          <td>Centerville</td>
+          <td><span class="status complete">Filed</span></td>
+          <td>Await Answer Period</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </main>
+</div>
+
+<footer>
+  © 2026 Houston County Eviction Automation Platform (Simulation UI)
+</footer>
+
+</body>
+</html>
