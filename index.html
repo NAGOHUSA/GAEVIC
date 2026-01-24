@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Houston County Eviction Filing System | Georgia Magistrate Court</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --houston-blue: #003366;
+            --houston-red: #b22234;
+            --houston-gold: #f0b323;
+            --georgia-blue: #0f2044;
+            --georgia-red: #ae1a1f;
+            --light-gray: #f8f9fa;
+            --dark-gray: #343a40;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Open Sans', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Styles */
+        .header {
+            background: linear-gradient(to right, var(--houston-blue), var(--georgia-blue));
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo {
+            width: 70px;
+            height: 70px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--houston-blue);
+            border: 3px solid var(--houston-gold);
+        }
+        
+        .logo-text h1 {
+            font-family: 'Merriweather', serif;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .logo-text p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .contact-info {
+            text-align: right;
+        }
+        
+        .contact-info p {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .contact-info i {
+            margin-right: 8px;
+            color: var(--houston-gold);
+        }
+        
+        .navigation {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 12px 20px;
+            margin-top: 10px;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--houston-gold);
+        }
+        
+        .nav-links a i {
+            margin-right: 8px;
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 60px 0;
+            text-align: center;
+            background: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)), url('https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Seal_of_Georgia.svg/200px-Seal_of_Georgia.svg.png') no-repeat center;
+            background-size: contain;
+        }
+        
+        .hero h2 {
+            font-size: 36px;
+            color: var(--houston-blue);
+            margin-bottom: 20px;
+            font-family: 'Merriweather', serif;
+        }
+        
+        .hero p {
+            font-size: 18px;
+            max-width: 800px;
+            margin: 0 auto 30px;
+            color: var(--dark-gray);
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(to right, var(--houston-red), var(--georgia-red));
+            color: white;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 60px 0;
+            background-color: white;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 32px;
+            color: var(--houston-blue);
+            margin-bottom: 50px;
+            font-family: 'Merriweather', serif;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+        
+        .feature-card {
+            background-color: var(--light-gray);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            text-align: center;
+            box-shadow: var(--box-shadow);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(to right, var(--houston-blue), var(--georgia-blue));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 28px;
+        }
+        
+        .feature-card h3 {
+            color: var(--houston-blue);
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+        
+        /* Form Container */
+        .form-container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 40px;
+            margin: 40px auto;
+            max-width: 900px;
+            display: none; /* Hidden by default, shown when user clicks "Start Eviction Filing" */
+        }
+        
+        .form-progress {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .form-progress:before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: #e0e0e0;
+            z-index: 1;
+        }
+        
+        .progress-step {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .step-circle.active {
+            background-color: var(--houston-blue);
+            color: white;
+        }
+        
+        .step-circle.completed {
+            background-color: var(--houston-gold);
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .form-step {
+            display: none;
+        }
+        
+        .form-step.active {
+            display: block;
+        }
+        
+        .form-title {
+            color: var(--houston-blue);
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-family: 'Merriweather', serif;
+            border-bottom: 2px solid var(--houston-gold);
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-family: 'Open Sans', sans-serif;
+            transition: border 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--houston-blue);
+            box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.1);
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-family: 'Open Sans', sans-serif;
+        }
+        
+        .btn-primary {
+            background-color: var(--houston-blue);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--georgia-blue);
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .btn-outline {
+            background-color: white;
+            color: var(--houston-blue);
+            border: 2px solid var(--houston-blue);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--houston-blue);
+            color: white;
+        }
+        
+        /* Info Box */
+        .info-box {
+            background-color: #e8f4fd;
+            border-left: 4px solid var(--houston-blue);
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: var(--border-radius);
+        }
+        
+        .info-box h4 {
+            color: var(--houston-blue);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Footer */
+        .footer {
+            background-color: var(--georgia-blue);
+            color: white;
+            padding: 50px 0 20px;
+            margin-top: 60px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-section h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: var(--houston-gold);
+            font-family: 'Merriweather', serif;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: #ddd;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--houston-gold);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+            color: #aaa;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-top {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .contact-info {
+                text-align: center;
+            }
+            
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 20px;
+            }
+            
+            .hero h2 {
+                font-size: 28px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-container {
+                padding: 25px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-top">
+                <div class="logo-container">
+                    <div class="logo">HC</div>
+                    <div class="logo-text">
+                        <h1>Houston County Eviction System</h1>
+                        <p>Georgia Magistrate Court - Warner Robins, GA</p>
+                    </div>
+                </div>
+                <div class="contact-info">
+                    <p><i class="fas fa-phone"></i> (478) 542-2100</p>
+                    <p><i class="fas fa-map-marker-alt"></i> 202 Carl Vinson Pkwy, Warner Robins, GA 31088</p>
+                    <p><i class="fas fa-clock"></i> Mon-Fri: 8:00 AM - 5:00 PM</p>
+                </div>
+            </div>
+            
+            <nav class="navigation">
+                <ul class="nav-links">
+                    <li><a href="#"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="#"><i class="fas fa-file-alt"></i> Start Filing</a></li>
+                    <li><a href="#"><i class="fas fa-question-circle"></i> How It Works</a></li>
+                    <li><a href="#"><i class="fas fa-gavel"></i> Court Information</a></li>
+                    <li><a href="#"><i class="fas fa-dollar-sign"></i> Fee Schedule</a></li>
+                    <li><a href="#"><i class="fas fa-envelope"></i> Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h2>File Eviction Cases Online for Houston County, Georgia</h2>
+            <p>Our secure online system allows landlords to file dispossessory affidavits, generate required notices, and submit cases directly to the Houston County Magistrate Court. Save time and ensure compliance with Georgia eviction laws.</p>
+            <a href="#" class="cta-button" id="startFilingBtn">
+                <i class="fas fa-file-signature"></i> Start Eviction Filing
+            </a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Why File With Our System?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <h3>Court-Approved Forms</h3>
+                    <p>Automatically generate Georgia dispossessory affidavits, 7-day notices, and summons forms that comply with Houston County requirements.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Faster Processing</h3>
+                    <p>Reduce filing time from days to minutes. Submit directly to the court clerk's office without waiting in line.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>SCRA Compliance</h3>
+                    <p>Automatic Servicemembers Civil Relief Act verification to ensure compliance with federal law.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <h3>Transparent Fees</h3>
+                    <p>Pay Houston County's $81 filing fee securely online. No hidden charges or subscription fees.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Eviction Filing Form (Initially Hidden) -->
+    <div class="container">
+        <div class="form-container" id="evictionForm">
+            <!-- Form Progress -->
+            <div class="form-progress">
+                <div class="progress-step">
+                    <div class="step-circle active" id="step1Circle">1</div>
+                    <div class="step-label">Landlord Info</div>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle" id="step2Circle">2</div>
+                    <div class="step-label">Property Info</div>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle" id="step3Circle">3</div>
+                    <div class="step-label">Tenant Info</div>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle" id="step4Circle">4</div>
+                    <div class="step-label">Case Details</div>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle" id="step5Circle">5</div>
+                    <div class="step-label">Review & Submit</div>
+                </div>
+            </div>
+            
+            <!-- Step 1: Landlord Information -->
+            <div class="form-step active" id="step1">
+                <h2 class="form-title">Landlord Information</h2>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Important Notice</h4>
+                    <p>You must be the property owner or authorized agent to file an eviction. If filing as an agent, you must have written authorization from the property owner.</p>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="landlordName">Full Legal Name *</label>
+                        <input type="text" id="landlordName" placeholder="Enter your full name as it appears on the deed">
+                    </div>
+                    <div class="form-group">
+                        <label for="landlordPhone">Phone Number *</label>
+                        <input type="tel" id="landlordPhone" placeholder="(478) 123-4567">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="landlordEmail">Email Address *</label>
+                        <input type="email" id="landlordEmail" placeholder="your@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="landlordType">Filing As</label>
+                        <select id="landlordType">
+                            <option value="owner">Property Owner</option>
+                            <option value="agent">Authorized Agent</option>
+                            <option value="property_manager">Property Manager</option>
+                            <option value="attorney">Attorney</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="landlordAddress">Mailing Address *</label>
+                    <input type="text" id="landlordAddress" placeholder="Street Address">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="landlordCity">City *</label>
+                        <input type="text" id="landlordCity" placeholder="City">
+                    </div>
+                    <div class="form-group">
+                        <label for="landlordState">State *</label>
+                        <select id="landlordState">
+                            <option value="GA" selected>Georgia</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="landlordZip">ZIP Code *</label>
+                        <input type="text" id="landlordZip" placeholder="31088">
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" id="cancelBtn">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="nextStep1">Next: Property Information</button>
+                </div>
+            </div>
+            
+            <!-- Step 2: Property Information -->
+            <div class="form-step" id="step2">
+                <h2 class="form-title">Property Information</h2>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-map-marker-alt"></i> Location Requirements</h4>
+                    <p>The property must be located within Houston County, Georgia. This system only handles evictions for properties in Houston County.</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="propertyAddress">Property Address *</label>
+                    <input type="text" id="propertyAddress" placeholder="Street Address of the rental property">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="propertyCity">City *</label>
+                        <select id="propertyCity">
+                            <option value="Warner Robins" selected>Warner Robins</option>
+                            <option value="Perry">Perry</option>
+                            <option value="Centerville">Centerville</option>
+                            <option value="Bonaire">Bonaire</option>
+                            <option value="Kathleen">Kathleen</option>
+                            <option value="Other">Other Houston County Location</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="propertyZip">ZIP Code *</label>
+                        <input type="text" id="propertyZip" placeholder="31088">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="propertyType">Property Type</label>
+                        <select id="propertyType">
+                            <option value="single_family">Single Family Home</option>
+                            <option value="apartment">Apartment</option>
+                            <option value="condo">Condominium</option>
+                            <option value="townhome">Townhome</option>
+                            <option value="mobile_home">Mobile Home</option>
+                            <option value="commercial">Commercial Property</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="unitNumber">Unit Number (if applicable)</label>
+                        <input type="text" id="unitNumber" placeholder="Apt 3B, Unit 12, etc.">
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="prevStep2">Previous</button>
+                    <button type="button" class="btn btn-primary" id="nextStep2">Next: Tenant Information</button>
+                </div>
+            </div>
+            
+            <!-- Step 3: Tenant Information -->
+            <div class="form-step" id="step3">
+                <h2 class="form-title">Tenant Information</h2>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-user-friends"></i> Multiple Tenants</h4>
+                    <p>If there are multiple tenants on the lease, you'll need to provide information for each one. You can add additional tenants after completing this section.</p>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tenantName">Tenant Full Name *</label>
+                        <input type="text" id="tenantName" placeholder="Tenant's legal name">
+                    </div>
+                    <div class="form-group">
+                        <label for="tenantPhone">Tenant Phone Number</label>
+                        <input type="tel" id="tenantPhone" placeholder="(478) 123-4567">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tenantEmail">Tenant Email (if known)</label>
+                        <input type="email" id="tenantEmail" placeholder="tenant@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="tenantAltAddress">Alternate Mailing Address</label>
+                        <input type="text" id="tenantAltAddress" placeholder="If different from property address">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <input type="checkbox" id="militaryCheck" style="width: auto;">
+                        <label for="militaryCheck" style="margin: 0;">I believe this tenant may be an active duty service member</label>
+                    </div>
+                    <p class="small-text"><i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i> The court will verify military status through the SCRA database. False statements may result in dismissal of your case.</p>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="prevStep3">Previous</button>
+                    <button type="button" class="btn btn-primary" id="nextStep3">Next: Case Details</button>
+                </div>
+            </div>
+            
+            <!-- Step 4: Case Details -->
+            <div class="form-step" id="step4">
+                <h2 class="form-title">Case Details</h2>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-balance-scale"></i> Georgia Eviction Laws</h4>
+                    <p>In Georgia, you must have legal grounds for eviction. Common reasons include non-payment of rent, lease violations, or holdover tenancy after lease expiration.</p>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="leaseType">Lease Type *</label>
+                        <select id="leaseType">
+                            <option value="month_to_month">Month-to-Month</option>
+                            <option value="fixed_term">Fixed Term Lease</option>
+                            <option value="week_to_week">Week-to-Week</option>
+                            <option value="verbal">Verbal Agreement</option>
+                            <option value="no_lease">No Lease Agreement</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reason">Reason for Eviction *</label>
+                        <select id="reason">
+                            <option value="non_payment">Non-Payment of Rent</option>
+                            <option value="lease_violation">Lease Violation</option>
+                            <option value="holdover">Holdover (Lease Expired)</option>
+                            <option value="property_damage">Property Damage</option>
+                            <option value="illegal_activity">Illegal Activity</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="rentAmount">Monthly Rent Amount *</label>
+                        <div style="position: relative;">
+                            <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%);">$</span>
+                            <input type="number" id="rentAmount" placeholder="0.00" style="padding-left: 30px;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="amountOwed">Total Amount Owed *</label>
+                        <div style="position: relative;">
+                            <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%);">$</span>
+                            <input type="number" id="amountOwed" placeholder="0.00" style="padding-left: 30px;">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="lastPaymentDate">Last Payment Received</label>
+                        <input type="date" id="lastPaymentDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="noticeDate">Date Notice Was Served *</label>
+                        <input type="date" id="noticeDate">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="noticeDetails">Details of Notice Served</label>
+                    <textarea id="noticeDetails" rows="3" placeholder="Describe how and when the notice was delivered to the tenant (e.g., 'Posted on front door on 10/15/2023' or 'Certified mail #1234567890')"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="prevStep4">Previous</button>
+                    <button type="button" class="btn btn-primary" id="nextStep4">Next: Review & Submit</button>
+                </div>
+            </div>
+            
+            <!-- Step 5: Review & Submit -->
+            <div class="form-step" id="step5">
+                <h2 class="form-title">Review & Submit Your Filing</h2>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-file-invoice-dollar"></i> Filing Fee</h4>
+                    <p>Houston County filing fee: <strong>$81.00</strong>. This fee is paid to the court and is non-refundable once the case is filed.</p>
+                </div>
+                
+                <div class="review-section">
+                    <h3 style="color: var(--houston-blue); margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">Case Summary</h3>
+                    
+                    <div class="review-row" style="display: flex; margin-bottom: 15px;">
+                        <div style="flex: 1; font-weight: 600;">Landlord:</div>
+                        <div style="flex: 2;" id="reviewLandlord">Not provided</div>
+                    </div>
+                    
+                    <div class="review-row" style="display: flex; margin-bottom: 15px;">
+                        <div style="flex: 1; font-weight: 600;">Property:</div>
+                        <div style="flex: 2;" id="reviewProperty">Not provided</div>
+                    </div>
+                    
+                    <div class="review-row" style="display: flex; margin-bottom: 15px;">
+                        <div style="flex: 1; font-weight: 600;">Tenant:</div>
+                        <div style="flex: 2;" id="reviewTenant">Not provided</div>
+                    </div>
+                    
+                    <div class="review-row" style="display: flex; margin-bottom: 15px;">
+                        <div style="flex: 1; font-weight: 600;">Reason:</div>
+                        <div style="flex: 2;" id="reviewReason">Not provided</div>
+                    </div>
+                    
+                    <div class="review-row" style="display: flex; margin-bottom: 15px;">
+                        <div style="flex: 1; font-weight: 600;">Amount Owed:</div>
+                        <div style="flex: 2;" id="reviewAmount">$0.00</div>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-top: 30px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="agreeTerms" style="width: auto;">
+                        <label for="agreeTerms" style="margin: 0;">I certify under penalty of perjury that the information provided is true and correct to the best of my knowledge.</label>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="prevStep5">Previous</button>
+                    <button type="button" class="btn btn-primary" id="submitCase" disabled>Generate Documents & Continue to Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Houston County Magistrate Court</h3>
+                    <p>202 Carl Vinson Parkway<br>
+                    Warner Robins, GA 31088<br>
+                    Phone: (478) 542-2100<br>
+                    Hours: Monday-Friday, 8:00 AM - 5:00 PM</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Start New Filing</a></li>
+                        <li><a href="#">Check Case Status</a></li>
+                        <li><a href="#">Court Rules & Procedures</a></li>
+                        <li><a href="#">Eviction Timeline</a></li>
+                        <li><a href="#">Fee Schedule</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Georgia Landlord-Tenant Handbook</a></li>
+                        <li><a href="#">SCRA Information</a></li>
+                        <li><a href="#">Legal Aid Services</a></li>
+                        <li><a href="#">Forms & Documents</a></li>
+                        <li><a href="#">FAQs</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>© 2023 Houston County Magistrate Court, Georgia. This is an official system for filing eviction cases in Houston County. Unauthorized use is prohibited.</p>
+                <p style="margin-top: 10px;">This system is designed to assist with proper filing but does not constitute legal advice. Consult an attorney for legal questions.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Form Navigation Logic
+        document.addEventListener('DOMContentLoaded', function() {
+            const startFilingBtn = document.getElementById('startFilingBtn');
+            const evictionForm = document.getElementById('evictionForm');
+            const cancelBtn = document.getElementById('cancelBtn');
+            
+            // Show/Hide Form
+            startFilingBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                evictionForm.style.display = 'block';
+                window.scrollTo({
+                    top: evictionForm.offsetTop - 20,
+                    behavior: 'smooth'
+                });
+            });
+            
+            cancelBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to cancel? All entered information will be lost.')) {
+                    evictionForm.style.display = 'none';
+                    resetForm();
+                }
+            });
+            
+            // Step Navigation
+            let currentStep = 1;
+            
+            // Next Step Buttons
+            document.getElementById('nextStep1').addEventListener('click', () => goToStep(2));
+            document.getElementById('nextStep2').addEventListener('click', () => goToStep(3));
+            document.getElementById('nextStep3').addEventListener('click', () => goToStep(4));
+            document.getElementById('nextStep4').addEventListener('click', () => {
+                updateReviewSection();
+                goToStep(5);
+            });
+            
+            // Previous Step Buttons
+            document.getElementById('prevStep2').addEventListener('click', () => goToStep(1));
+            document.getElementById('prevStep3').addEventListener('click', () => goToStep(2));
+            document.getElementById('prevStep4').addEventListener('click', () => goToStep(3));
+            document.getElementById('prevStep5').addEventListener('click', () => goToStep(4));
+            
+            // Terms Agreement
+            document.getElementById('agreeTerms').addEventListener('change', function() {
+                document.getElementById('submitCase').disabled = !this.checked;
+            });
+            
+            // Submit Case
+            document.getElementById('submitCase').addEventListener('click', function() {
+                // In a real application, this would submit to backend
+                alert('Form submission would generate documents and proceed to payment. In a real implementation, this would connect to the backend API.');
+                // Reset form after "submission"
+                evictionForm.style.display = 'none';
+                resetForm();
+            });
+            
+            function goToStep(step) {
+                // Hide current step
+                document.getElementById(`step${currentStep}`).classList.remove('active');
+                document.getElementById(`step${currentStep}Circle`).classList.remove('active');
+                
+                // Update current step
+                currentStep = step;
+                
+                // Show new step
+                document.getElementById(`step${currentStep}`).classList.add('active');
+                document.getElementById(`step${currentStep}Circle`).classList.add('active');
+                
+                // Mark previous steps as completed
+                for (let i = 1; i < currentStep; i++) {
+                    document.getElementById(`step${i}Circle`).classList.add('completed');
+                }
+                
+                // Scroll to top of form
+                evictionForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            
+            function updateReviewSection() {
+                // Update review section with form data
+                document.getElementById('reviewLandlord').textContent = 
+                    document.getElementById('landlordName').value || 'Not provided';
+                
+                const propertyAddress = document.getElementById('propertyAddress').value;
+                const propertyCity = document.getElementById('propertyCity').value;
+                document.getElementById('reviewProperty').textContent = 
+                    `${propertyAddress || 'Not provided'}, ${propertyCity || ''}`;
+                
+                document.getElementById('reviewTenant').textContent = 
+                    document.getElementById('tenantName').value || 'Not provided';
+                
+                // Convert reason code to readable text
+                const reasonSelect = document.getElementById('reason');
+                const reasonText = reasonSelect.options[reasonSelect.selectedIndex].text;
+                document.getElementById('reviewReason').textContent = reasonText;
+                
+                // Format currency
+                const amountOwed = document.getElementById('amountOwed').value;
+                document.getElementById('reviewAmount').textContent = 
+                    amountOwed ? `$${parseFloat(amountOwed).toFixed(2)}` : '$0.00';
+            }
+            
+            function resetForm() {
+                // Reset to step 1
+                currentStep = 1;
+                
+                // Hide all steps except first
+                const steps = document.querySelectorAll('.form-step');
+                steps.forEach(step => step.classList.remove('active'));
+                document.getElementById('step1').classList.add('active');
+                
+                // Reset progress indicators
+                const circles = document.querySelectorAll('.step-circle');
+                circles.forEach(circle => {
+                    circle.classList.remove('active', 'completed');
+                });
+                document.getElementById('step1Circle').classList.add('active');
+                
+                // Reset form fields (in a real app, you'd want to clear all inputs)
+                document.getElementById('agreeTerms').checked = false;
+                document.getElementById('submitCase').disabled = true;
+            }
+            
+            // Pre-fill today's date in notice date field
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('noticeDate').value = today;
+            
+            // Set minimum date for notice date (30 days ago)
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            document.getElementById('noticeDate').min = thirtyDaysAgo.toISOString().split('T')[0];
+            
+            // Set maximum date for notice date (today)
+            document.getElementById('noticeDate').max = today;
+        });
+    </script>
+</body>
+</html>
