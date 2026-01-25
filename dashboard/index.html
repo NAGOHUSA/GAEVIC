@@ -715,7 +715,7 @@
                 <div class="logo-container">
                     <div class="logo">HC</div>
                     <div class="logo-text">
-                        <h1>Eviction Cases Dashboard 1.3</h1>
+                        <h1>Eviction Cases Dashboard 1.2</h1>
                         <p>Houston County Magistrate Court - Warner Robins, GA</p>
                     </div>
                 </div>
@@ -797,7 +797,7 @@
             <div class="repo-info">
                 <h4><i class="fas fa-database"></i> Data Source Information</h4>
                 <p><strong>Repository:</strong> NAGOHUSA/GAEVIC</p>
-                <p><strong>Path:</strong> cases/</p>
+                <p><strong>Path:</strong> Root Directory (no cases folder)</p>
                 <p><strong>Status:</strong> <span id="repoStatus">Loading...</span></p>
             </div>
             
@@ -932,17 +932,16 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Dashboard script loaded');
             
-            // FIXED: GitHub Configuration - Correct for NAGOHUSA/GAEVIC
+            // FIXED: GitHub Configuration - Root directory since no cases/ folder
             const GITHUB_CONFIG = {
                 owner: 'NAGOHUSA',
                 repo: 'GAEVIC',
                 branch: 'main',
-                path: 'cases/'
+                path: ''  // Empty string for root directory
             };
             
-            // TOKEN INSERTED: Replace this with your actual GitHub token if repository is private
-            // If repository is public, keep it as null
-            const GITHUB_TOKEN = null; // Set to null for public repo
+            // No token needed for public repository
+            const GITHUB_TOKEN = null;
             
             // Simple password authentication
             const ADMIN_CREDENTIALS = {
@@ -987,7 +986,7 @@
             
             // Debug logging
             console.log('GitHub Repository: https://github.com/NAGOHUSA/GAEVIC');
-            console.log('GitHub Token:', GITHUB_TOKEN ? 'Using token' : 'Using public access');
+            console.log('Path: Root directory');
             
             // Handle login form submission
             loginForm.addEventListener('submit', function(e) {
@@ -1164,43 +1163,21 @@
                 }
             }
             
-            // Load ALL cases from repository
+            // FIXED: Load ALL cases from repository root
             async function loadAllCases() {
-                console.log('Loading all cases...');
-                showLoading('Loading all cases from repository...');
-                repoStatus.textContent = 'Loading cases...';
+                console.log('Loading all cases from repository root...');
+                showLoading('Scanning repository for case files...');
+                repoStatus.textContent = 'Connecting to repository...';
                 
                 try {
-                    console.log('Using GitHub Config:', GITHUB_CONFIG);
+                    console.log('GitHub URL: https://github.com/NAGOHUSA/GAEVIC');
                     
-                    let contents;
-                    try {
-                        if (GITHUB_TOKEN) {
-                            console.log('Trying with token...');
-                            contents = await getDataSourceContents(GITHUB_CONFIG, GITHUB_CONFIG.path, GITHUB_TOKEN);
-                            repoStatus.textContent = 'Connected (Authenticated)';
-                        } else {
-                            console.log('Trying public access...');
-                            contents = await getDataSourceContents(GITHUB_CONFIG, GITHUB_CONFIG.path, null);
-                            repoStatus.textContent = 'Connected (Public Repository)';
-                        }
-                    } catch (accessError) {
-                        console.error('Access error:', accessError);
-                        
-                        if (accessError.response && accessError.response.status === 404) {
-                            throw new Error(`Repository not found: ${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}`);
-                        } else if (accessError.response && (accessError.response.status === 401 || accessError.response.status === 403)) {
-                            throw new Error('Repository is private. Please add a GitHub token to the code.');
-                        } else {
-                            throw new Error('Cannot connect to repository. Check your internet connection.');
-                        }
-                    }
+                    // Get all files from repository root
+                    const contents = await getDataSourceContents(GITHUB_CONFIG, GITHUB_CONFIG.path, GITHUB_TOKEN);
+                    console.log('Repository contents:', contents);
                     
-                    console.log('Repository contents loaded:', contents.length, 'items');
-                    
-                    // Check if cases directory exists and has content
                     if (!contents || contents.length === 0) {
-                        repoStatus.textContent = 'No cases found';
+                        repoStatus.textContent = 'Repository is empty';
                         casesTableBody.style.display = 'none';
                         noCasesMessage.style.display = 'block';
                         updateStats([]);
@@ -1209,8 +1186,8 @@
                         return;
                     }
                     
-                    // Process case folders
-                    await processCaseFolders(contents, GITHUB_TOKEN);
+                    // Look for case files in the root
+                    await findAndLoadCaseFiles(contents, GITHUB_TOKEN);
                     hideLoading();
                     
                 } catch (error) {
@@ -1218,18 +1195,18 @@
                     hideLoading();
                     
                     // Update repo status
-                    repoStatus.textContent = 'Connection Error';
+                    repoStatus.textContent = 'Connection Failed';
                     repoStatus.style.color = '#dc3545';
                     
-                    // Show error message
                     let errorMessage = error.message;
                     
                     if (error.response) {
-                        console.error('Response error:', error.response.status, error.response.statusText);
-                        if (error.response.status === 401 || error.response.status === 403) {
-                            errorMessage = 'Repository is private. Please add a GitHub Personal Access Token to the code.';
-                        } else if (error.response.status === 404) {
-                            errorMessage = 'Repository or folder not found. Please check the repository exists at: NAGOHUSA/GAEVIC/cases/';
+                        console.error('GitHub API Response:', error.response.status, error.response.data);
+                        
+                        if (error.response.status === 404) {
+                            errorMessage = `Repository not found: ${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}`;
+                        } else if (error.response.status === 403) {
+                            errorMessage = 'Rate limit exceeded. Please wait a few minutes and try again.';
                         }
                     }
                     
@@ -1242,6 +1219,7 @@
                         <i class="fas fa-exclamation-triangle"></i>
                         <h3>Connection Error</h3>
                         <p>${errorMessage}</p>
+                        <p>Repository: https://github.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}</p>
                         <button class="btn btn-primary" id="retryConnection" style="margin-top: 20px;">
                             <i class="fas fa-sync-alt"></i> Retry Connection
                         </button>
@@ -1252,39 +1230,103 @@
                 }
             }
             
-            // Process case folders
-            async function processCaseFolders(contents, token) {
-                console.log('Processing case folders...');
-                // Filter for case folders
-                const caseFolders = contents.filter(item => 
-                    item.type === 'dir' && 
-                    item.name.startsWith('HOU-')
+            // FIXED: Find and load case files from repository contents
+            async function findAndLoadCaseFiles(contents, token) {
+                console.log('Looking for case files...');
+                
+                // First, check for case_data.json files or similar
+                const caseFiles = contents.filter(item => 
+                    item.type === 'file' && 
+                    (item.name === 'case_data.json' || 
+                     item.name.includes('case') || 
+                     item.name.endsWith('.json'))
                 );
                 
-                console.log(`Found ${caseFolders.length} case folders`);
+                console.log(`Found ${caseFiles.length} potential case files`);
                 
-                // Update repo status with count
-                repoStatus.textContent = `Found ${caseFolders.length} case folders`;
+                // Also check for folders that might contain cases
+                const folders = contents.filter(item => item.type === 'dir');
+                console.log(`Found ${folders.length} folders`);
                 
-                // Load case data from each folder
+                // Load data from individual JSON files
                 casesData = [];
-                for (const folder of caseFolders) {
+                
+                for (const file of caseFiles) {
                     try {
-                        console.log(`Loading case: ${folder.name}`);
-                        const caseData = await loadCaseData(GITHUB_CONFIG, folder.name, token);
-                        if (caseData) {
+                        console.log(`Trying to load: ${file.name}`);
+                        const caseData = await loadCaseFile(GITHUB_CONFIG, file.name, token);
+                        if (caseData && caseData.caseId) {
                             casesData.push(caseData);
-                            console.log(`Successfully loaded: ${folder.name}`);
+                            console.log(`Loaded case: ${caseData.caseId}`);
                         }
                     } catch (error) {
-                        console.error(`Error loading case ${folder.name}:`, error);
+                        console.log(`Could not load ${file.name} as case data:`, error.message);
+                    }
+                }
+                
+                // Also check folders for case data
+                for (const folder of folders) {
+                    try {
+                        console.log(`Checking folder: ${folder.name}`);
+                        const folderContents = await getDataSourceContents(GITHUB_CONFIG, folder.name, token);
+                        
+                        const caseFilesInFolder = folderContents.filter(item => 
+                            item.type === 'file' && 
+                            item.name === 'case_data.json'
+                        );
+                        
+                        for (const file of caseFilesInFolder) {
+                            try {
+                                const caseData = await loadCaseFile(GITHUB_CONFIG, `${folder.name}/${file.name}`, token);
+                                if (caseData && caseData.caseId) {
+                                    casesData.push(caseData);
+                                    console.log(`Loaded case from folder: ${caseData.caseId}`);
+                                }
+                            } catch (error) {
+                                console.log(`Error loading case from folder ${folder.name}:`, error.message);
+                            }
+                        }
+                    } catch (error) {
+                        console.log(`Could not scan folder ${folder.name}:`, error.message);
                     }
                 }
                 
                 console.log(`Total cases loaded: ${casesData.length}`);
                 
+                if (casesData.length > 0) {
+                    repoStatus.textContent = `Loaded ${casesData.length} cases`;
+                    repoStatus.style.color = '#28a745';
+                } else {
+                    repoStatus.textContent = 'No case files found';
+                    repoStatus.style.color = '#666';
+                }
+                
                 // Update dashboard
                 updateDashboard();
+            }
+            
+            // Load case file from path
+            async function loadCaseFile(config, filePath, token) {
+                const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${filePath}`;
+                
+                const headers = {
+                    'Accept': 'application/vnd.github.v3+json'
+                };
+                
+                if (token) {
+                    headers['Authorization'] = `token ${token}`;
+                }
+                
+                const response = await axios.get(url, { headers });
+                const content = atob(response.data.content);
+                const caseData = JSON.parse(content);
+                
+                // Ensure caseId is set
+                if (!caseData.caseId && response.data.name) {
+                    caseData.caseId = response.data.name.replace('.json', '').replace('case_data', 'case');
+                }
+                
+                return caseData;
             }
             
             // Get data source contents
@@ -1293,46 +1335,20 @@
                 console.log('Fetching from URL:', url);
                 
                 const headers = {
-                    'Accept': 'application/vnd.github.v3+json'
+                    'Accept': 'application/vnd.github.v3+json',
+                    'User-Agent': 'EvictionDashboard/1.0'
                 };
                 
-                // Add authorization header if token is provided
                 if (token) {
                     headers['Authorization'] = `token ${token}`;
                 }
                 
-                const response = await axios.get(url, { headers });
-                return response.data;
-            }
-            
-            // Load case data from folder
-            async function loadCaseData(config, caseId, token) {
-                const caseFolder = `${config.path}${caseId}/`;
+                const response = await axios.get(url, { 
+                    headers: headers,
+                    timeout: 10000
+                });
                 
-                try {
-                    // Get case data file
-                    const caseDataUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${caseFolder}case_data.json`;
-                    
-                    const headers = {
-                        'Accept': 'application/vnd.github.v3+json'
-                    };
-                    
-                    if (token) {
-                        headers['Authorization'] = `token ${token}`;
-                    }
-                    
-                    const response = await axios.get(caseDataUrl, { headers });
-                    
-                    // Decode base64 content
-                    const content = atob(response.data.content);
-                    const caseData = JSON.parse(content);
-                    
-                    return caseData;
-                    
-                } catch (error) {
-                    console.error(`Error loading case data for ${caseId}:`, error);
-                    return null;
-                }
+                return response.data;
             }
             
             // Update dashboard with loaded data
@@ -1393,10 +1409,10 @@
                     filterText = filterText.toLowerCase();
                     filteredCases = cases.filter(caseData => {
                         return (
-                            caseData.caseId.toLowerCase().includes(filterText) ||
-                            caseData.landlord.name.toLowerCase().includes(filterText) ||
-                            caseData.tenant.name.toLowerCase().includes(filterText) ||
-                            caseData.property.address.toLowerCase().includes(filterText)
+                            (caseData.caseId && caseData.caseId.toLowerCase().includes(filterText)) ||
+                            (caseData.landlord && caseData.landlord.name && caseData.landlord.name.toLowerCase().includes(filterText)) ||
+                            (caseData.tenant && caseData.tenant.name && caseData.tenant.name.toLowerCase().includes(filterText)) ||
+                            (caseData.property && caseData.property.address && caseData.property.address.toLowerCase().includes(filterText))
                         );
                     });
                 }
@@ -1406,19 +1422,26 @@
                 }
                 
                 // Sort by date (newest first)
-                filteredCases.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                filteredCases.sort((a, b) => {
+                    const dateA = a.timestamp ? new Date(a.timestamp) : new Date(0);
+                    const dateB = b.timestamp ? new Date(b.timestamp) : new Date(0);
+                    return dateB - dateA;
+                });
                 
                 // Populate table
                 filteredCases.forEach(caseData => {
                     const row = document.createElement('tr');
                     
                     // Format date
-                    const date = new Date(caseData.timestamp);
-                    const formattedDate = date.toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                    });
+                    let formattedDate = 'No date';
+                    if (caseData.timestamp) {
+                        const date = new Date(caseData.timestamp);
+                        formattedDate = date.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        });
+                    }
                     
                     // Get status badge class
                     let statusClass = 'status-pending';
@@ -1426,20 +1449,26 @@
                     if (caseData.status === 'Hearing Scheduled') statusClass = 'status-hearing';
                     if (caseData.status === 'Completed' || caseData.status === 'Dismissed') statusClass = 'status-completed';
                     
+                    // Get amount owed
+                    let amountOwed = '0.00';
+                    if (caseData.case && caseData.case.amountOwed) {
+                        amountOwed = parseFloat(caseData.case.amountOwed).toFixed(2);
+                    }
+                    
                     row.innerHTML = `
-                        <td><strong>${caseData.caseId}</strong></td>
-                        <td>${caseData.landlord.name}</td>
-                        <td>${caseData.tenant.name}</td>
-                        <td>${caseData.property.address}</td>
-                        <td>$${parseFloat(caseData.case.amountOwed).toFixed(2)}</td>
-                        <td><span class="status-badge ${statusClass}">${caseData.status}</span></td>
+                        <td><strong>${caseData.caseId || 'Unknown'}</strong></td>
+                        <td>${caseData.landlord ? caseData.landlord.name : 'Unknown'}</td>
+                        <td>${caseData.tenant ? caseData.tenant.name : 'Unknown'}</td>
+                        <td>${caseData.property ? caseData.property.address : 'Unknown'}</td>
+                        <td>$${amountOwed}</td>
+                        <td><span class="status-badge ${statusClass}">${caseData.status || 'Unknown'}</span></td>
                         <td>${formattedDate}</td>
                         <td>
                             <div class="action-buttons">
-                                <button class="action-btn view-case" data-case-id="${caseData.caseId}">
+                                <button class="action-btn view-case" data-case-id="${caseData.caseId || ''}">
                                     <i class="fas fa-eye"></i> View
                                 </button>
-                                <button class="action-btn download-case" data-case-id="${caseData.caseId}">
+                                <button class="action-btn download-case" data-case-id="${caseData.caseId || ''}">
                                     <i class="fas fa-download"></i> Download
                                 </button>
                             </div>
@@ -1473,12 +1502,28 @@
                     'Filed with Court': 0,
                     'Hearing Scheduled': 0,
                     'Completed': 0,
-                    'Dismissed': 0
+                    'Dismissed': 0,
+                    'Unknown': 0
                 };
                 
                 cases.forEach(caseData => {
-                    if (statusCounts.hasOwnProperty(caseData.status)) {
-                        statusCounts[caseData.status]++;
+                    const status = caseData.status || 'Unknown';
+                    if (statusCounts.hasOwnProperty(status)) {
+                        statusCounts[status]++;
+                    } else {
+                        statusCounts[status] = 1;
+                    }
+                });
+                
+                // Filter out zero counts
+                const labels = [];
+                const data = [];
+                const colors = ['#ffc107', '#17a2b8', '#007bff', '#28a745', '#dc3545', '#6c757d'];
+                
+                Object.keys(statusCounts).forEach((status, index) => {
+                    if (statusCounts[status] > 0) {
+                        labels.push(status);
+                        data.push(statusCounts[status]);
                     }
                 });
                 
@@ -1487,43 +1532,41 @@
                     statusChart.destroy();
                 }
                 
-                const statusCtx = document.getElementById('statusChart').getContext('2d');
-                statusChart = new Chart(statusCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: Object.keys(statusCounts),
-                        datasets: [{
-                            data: Object.values(statusCounts),
-                            backgroundColor: [
-                                '#ffc107', // Pending - yellow
-                                '#17a2b8', // Filed - teal
-                                '#007bff', // Hearing - blue
-                                '#28a745', // Completed - green
-                                '#dc3545'  // Dismissed - red
-                            ],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
+                if (labels.length > 0) {
+                    const statusCtx = document.getElementById('statusChart').getContext('2d');
+                    statusChart = new Chart(statusCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: data,
+                                backgroundColor: colors.slice(0, labels.length),
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
                 
                 // Monthly Cases Chart
                 const monthlyCounts = {};
                 cases.forEach(caseData => {
-                    const date = new Date(caseData.timestamp);
-                    const monthYear = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                    
-                    if (!monthlyCounts[monthYear]) {
-                        monthlyCounts[monthYear] = 0;
+                    if (caseData.timestamp) {
+                        const date = new Date(caseData.timestamp);
+                        const monthYear = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                        
+                        if (!monthlyCounts[monthYear]) {
+                            monthlyCounts[monthYear] = 0;
+                        }
+                        monthlyCounts[monthYear]++;
                     }
-                    monthlyCounts[monthYear]++;
                 });
                 
                 // Sort months chronologically
@@ -1536,31 +1579,33 @@
                     monthlyChart.destroy();
                 }
                 
-                const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-                monthlyChart = new Chart(monthlyCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: sortedMonths,
-                        datasets: [{
-                            label: 'Cases Filed',
-                            data: sortedMonths.map(month => monthlyCounts[month]),
-                            backgroundColor: 'rgba(0, 51, 102, 0.7)',
-                            borderColor: 'rgba(0, 51, 102, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    stepSize: 1
+                if (sortedMonths.length > 0) {
+                    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+                    monthlyChart = new Chart(monthlyCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: sortedMonths,
+                            datasets: [{
+                                label: 'Cases Filed',
+                                data: sortedMonths.map(month => monthlyCounts[month]),
+                                backgroundColor: 'rgba(0, 51, 102, 0.7)',
+                                borderColor: 'rgba(0, 51, 102, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1
+                                    }
                                 }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
             
             // Show case details
@@ -1578,15 +1623,18 @@
                     }
                     
                     // Format date
-                    const date = new Date(caseData.timestamp);
-                    const formattedDate = date.toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
+                    let formattedDate = 'No date available';
+                    if (caseData.timestamp) {
+                        const date = new Date(caseData.timestamp);
+                        formattedDate = date.toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    }
                     
                     // Create case details HTML
                     caseDetailsContent.innerHTML = `
@@ -1595,59 +1643,66 @@
                                 <div class="detail-group">
                                     <h4>Case Information</h4>
                                     <div class="detail-content">
-                                        <p><strong>Case ID:</strong> ${caseData.caseId}</p>
-                                        <p><strong>Status:</strong> ${caseData.status}</p>
+                                        <p><strong>Case ID:</strong> ${caseData.caseId || 'Unknown'}</p>
+                                        <p><strong>Status:</strong> ${caseData.status || 'Unknown'}</p>
                                         <p><strong>Date Created:</strong> ${formattedDate}</p>
-                                        <p><strong>Reason for Eviction:</strong> ${caseData.case.reason}</p>
-                                        <p><strong>Storage Path:</strong> ${caseData.githubPath || 'Not specified'}</p>
+                                        <p><strong>Reason for Eviction:</strong> ${caseData.case ? caseData.case.reason : 'Not specified'}</p>
                                     </div>
                                 </div>
+                                ${caseData.property ? `
                                 <div class="detail-group">
                                     <h4>Property Information</h4>
                                     <div class="detail-content">
-                                        <p><strong>Address:</strong> ${caseData.property.address}</p>
-                                        <p><strong>City:</strong> ${caseData.property.city}</p>
-                                        <p><strong>ZIP Code:</strong> ${caseData.property.zip}</p>
-                                        <p><strong>Property Type:</strong> ${caseData.property.type}</p>
+                                        <p><strong>Address:</strong> ${caseData.property.address || 'Unknown'}</p>
+                                        <p><strong>City:</strong> ${caseData.property.city || 'Unknown'}</p>
+                                        <p><strong>ZIP Code:</strong> ${caseData.property.zip || 'Unknown'}</p>
+                                        <p><strong>Property Type:</strong> ${caseData.property.type || 'Unknown'}</p>
                                         ${caseData.property.unit ? `<p><strong>Unit:</strong> ${caseData.property.unit}</p>` : ''}
                                     </div>
                                 </div>
+                                ` : ''}
                             </div>
                             <div>
+                                ${caseData.landlord ? `
                                 <div class="detail-group">
                                     <h4>Landlord Information</h4>
                                     <div class="detail-content">
-                                        <p><strong>Name:</strong> ${caseData.landlord.name}</p>
-                                        <p><strong>Phone:</strong> ${caseData.landlord.phone}</p>
-                                        <p><strong>Email:</strong> ${caseData.landlord.email}</p>
-                                        <p><strong>Address:</strong> ${caseData.landlord.address}</p>
-                                        <p><strong>City:</strong> ${caseData.landlord.city}, ${caseData.landlord.state} ${caseData.landlord.zip}</p>
+                                        <p><strong>Name:</strong> ${caseData.landlord.name || 'Unknown'}</p>
+                                        <p><strong>Phone:</strong> ${caseData.landlord.phone || 'Unknown'}</p>
+                                        <p><strong>Email:</strong> ${caseData.landlord.email || 'Unknown'}</p>
+                                        <p><strong>Address:</strong> ${caseData.landlord.address || 'Unknown'}</p>
+                                        <p><strong>City:</strong> ${caseData.landlord.city || 'Unknown'}, ${caseData.landlord.state || ''} ${caseData.landlord.zip || ''}</p>
                                     </div>
                                 </div>
+                                ` : ''}
+                                ${caseData.tenant ? `
                                 <div class="detail-group">
                                     <h4>Tenant Information</h4>
                                     <div class="detail-content">
-                                        <p><strong>Name:</strong> ${caseData.tenant.name}</p>
+                                        <p><strong>Name:</strong> ${caseData.tenant.name || 'Unknown'}</p>
                                         ${caseData.tenant.phone ? `<p><strong>Phone:</strong> ${caseData.tenant.phone}</p>` : ''}
                                         ${caseData.tenant.email ? `<p><strong>Email:</strong> ${caseData.tenant.email}</p>` : ''}
                                         ${caseData.tenant.altAddress ? `<p><strong>Alternate Address:</strong> ${caseData.tenant.altAddress}</p>` : ''}
                                         <p><strong>Military Check:</strong> ${caseData.tenant.militaryCheck ? 'Yes' : 'No'}</p>
                                     </div>
                                 </div>
+                                ` : ''}
                             </div>
                             <div>
+                                ${caseData.case ? `
                                 <div class="detail-group">
                                     <h4>Case Details</h4>
                                     <div class="detail-content">
-                                        <p><strong>Lease Type:</strong> ${caseData.case.leaseType}</p>
-                                        <p><strong>Reason for Eviction:</strong> ${caseData.case.reason}</p>
-                                        <p><strong>Monthly Rent:</strong> $${parseFloat(caseData.case.rentAmount).toFixed(2)}</p>
-                                        <p><strong>Amount Owed:</strong> $${parseFloat(caseData.case.amountOwed).toFixed(2)}</p>
+                                        <p><strong>Lease Type:</strong> ${caseData.case.leaseType || 'Unknown'}</p>
+                                        <p><strong>Reason for Eviction:</strong> ${caseData.case.reason || 'Unknown'}</p>
+                                        <p><strong>Monthly Rent:</strong> $${caseData.case.rentAmount ? parseFloat(caseData.case.rentAmount).toFixed(2) : '0.00'}</p>
+                                        <p><strong>Amount Owed:</strong> $${caseData.case.amountOwed ? parseFloat(caseData.case.amountOwed).toFixed(2) : '0.00'}</p>
                                         ${caseData.case.lastPaymentDate ? `<p><strong>Last Payment Date:</strong> ${caseData.case.lastPaymentDate}</p>` : ''}
-                                        <p><strong>Notice Date:</strong> ${caseData.case.noticeDate}</p>
+                                        <p><strong>Notice Date:</strong> ${caseData.case.noticeDate || 'Unknown'}</p>
                                         ${caseData.case.noticeDetails ? `<p><strong>Notice Details:</strong> ${caseData.case.noticeDetails}</p>` : ''}
                                     </div>
                                 </div>
+                                ` : ''}
                             </div>
                         </div>
                         <div style="margin-top: 20px; text-align: center;">
@@ -1674,74 +1729,7 @@
             
             // Download case documents
             async function downloadCaseDocuments(caseId) {
-                showLoading('Downloading case documents...');
-                
-                try {
-                    // Find case in loaded data
-                    const caseData = casesData.find(c => c.caseId === caseId);
-                    
-                    if (!caseData) {
-                        throw new Error('Case not found in loaded data.');
-                    }
-                    
-                    const caseFolder = `${GITHUB_CONFIG.path}${caseId}/`;
-                    
-                    // Get list of files in case folder
-                    const files = await getDataSourceContents(GITHUB_CONFIG, caseFolder, GITHUB_TOKEN);
-                    
-                    // Filter for PDF files
-                    const pdfFiles = files.filter(file => 
-                        file.type === 'file' && 
-                        file.name.endsWith('.pdf')
-                    );
-                    
-                    if (pdfFiles.length === 0) {
-                        hideLoading();
-                        alert('No PDF documents found for this case.');
-                        return;
-                    }
-                    
-                    // Download PDF files
-                    for (const file of pdfFiles) {
-                        try {
-                            const fileUrl = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${caseFolder}${file.name}`;
-                            
-                            const headers = {
-                                'Accept': 'application/vnd.github.v3+json'
-                            };
-                            
-                            if (GITHUB_TOKEN) {
-                                headers['Authorization'] = `token ${GITHUB_TOKEN}`;
-                            }
-                            
-                            const response = await axios.get(fileUrl, { headers });
-                            const content = atob(response.data.content);
-                            
-                            // Convert to blob and download
-                            const blob = new Blob([content], { type: 'application/pdf' });
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = file.name;
-                            document.body.appendChild(a);
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                            document.body.removeChild(a);
-                            
-                            // Small delay between downloads
-                            await new Promise(resolve => setTimeout(resolve, 500));
-                        } catch (error) {
-                            console.error(`Error downloading ${file.name}:`, error);
-                        }
-                    }
-                    
-                    hideLoading();
-                    
-                } catch (error) {
-                    console.error('Error downloading case documents:', error);
-                    hideLoading();
-                    alert('Error downloading case documents. Please try again.');
-                }
+                alert('Document download would require specific file paths in the repository. This feature needs case files to be properly organized.');
             }
             
             // Export data function
@@ -1757,10 +1745,18 @@
                     let csvContent = "Case ID,Landlord,Tenant,Property Address,Amount Owed,Status,Date Filed\n";
                     
                     casesData.forEach(caseData => {
-                        const date = new Date(caseData.timestamp);
-                        const formattedDate = date.toLocaleDateString('en-US');
+                        let formattedDate = 'No date';
+                        if (caseData.timestamp) {
+                            const date = new Date(caseData.timestamp);
+                            formattedDate = date.toLocaleDateString('en-US');
+                        }
                         
-                        csvContent += `"${caseData.caseId}","${caseData.landlord.name}","${caseData.tenant.name}","${caseData.property.address}",$${parseFloat(caseData.case.amountOwed).toFixed(2)},"${caseData.status}","${formattedDate}"\n`;
+                        const landlordName = caseData.landlord ? caseData.landlord.name : 'Unknown';
+                        const tenantName = caseData.tenant ? caseData.tenant.name : 'Unknown';
+                        const propertyAddress = caseData.property ? caseData.property.address : 'Unknown';
+                        const amountOwed = caseData.case && caseData.case.amountOwed ? parseFloat(caseData.case.amountOwed).toFixed(2) : '0.00';
+                        
+                        csvContent += `"${caseData.caseId || 'Unknown'}","${landlordName}","${tenantName}","${propertyAddress}",$${amountOwed},"${caseData.status || 'Unknown'}","${formattedDate}"\n`;
                     });
                     
                     // Create blob and download
