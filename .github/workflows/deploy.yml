@@ -1,39 +1,32 @@
-name: CD - Deploy Platform
-
+name: Deploy Platform
 on:
   push:
-    branches: [ main ]
-
-permissions:
-  contents: read
-  id-token: write
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
         with:
-          role-to-assume: arn:aws:iam::123456789012:role/github-deploy
-          aws-region: us-east-1
-
-      - name: Build Docker images
+          token: ${{ secrets.GAEVIC }}
+      
+      - name: Setup environment
         run: |
-          docker build -t eviction-backend ./backend
-          docker build -t eviction-frontend ./frontend
-
-      - name: Push to ECR
+          # Your build/setup commands here
+          # The token can be accessed as ${{ secrets.GAEVIC }}
+          echo "Deployment in progress..."
+          
+      - name: Deploy to hosting platform
+        env:
+          GITHUB_TOKEN: ${{ secrets.GAEVIC }}
         run: |
-          aws ecr get-login-password | docker login --username AWS --password-stdin $ECR_REGISTRY
-          docker tag eviction-backend $ECR_REGISTRY/eviction-backend:latest
-          docker push $ECR_REGISTRY/eviction-backend:latest
-
-      - name: Deploy via Terraform
-        run: |
-          cd infra/terraform
-          terraform init
-          terraform apply -auto-approve
+          # Example: Deploy to Vercel, Netlify, etc.
+          # Use the token for authentication
+          curl -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Content-Type: application/json" \
+            https://api.your-hosting-platform.com/deploy
