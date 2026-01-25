@@ -247,47 +247,6 @@
             color: var(--houston-red);
         }
         
-        /* Data Source Configuration */
-        .datasource-config {
-            background: #f8f9fa;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            margin: 30px 0;
-            border: 2px solid var(--houston-blue);
-        }
-        
-        .datasource-config h3 {
-            color: var(--houston-blue);
-            margin-bottom: 20px;
-            font-size: 20px;
-        }
-        
-        .datasource-config .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .datasource-config .form-group {
-            margin-bottom: 15px;
-        }
-        
-        .datasource-config label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: var(--dark-gray);
-        }
-        
-        .datasource-config input {
-            width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: var(--border-radius);
-            font-size: 14px;
-        }
-        
         /* Dashboard Content */
         .dashboard-content {
             padding: 40px 0;
@@ -656,6 +615,21 @@
             background: rgba(255, 255, 255, 0.3);
         }
         
+        /* Repository Info */
+        .repo-info {
+            background: #f8f9fa;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 4px solid var(--houston-blue);
+        }
+        
+        .repo-info h4 {
+            color: var(--houston-blue);
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
         /* Responsive Design */
         @media (max-width: 768px) {
             .header-top {
@@ -688,10 +662,6 @@
                 flex-direction: column;
                 gap: 15px;
                 text-align: center;
-            }
-            
-            .datasource-config .form-row {
-                grid-template-columns: 1fr;
             }
             
             table {
@@ -823,32 +793,12 @@
                 </div>
             </div>
             
-            <!-- Data Source Configuration -->
-            <div class="datasource-config">
-                <h3><i class="fas fa-cloud"></i> Data Source Configuration</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="dashboardDataSourceOwner">Data Source Owner</label>
-                        <input type="text" id="dashboardDataSourceOwner" placeholder="nagoh" value="nagoh">
-                    </div>
-                    <div class="form-group">
-                        <label for="dashboardDataSourceRepo">Repository Name</label>
-                        <input type="text" id="dashboardDataSourceRepo" placeholder="GAEVIC" value="GAEVIC">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="dashboardDataSourceBranch">Branch</label>
-                        <input type="text" id="dashboardDataSourceBranch" placeholder="main" value="main">
-                    </div>
-                    <div class="form-group">
-                        <label for="dashboardDataSourcePath">Cases Folder Path</label>
-                        <input type="text" id="dashboardDataSourcePath" placeholder="cases/" value="cases/">
-                    </div>
-                </div>
-                <button class="btn btn-success" id="loadCasesBtn">
-                    <i class="fas fa-cloud-download-alt"></i> Load Cases
-                </button>
+            <!-- Repository Info -->
+            <div class="repo-info">
+                <h4><i class="fas fa-database"></i> Data Source Information</h4>
+                <p><strong>Repository:</strong> nagoh/GAEVIC</p>
+                <p><strong>Path:</strong> cases/</p>
+                <p><strong>Status:</strong> <span id="repoStatus">Loading...</span></p>
             </div>
             
             <div class="stats-grid">
@@ -926,9 +876,9 @@
                 <div id="noCasesMessage" class="no-cases" style="display: none;">
                     <i class="fas fa-folder-open"></i>
                     <h3>No Cases Found</h3>
-                    <p>No cases found in the data source. Configure your settings and load cases.</p>
-                    <button class="btn btn-primary" id="loadCasesBtn2" style="margin-top: 20px;">
-                        <i class="fas fa-cloud-download-alt"></i> Load Cases
+                    <p>No cases found in the repository. Cases will appear here as they are filed.</p>
+                    <button class="btn btn-primary" id="refreshData2" style="margin-top: 20px;">
+                        <i class="fas fa-sync-alt"></i> Refresh Data
                     </button>
                 </div>
             </div>
@@ -980,10 +930,44 @@
     <script>
         // Dashboard Logic
         document.addEventListener('DOMContentLoaded', function() {
-            // GitHub API Token from secrets - This should be set by your server/CI/CD pipeline
-            const GITHUB_TOKEN = 'GAEVIC'; // Replace with your actual token or set via server-side
+            // FIXED: GitHub Configuration - Hardcoded for your repository
+            const GITHUB_CONFIG = {
+                owner: 'NAGOHUSA',
+                repo: 'GAEVIC',
+                branch: 'main',
+                path: 'cases/'
+            };
             
-            // Simple password authentication (in production, this should be server-side)
+            // FIXED: GitHub Token - This should be set in your GitHub Secrets
+            // If you're running this in GitHub Pages, you need to handle this differently
+            // For now, we'll try to get it from a query parameter or environment
+            let GITHUB_TOKEN = GAEVIC;
+            
+            // Try to get token from multiple sources
+            function getGitHubToken() {
+                // 1. Check URL parameter (for testing)
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('token')) {
+                    return urlParams.get('token');
+                }
+                
+                // 2. Check if token is set in script tag data attribute
+                const scriptTag = document.querySelector('script[data-github-token]');
+                if (scriptTag && scriptTag.dataset.githubToken) {
+                    return scriptTag.dataset.githubToken;
+                }
+                
+                // 3. Check environment (for GitHub Pages with Actions)
+                if (typeof window.GITHUB_TOKEN !== 'GAEVIC') {
+                    return window.GITHUB_TOKEN;
+                }
+                
+                // 4. Return the token from your secrets (this should be set by your CI/CD)
+                // IMPORTANT: In production, this should be set server-side
+                return 'GAEVIC'; // This is the name of your secret, not the actual token
+            }
+            
+            // Simple password authentication
             const ADMIN_CREDENTIALS = {
                 username: 'admin',
                 password: 'admin' // Change this to a strong password
@@ -1008,14 +992,14 @@
             const activeCases = document.getElementById('activeCases');
             const completedCases = document.getElementById('completedCases');
             const refreshDataBtn = document.getElementById('refreshData');
+            const refreshDataBtn2 = document.getElementById('refreshData2');
             const exportDataBtn = document.getElementById('exportData');
-            const loadCasesBtn = document.getElementById('loadCasesBtn');
-            const loadCasesBtn2 = document.getElementById('loadCasesBtn2');
             const searchCases = document.getElementById('searchCases');
             const filterPendingBtn = document.getElementById('filterPending');
             const caseDetailsModal = document.getElementById('caseDetailsModal');
             const closeModalBtn = document.getElementById('closeModal');
             const caseDetailsContent = document.getElementById('caseDetailsContent');
+            const repoStatus = document.getElementById('repoStatus');
             
             // Charts
             let statusChart = null;
@@ -1023,6 +1007,9 @@
             
             // Cases data
             let casesData = [];
+            
+            // Initialize token
+            GITHUB_TOKEN = getGitHubToken();
             
             // Check if user is already logged in
             function checkAuth() {
@@ -1054,7 +1041,7 @@
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
                 
-                // Simple authentication (in production, this should be server-side)
+                // Simple authentication
                 if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
                     // Successful login
                     localStorage.setItem('evictionDashboardLoggedIn', 'true');
@@ -1114,6 +1101,7 @@
                 pendingCases.textContent = '0';
                 activeCases.textContent = '0';
                 completedCases.textContent = '0';
+                repoStatus.textContent = 'Logged out';
                 document.getElementById('casesTrend').textContent = 'Please login to load data';
             }
             
@@ -1124,7 +1112,7 @@
                 dashboardContent.style.display = 'block';
                 
                 // Load cases automatically
-                loadCasesFromDataSource();
+                loadAllCases();
             }
             
             // Start session timer
@@ -1221,66 +1209,49 @@
                 }
             }
             
-            // Load cases from data source
-            async function loadCasesFromDataSource() {
-                showLoading('Loading cases from secure storage...');
+            // FIXED: Load ALL cases from repository (auto-load without configuration)
+            async function loadAllCases() {
+                showLoading('Loading all cases from repository...');
+                repoStatus.textContent = 'Loading cases...';
                 
                 try {
-                    // Get configuration from form
-                    const config = {
-                        owner: document.getElementById('dashboardDataSourceOwner').value.trim() || 'nagoh',
-                        repo: document.getElementById('dashboardDataSourceRepo').value.trim() || 'GAEVIC',
-                        branch: document.getElementById('dashboardDataSourceBranch').value.trim() || 'main',
-                        path: document.getElementById('dashboardDataSourcePath').value.trim() || 'cases/'
-                    };
-                    
-                    // Validate configuration
-                    if (!config.owner || !config.repo) {
-                        throw new Error('Data source owner and repository name are required');
-                    }
-                    
-                    // Use the GitHub token from secrets
-                    const token = GITHUB_TOKEN;
-                    
-                    if (!token || token === 'GAEVIC') {
-                        throw new Error('Authentication token not configured. Please check your setup.');
-                    }
-                    
-                    // Get repository contents
-                    const contents = await getDataSourceContents(config, config.path, token);
-                    
-                    // Filter for case folders
-                    const caseFolders = contents.filter(item => 
-                        item.type === 'dir' && 
-                        item.name.startsWith('HOU-')
-                    );
-                    
-                    // Load case data from each folder
-                    casesData = [];
-                    for (const folder of caseFolders) {
+                    // Validate token
+                    if (!GITHUB_TOKEN || GITHUB_TOKEN === 'GAEVIC') {
+                        // Try to load without token first (public repo)
                         try {
-                            const caseData = await loadCaseData(config, folder.name, token);
-                            if (caseData) {
-                                casesData.push(caseData);
-                            }
-                        } catch (error) {
-                            console.error(`Error loading case ${folder.name}:`, error);
+                            const publicContents = await getDataSourceContents(GITHUB_CONFIG, GITHUB_CONFIG.path, null);
+                            await processCaseFolders(publicContents, null);
+                            repoStatus.textContent = 'Connected (Public)';
+                            hideLoading();
+                            return;
+                        } catch (publicError) {
+                            throw new Error('Authentication required. Please check your GitHub token setup.');
                         }
                     }
                     
-                    // Update dashboard
-                    updateDashboard();
-                    
+                    // Try with token
+                    const contents = await getDataSourceContents(GITHUB_CONFIG, GITHUB_CONFIG.path, GITHUB_TOKEN);
+                    await processCaseFolders(contents, GITHUB_TOKEN);
+                    repoStatus.textContent = 'Connected (Authenticated)';
                     hideLoading();
                     
                 } catch (error) {
                     console.error('Error loading cases:', error);
                     hideLoading();
                     
-                    if (error.response && error.response.status === 404) {
-                        alert('Data source or folder not found. Please check your configuration.');
-                    } else if (error.response && error.response.status === 401 || error.response && error.response.status === 403) {
-                        alert('Authentication failed. Please check your token configuration.');
+                    // Update repo status
+                    repoStatus.textContent = 'Connection Error';
+                    repoStatus.style.color = '#dc3545';
+                    
+                    // Show error message
+                    if (error.response) {
+                        if (error.response.status === 401 || error.response.status === 403) {
+                            alert('GitHub authentication failed. Please check your token configuration.\n\nIf your repository is public, you might not need a token.');
+                        } else if (error.response.status === 404) {
+                            alert('Repository or folder not found. Please check the repository configuration.');
+                        } else {
+                            alert(`Error loading cases: ${error.response.status} ${error.response.statusText}`);
+                        }
                     } else {
                         alert(`Error loading cases: ${error.message}`);
                     }
@@ -1291,14 +1262,46 @@
                 }
             }
             
+            // Process case folders
+            async function processCaseFolders(contents, token) {
+                // Filter for case folders
+                const caseFolders = contents.filter(item => 
+                    item.type === 'dir' && 
+                    item.name.startsWith('HOU-')
+                );
+                
+                // Update repo status with count
+                repoStatus.textContent = `Found ${caseFolders.length} case folders`;
+                
+                // Load case data from each folder
+                casesData = [];
+                for (const folder of caseFolders) {
+                    try {
+                        const caseData = await loadCaseData(GITHUB_CONFIG, folder.name, token);
+                        if (caseData) {
+                            casesData.push(caseData);
+                        }
+                    } catch (error) {
+                        console.error(`Error loading case ${folder.name}:`, error);
+                    }
+                }
+                
+                // Update dashboard
+                updateDashboard();
+            }
+            
             // Get data source contents
             async function getDataSourceContents(config, path, token) {
                 const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${path}`;
                 
                 const headers = {
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Authorization': `token ${token}`
+                    'Accept': 'application/vnd.github.v3+json'
                 };
+                
+                // Add authorization header if token is provided
+                if (token) {
+                    headers['Authorization'] = `token ${token}`;
+                }
                 
                 const response = await axios.get(url, { headers });
                 return response.data;
@@ -1313,9 +1316,12 @@
                     const caseDataUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${caseFolder}case_data.json`;
                     
                     const headers = {
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Authorization': `token ${token}`
+                        'Accept': 'application/vnd.github.v3+json'
                     };
+                    
+                    if (token) {
+                        headers['Authorization'] = `token ${token}`;
+                    }
                     
                     const response = await axios.get(caseDataUrl, { headers });
                     
@@ -1360,9 +1366,11 @@
                 if (total > 0) {
                     casesTrend.textContent = `${total} case${total !== 1 ? 's' : ''} loaded`;
                     casesTrend.className = 'stat-trend';
+                    casesTrend.style.color = '#28a745';
                 } else {
                     casesTrend.textContent = 'No cases found';
                     casesTrend.className = 'stat-trend';
+                    casesTrend.style.color = '#666';
                 }
             }
             
@@ -1677,19 +1685,10 @@
                         throw new Error('Case not found in loaded data.');
                     }
                     
-                    // Get configuration
-                    const config = {
-                        owner: document.getElementById('dashboardDataSourceOwner').value.trim() || 'nagoh',
-                        repo: document.getElementById('dashboardDataSourceRepo').value.trim() || 'GAEVIC',
-                        branch: document.getElementById('dashboardDataSourceBranch').value.trim() || 'main',
-                        path: document.getElementById('dashboardDataSourcePath').value.trim() || 'cases/'
-                    };
-                    
-                    const token = GITHUB_TOKEN;
-                    const caseFolder = `${config.path}${caseId}/`;
+                    const caseFolder = `${GITHUB_CONFIG.path}${caseId}/`;
                     
                     // Get list of files in case folder
-                    const files = await getDataSourceContents(config, caseFolder, token);
+                    const files = await getDataSourceContents(GITHUB_CONFIG, caseFolder, GITHUB_TOKEN);
                     
                     // Filter for PDF files
                     const pdfFiles = files.filter(file => 
@@ -1706,12 +1705,15 @@
                     // Download PDF files
                     for (const file of pdfFiles) {
                         try {
-                            const fileUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${caseFolder}${file.name}`;
+                            const fileUrl = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${caseFolder}${file.name}`;
                             
                             const headers = {
-                                'Accept': 'application/vnd.github.v3+json',
-                                'Authorization': `token ${token}`
+                                'Accept': 'application/vnd.github.v3+json'
                             };
+                            
+                            if (GITHUB_TOKEN) {
+                                headers['Authorization'] = `token ${GITHUB_TOKEN}`;
+                            }
                             
                             const response = await axios.get(fileUrl, { headers });
                             const content = atob(response.data.content);
@@ -1795,9 +1797,8 @@
             });
             
             // Event listeners
-            refreshDataBtn.addEventListener('click', loadCasesFromDataSource);
-            loadCasesBtn.addEventListener('click', loadCasesFromDataSource);
-            loadCasesBtn2.addEventListener('click', loadCasesFromDataSource);
+            refreshDataBtn.addEventListener('click', loadAllCases);
+            refreshDataBtn2.addEventListener('click', loadAllCases);
             exportDataBtn.addEventListener('click', exportData);
             
             searchCases.addEventListener('input', function() {
