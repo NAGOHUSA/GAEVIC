@@ -1215,41 +1215,13 @@
                     <p><strong>Status:</strong> <span id="caseStatusDisplay">Pending Court Filing</span></p>
                 </div>
                 
-                <!-- GitHub Configuration Section -->
-                <div class="github-config" id="githubConfigSection">
+                <!-- GitHub Configuration Section - HIDDEN from users -->
+                <div class="github-config" id="githubConfigSection" style="display: none;">
                     <h3><i class="fab fa-github"></i> GitHub Repository Configuration</h3>
-                    <p>Configure your GitHub repository settings to save case data to GitHub.</p>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="githubOwner">GitHub Username or Organization</label>
-                            <input type="text" id="githubOwner" placeholder="your-username" value="nagoh">
-                        </div>
-                        <div class="form-group">
-                            <label for="githubRepo">Repository Name</label>
-                            <input type="text" id="githubRepo" placeholder="repository-name" value="GAEVIC">
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="githubBranch">Branch</label>
-                            <input type="text" id="githubBranch" placeholder="main" value="main">
-                        </div>
-                        <div class="form-group">
-                            <label for="githubPath">Case Folder Path</label>
-                            <input type="text" id="githubPath" placeholder="cases/" value="cases/">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="githubToken">GitHub Personal Access Token (Optional)</label>
-                        <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-                        <p style="font-size: 12px; color: #666; margin-top: 5px;">
-                            <i class="fas fa-info-circle"></i> Only required for private repositories. 
-                            <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--houston-blue);">Create token</a>
-                        </p>
-                    </div>
+                    <p><strong>Repository:</strong> GAEVIC</p>
+                    <p><strong>Owner:</strong> NAGOHUSA</p>
+                    <p><strong>Branch:</strong> main</p>
+                    <p><strong>Path:</strong> cases/</p>
                 </div>
                 
                 <div class="info-box">
@@ -1387,14 +1359,14 @@
         // Initialize jsPDF
         const { jsPDF } = window.jspdf;
         
-        // GitHub API Configuration
+        // GitHub API Configuration - HARDCODED
         const GITHUB_API = {
             baseURL: 'https://api.github.com',
-            owner: 'nagoh',
-            repo: 'GAEVIC',
-            branch: 'main',
-            path: 'cases/',
-            token: null // Will be set from input or environment
+            owner: 'NAGOHUSA',              // Your GitHub username
+            repo: 'GAEVIC',              // Your repository name
+            branch: 'main',              // Branch name
+            path: 'cases/',              // Folder path
+            token: null                  // Will use public repo (no token needed for public)
         };
         
         // Form Navigation Logic
@@ -1946,19 +1918,14 @@
                 showLoading('Saving case to GitHub repository...');
                 
                 try {
-                    // Get GitHub configuration from form
+                    // Use hardcoded GitHub configuration
                     const githubConfig = {
-                        owner: document.getElementById('githubOwner').value.trim() || GITHUB_API.owner,
-                        repo: document.getElementById('githubRepo').value.trim() || GITHUB_API.repo,
-                        branch: document.getElementById('githubBranch').value.trim() || GITHUB_API.branch,
-                        path: document.getElementById('githubPath').value.trim() || GITHUB_API.path,
-                        token: document.getElementById('githubToken').value.trim() || null
+                        owner: GITHUB_API.owner,
+                        repo: GITHUB_API.repo,
+                        branch: GITHUB_API.branch,
+                        path: GITHUB_API.path,
+                        token: GITHUB_API.token
                     };
-                    
-                    // Validate configuration
-                    if (!githubConfig.owner || !githubConfig.repo) {
-                        throw new Error('GitHub owner and repository name are required');
-                    }
                     
                     // Prepare case data
                     collectFormData();
@@ -2017,7 +1984,7 @@
                             <h3 style="color: #28a745;">Case Saved to GitHub Successfully!</h3>
                             <p>All case files have been saved to your GitHub repository.</p>
                             <p><strong>Case ID:</strong> ${caseId}</p>
-                            <p><strong>GitHub Path:</strong> ${caseFolder}</p>
+                            <p><strong>Repository:</strong> ${githubConfig.owner}/${githubConfig.repo}</p>
                             <p><strong>Files Uploaded:</strong> ${successfulUploads}</p>
                             <p><a href="https://github.com/${githubConfig.owner}/${githubConfig.repo}/tree/main/${caseFolder}" 
                                   target="_blank" style="color: var(--houston-blue); text-decoration: underline;">
@@ -2047,28 +2014,16 @@
                     if (error.response && error.response.status === 401) {
                         showErrorMessage(`
                             <i class="fas fa-lock"></i>
-                            <h3 style="color: #dc3545;">Authentication Failed</h3>
-                            <p>GitHub authentication failed. Please check:</p>
-                            <ul style="text-align: left; margin: 15px 0;">
-                                <li>Your GitHub username and repository name</li>
-                                <li>If repository is private, a valid token is required</li>
-                                <li>Token must have "repo" scope permissions</li>
-                            </ul>
-                            <p><a href="https://github.com/settings/tokens" target="_blank" 
-                                  style="color: var(--houston-blue);">
-                                Generate a new token
-                            </a></p>
+                            <h3 style="color: #dc3545;">Authentication Required</h3>
+                            <p>This repository requires authentication.</p>
+                            <p>Please add a GitHub token in the system configuration.</p>
                         `);
                     } else if (error.response && error.response.status === 404) {
                         showErrorMessage(`
                             <i class="fas fa-search"></i>
                             <h3 style="color: #dc3545;">Repository Not Found</h3>
-                            <p>The GitHub repository was not found. Please check:</p>
-                            <ul style="text-align: left; margin: 15px 0;">
-                                <li>GitHub username/organization is correct</li>
-                                <li>Repository name is correct</li>
-                                <li>Repository exists and you have access</li>
-                            </ul>
+                            <p>The GitHub repository "${GITHUB_API.owner}/${GITHUB_API.repo}" was not found.</p>
+                            <p>Please verify the repository exists and is accessible.</p>
                         `);
                     } else {
                         showErrorMessage(`
