@@ -930,47 +930,20 @@
     <script>
         // Dashboard Logic
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dashboard script loaded');
+            
             // FIXED: GitHub Configuration - Hardcoded for your repository
             const GITHUB_CONFIG = {
-                owner: 'NAGOHUSA',
+                owner: 'nagoh',
                 repo: 'GAEVIC',
                 branch: 'main',
                 path: 'cases/'
             };
             
-            // FIXED: GitHub Token - This should be set in your GitHub Secrets
-            // If you're running this in GitHub Pages, you need to handle this differently
-            // For now, we'll try to get it from a query parameter or environment
-            let GITHUB_TOKEN = GAEVIC;
-            
-            // Try to get token from multiple sources
-            function getGitHubToken() {
-                // 1. Check URL parameter (for testing)
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.has('token')) {
-                    return urlParams.get('token');
-                }
-                
-                // 2. Check if token is set in script tag data attribute
-                const scriptTag = document.querySelector('script[data-github-token]');
-                if (scriptTag && scriptTag.dataset.githubToken) {
-                    return scriptTag.dataset.githubToken;
-                }
-                
-                // 3. Check environment (for GitHub Pages with Actions)
-                if (typeof window.GITHUB_TOKEN !== 'GAEVIC') {
-                    return window.GITHUB_TOKEN;
-                }
-                
-                // 4. Return the token from your secrets (this should be set by your CI/CD)
-                // IMPORTANT: In production, this should be set server-side
-                return 'GAEVIC'; // This is the name of your secret, not the actual token
-            }
-            
-            // Simple password authentication
+            // FIXED: Simple password authentication
             const ADMIN_CREDENTIALS = {
-                username: 'admin',
-                password: 'admin' // Change this to a strong password
+                username: 'houstonadmin',
+                password: 'CourtAccess2024!' // Change this to a strong password
             };
             
             // Session timeout (in minutes)
@@ -1008,41 +981,23 @@
             // Cases data
             let casesData = [];
             
-            // Initialize token
-            GITHUB_TOKEN = getGitHubToken();
+            // Debug logging
+            console.log('DOM elements loaded');
             
-            // Check if user is already logged in
-            function checkAuth() {
-                const isLoggedIn = localStorage.getItem('evictionDashboardLoggedIn');
-                const loginTime = localStorage.getItem('evictionDashboardLoginTime');
-                
-                if (isLoggedIn === 'true' && loginTime) {
-                    const currentTime = new Date().getTime();
-                    const loginTimeValue = parseInt(loginTime);
-                    const sessionDuration = (currentTime - loginTimeValue) / (1000 * 60); // in minutes
-                    
-                    if (sessionDuration < SESSION_TIMEOUT) {
-                        // User is logged in and session is valid
-                        showDashboard();
-                        startSessionTimer();
-                        return true;
-                    } else {
-                        // Session expired
-                        logout();
-                    }
-                }
-                return false;
-            }
-            
-            // Handle login
+            // FIXED: Handle login form submission
             loginForm.addEventListener('submit', function(e) {
-                e.preventDefault();
+                e.preventDefault(); // Prevent default form submission
+                console.log('Login form submitted');
                 
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
                 
+                console.log('Username entered:', username);
+                console.log('Password length:', password.length);
+                
                 // Simple authentication
                 if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                    console.log('Login successful');
                     // Successful login
                     localStorage.setItem('evictionDashboardLoggedIn', 'true');
                     localStorage.setItem('evictionDashboardLoginTime', new Date().getTime().toString());
@@ -1060,6 +1015,7 @@
                     document.getElementById('username').value = '';
                     document.getElementById('password').value = '';
                 } else {
+                    console.log('Login failed');
                     // Failed login
                     loginError.style.display = 'block';
                     document.getElementById('password').value = '';
@@ -1076,6 +1032,7 @@
             logoutBtn.addEventListener('click', logout);
             
             function logout() {
+                console.log('Logging out');
                 // Clear session
                 localStorage.removeItem('evictionDashboardLoggedIn');
                 localStorage.removeItem('evictionDashboardLoginTime');
@@ -1107,6 +1064,7 @@
             
             // Show dashboard
             function showDashboard() {
+                console.log('Showing dashboard');
                 loginContainer.style.display = 'none';
                 dashboardHeader.style.display = 'block';
                 dashboardContent.style.display = 'block';
@@ -1211,29 +1169,39 @@
             
             // FIXED: Load ALL cases from repository (auto-load without configuration)
             async function loadAllCases() {
+                console.log('Loading all cases...');
                 showLoading('Loading all cases from repository...');
                 repoStatus.textContent = 'Loading cases...';
                 
                 try {
-                    // Validate token
-                    if (!GITHUB_TOKEN || GITHUB_TOKEN === 'GAEVIC') {
-                        // Try to load without token first (public repo)
-                        try {
-                            const publicContents = await getDataSourceContents(GITHUB_CONFIG, GITHUB_CONFIG.path, null);
-                            await processCaseFolders(publicContents, null);
-                            repoStatus.textContent = 'Connected (Public)';
+                    console.log('GitHub Config:', GITHUB_CONFIG);
+                    
+                    // First try without token (public repo)
+                    try {
+                        console.log('Trying public access...');
+                        const publicContents = await getDataSourceContents(GITHUB_CONFIG, GITHUB_CONFIG.path, null);
+                        console.log('Public access successful, found items:', publicContents.length);
+                        await processCaseFolders(publicContents, null);
+                        repoStatus.textContent = 'Connected (Public Repository)';
+                        hideLoading();
+                        return;
+                    } catch (publicError) {
+                        console.log('Public access failed:', publicError.message);
+                        // If public fails, try with token via URL parameter
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const tokenFromUrl = urlParams.get('token');
+                        
+                        if (tokenFromUrl) {
+                            console.log('Trying with token from URL...');
+                            const tokenContents = await getDataSourceContents(GITHUB_CONFIG, GITHUB_CONFIG.path, tokenFromUrl);
+                            await processCaseFolders(tokenContents, tokenFromUrl);
+                            repoStatus.textContent = 'Connected (Token from URL)';
                             hideLoading();
                             return;
-                        } catch (publicError) {
-                            throw new Error('Authentication required. Please check your GitHub token setup.');
+                        } else {
+                            throw new Error('Repository access failed. If repository is private, add ?token=YOUR_TOKEN to URL.');
                         }
                     }
-                    
-                    // Try with token
-                    const contents = await getDataSourceContents(GITHUB_CONFIG, GITHUB_CONFIG.path, GITHUB_TOKEN);
-                    await processCaseFolders(contents, GITHUB_TOKEN);
-                    repoStatus.textContent = 'Connected (Authenticated)';
-                    hideLoading();
                     
                 } catch (error) {
                     console.error('Error loading cases:', error);
@@ -1245,15 +1213,16 @@
                     
                     // Show error message
                     if (error.response) {
+                        console.error('Response error:', error.response.status, error.response.statusText);
                         if (error.response.status === 401 || error.response.status === 403) {
-                            alert('GitHub authentication failed. Please check your token configuration.\n\nIf your repository is public, you might not need a token.');
+                            alert('GitHub authentication failed. Please check if repository is public or add token via URL parameter.\n\nExample: dashboard.html?token=YOUR_GITHUB_TOKEN');
                         } else if (error.response.status === 404) {
                             alert('Repository or folder not found. Please check the repository configuration.');
                         } else {
                             alert(`Error loading cases: ${error.response.status} ${error.response.statusText}`);
                         }
                     } else {
-                        alert(`Error loading cases: ${error.message}`);
+                        alert(`Error loading cases: ${error.message}\n\nTry accessing with: ${window.location.pathname}?token=YOUR_GITHUB_TOKEN`);
                     }
                     
                     // Show no cases message
@@ -1264,11 +1233,14 @@
             
             // Process case folders
             async function processCaseFolders(contents, token) {
+                console.log('Processing case folders...');
                 // Filter for case folders
                 const caseFolders = contents.filter(item => 
                     item.type === 'dir' && 
                     item.name.startsWith('HOU-')
                 );
+                
+                console.log(`Found ${caseFolders.length} case folders`);
                 
                 // Update repo status with count
                 repoStatus.textContent = `Found ${caseFolders.length} case folders`;
@@ -1277,14 +1249,18 @@
                 casesData = [];
                 for (const folder of caseFolders) {
                     try {
+                        console.log(`Loading case: ${folder.name}`);
                         const caseData = await loadCaseData(GITHUB_CONFIG, folder.name, token);
                         if (caseData) {
                             casesData.push(caseData);
+                            console.log(`Successfully loaded: ${folder.name}`);
                         }
                     } catch (error) {
                         console.error(`Error loading case ${folder.name}:`, error);
                     }
                 }
+                
+                console.log(`Total cases loaded: ${casesData.length}`);
                 
                 // Update dashboard
                 updateDashboard();
@@ -1293,6 +1269,7 @@
             // Get data source contents
             async function getDataSourceContents(config, path, token) {
                 const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${path}`;
+                console.log('Fetching from URL:', url);
                 
                 const headers = {
                     'Accept': 'application/vnd.github.v3+json'
@@ -1339,6 +1316,7 @@
             
             // Update dashboard with loaded data
             function updateDashboard() {
+                console.log('Updating dashboard with', casesData.length, 'cases');
                 // Update statistics
                 updateStats(casesData);
                 
@@ -1688,7 +1666,7 @@
                     const caseFolder = `${GITHUB_CONFIG.path}${caseId}/`;
                     
                     // Get list of files in case folder
-                    const files = await getDataSourceContents(GITHUB_CONFIG, caseFolder, GITHUB_TOKEN);
+                    const files = await getDataSourceContents(GITHUB_CONFIG, caseFolder, null); // Try without token first
                     
                     // Filter for PDF files
                     const pdfFiles = files.filter(file => 
@@ -1711,10 +1689,7 @@
                                 'Accept': 'application/vnd.github.v3+json'
                             };
                             
-                            if (GITHUB_TOKEN) {
-                                headers['Authorization'] = `token ${GITHUB_TOKEN}`;
-                            }
-                            
+                            // Try without token first (public)
                             const response = await axios.get(fileUrl, { headers });
                             const content = atob(response.data.content);
                             
@@ -1828,11 +1803,40 @@
             }
             
             // Check authentication on page load
+            function checkAuth() {
+                const isLoggedIn = localStorage.getItem('evictionDashboardLoggedIn');
+                const loginTime = localStorage.getItem('evictionDashboardLoginTime');
+                
+                if (isLoggedIn === 'true' && loginTime) {
+                    const currentTime = new Date().getTime();
+                    const loginTimeValue = parseInt(loginTime);
+                    const sessionDuration = (currentTime - loginTimeValue) / (1000 * 60); // in minutes
+                    
+                    if (sessionDuration < SESSION_TIMEOUT) {
+                        console.log('User already logged in, session valid');
+                        // User is logged in and session is valid
+                        showDashboard();
+                        startSessionTimer();
+                        return true;
+                    } else {
+                        console.log('Session expired');
+                        // Session expired
+                        logout();
+                    }
+                }
+                return false;
+            }
+            
+            // Initial check
+            console.log('Checking authentication...');
             if (!checkAuth()) {
+                console.log('No valid session found, showing login');
                 // Show login page if not authenticated
                 loginContainer.style.display = 'flex';
                 dashboardHeader.style.display = 'none';
                 dashboardContent.style.display = 'none';
+            } else {
+                console.log('Valid session found, showing dashboard');
             }
             
             // Add shake animation for login error
@@ -1845,6 +1849,14 @@
                 }
             `;
             document.head.appendChild(style);
+            
+            // For debugging: expose login function
+            window.debugLogin = function() {
+                console.log('Debug: Current credentials:', ADMIN_CREDENTIALS);
+                console.log('Debug: Try logging in with:', ADMIN_CREDENTIALS.username, ADMIN_CREDENTIALS.password);
+            };
+            
+            console.log('Dashboard initialization complete');
         });
     </script>
 </body>
