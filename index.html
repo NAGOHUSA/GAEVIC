@@ -1914,54 +1914,116 @@
             }
             
             // Save Case to GitHub Repository
-            async function saveToGitHub() {
-                showLoading('Saving case to GitHub repository...');
-                
-                try {
-                    // Use hardcoded GitHub configuration
-                    const githubConfig = {
-                        owner: GITHUB_API.owner,
-                        repo: GITHUB_API.repo,
-                        branch: GITHUB_API.branch,
-                        path: GITHUB_API.path,
-                        token: GITHUB_API.token
-                    };
-                    
-                    // Prepare case data
-                    collectFormData();
-                    
-                    // Create case folder structure
-                    const caseFolder = `${githubConfig.path}${caseId}/`;
-                    const caseData = {
-                        ...formData,
-                        githubPath: caseFolder,
-                        savedAt: new Date().toISOString()
-                    };
-                    
-                    // Prepare files to upload
-                    const files = [
-                        {
-                            path: `${caseFolder}case_data.json`,
-                            content: JSON.stringify(caseData, null, 2),
-                            message: `Add case ${caseId} data`
-                        }
-                    ];
-                    
-                    // Generate and add PDF documents
-                    const documentTypes = ['demand_notice', 'affidavit', 'summons', 'scra_form'];
-                    for (const docType of documentTypes) {
-                        const doc = generatedDocuments[docType];
-                        if (doc) {
-                            const filename = getFilename(docType);
-                            const pdfBase64 = doc.output('datauristring').split(',')[1];
-                            files.push({
-                                path: `${caseFolder}${filename}`,
-                                content: pdfBase64,
-                                message: `Add ${filename} for case ${caseId}`,
-                                isBinary: true
-                            });
-                        }
-                    }
+ async function saveToGitHub() {
+    showLoading('Saving case to GitHub repository...');
+    
+    try {
+        // Use hardcoded GitHub configuration
+        const githubConfig = {
+            owner: GITHUB_API.owner,
+            repo: GITHUB_API.repo,
+            branch: GITHUB_API.branch,
+            path: GITHUB_API.path,
+            token: GITHUB_API.token
+        };
+        
+        // Prepare case data
+        collectFormData();
+        
+        // Create case folder structure
+        const caseFolder = `${githubConfig.path}${caseId}/`;
+        const caseData = {
+            ...formData,
+            githubPath: caseFolder,
+            savedAt: new Date().toISOString()
+        };
+        
+        // Prepare files to upload - SIMPLIFIED VERSION
+        const files = [];
+        
+        // 1. Add JSON data file
+        const caseDataJson = JSON.stringify(caseData, null, 2);
+        files.push({
+            path: `${caseFolder}case_data.json`,
+            content: btoa(caseDataJson), // Simple base64 encoding
+            message: `Add case ${caseId} data`
+        });
+        
+        // 2. Test with just one file first
+        const doc = generatedDocuments['demand_notice'];
+        if (doc) {
+            // Get PDF as blob, then convert to base64
+            const pdfBlob = doc.output('blob');
+            const reader = new FileReader();
+            
+            const pdfBase64 = await new Promise((resolve, reject) => {
+                reader.onload = () => {
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(pdfBlob);
+            });
+            
+            files.push({
+                path: `${caseFolder}7-Day_Demand_Notice.pdf`,
+                content: pdfBase64,
+                message: `Add 7-Day Demand Notice for case ${caseId}`
+            });
+        }
+        
+        // Upload files to GitHub
+        for (const file of files) {
+            try {
+                await uploadFileToGitHub(githubConfig, file);
+                console.log(`Uploaded: ${file.path}`);
+            } catch (error) {
+                console.error(`Failed to upload ${file.path}:`, error);
+                throw error;
+            }
+        }
+        
+        hideLoading();
+        
+        // Show success message
+        showSuccessMessage(`
+            <i class="fas fa-check-circle"></i>
+            <h3 style="color: #28a745;">Case Saved to GitHub Successfully!</h3>
+            <p>Your case has been saved to the GitHub repository.</p>
+            <p><strong>Case ID:</strong> ${caseId}</p>
+            <p><strong>Files Uploaded:</strong> ${files.length}</p>
+            <p><em>Note: Only the demand notice was uploaded for testing. Complete the setup for all documents.</em></p>
+        `);
+        
+    } catch (error) {
+        console.error('Error saving to GitHub:', error);
+        hideLoading();
+        
+        // Show detailed error
+        let errorMessage = 'An unexpected error occurred';
+        
+        if (error.response) {
+            console.log('GitHub API Error:', error.response.status, error.response.data);
+            
+            if (error.response.status === 401) {
+                errorMessage = 'Authentication failed. The repository may be private. You need a GitHub Personal Access Token.';
+            } else if (error.response.status === 403) {
+                errorMessage = 'Permission denied. Check if your token has write permissions.';
+            } else if (error.response.status === 404) {
+                errorMessage = `Repository "${GITHUB_API.owner}/${GITHUB_API.repo}" not found or you don't have access.`;
+            } else {
+                errorMessage = `GitHub API Error (${error.response.status}): ${JSON.stringify(error.response.data)}`;
+            }
+        }
+        
+        showErrorMessage(`
+            <i class="fas fa-exclamation-circle"></i>
+            <h3 style="color: #dc3545;">GitHub Upload Failed</h3>
+            <p>${errorMessage}</p>
+            <p>Please save documents locally for now.</p>
+        `);
+    }
+}
                     
                     // Upload files to GitHub
                     const uploadPromises = files.map(file => 
