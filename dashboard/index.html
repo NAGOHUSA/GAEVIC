@@ -120,6 +120,73 @@
             margin-right: 8px;
         }
         
+        /* Login Container */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 70vh;
+            padding: 40px 0;
+        }
+        
+        .login-box {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .login-box h2 {
+            color: var(--houston-blue);
+            margin-bottom: 10px;
+            font-family: 'Merriweather', serif;
+        }
+        
+        .login-box p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .login-form .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .login-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+        
+        .login-form input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        .login-form input:focus {
+            outline: none;
+            border-color: var(--houston-blue);
+            box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.1);
+        }
+        
+        .login-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            text-align: left;
+            display: none;
+        }
+        
         /* Dashboard Header */
         .dashboard-header {
             padding: 40px 0;
@@ -224,6 +291,7 @@
         /* Dashboard Content */
         .dashboard-content {
             padding: 40px 0;
+            display: none;
         }
         
         .section-header {
@@ -277,6 +345,15 @@
         
         .btn-success:hover {
             background-color: #218838;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
         }
         
         /* Cases Table */
@@ -551,6 +628,34 @@
             color: #aaa;
         }
         
+        /* User Info */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+        }
+        
+        .user-info i {
+            color: var(--houston-gold);
+        }
+        
+        /* Logout Button */
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 5px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
         /* Responsive Design */
         @media (max-width: 768px) {
             .header-top {
@@ -606,6 +711,10 @@
             .action-buttons {
                 flex-direction: column;
             }
+            
+            .login-box {
+                padding: 30px 20px;
+            }
         }
     </style>
 </head>
@@ -658,11 +767,52 @@
         </div>
     </header>
 
-    <!-- Dashboard Header -->
-    <section class="dashboard-header">
+    <!-- Login Container (Initially Visible) -->
+    <section class="login-container" id="loginContainer">
+        <div class="login-box">
+            <h2><i class="fas fa-lock"></i> Admin Dashboard Login</h2>
+            <p>Enter your credentials to access the eviction cases dashboard</p>
+            
+            <div class="login-error" id="loginError">
+                <i class="fas fa-exclamation-triangle"></i> Invalid username or password
+            </div>
+            
+            <form class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label for="username"><i class="fas fa-user"></i> Username</label>
+                    <input type="text" id="username" placeholder="Enter admin username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password"><i class="fas fa-key"></i> Password</label>
+                    <input type="password" id="password" placeholder="Enter password" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">
+                    <i class="fas fa-sign-in-alt"></i> Login to Dashboard
+                </button>
+                
+                <div style="margin-top: 20px; font-size: 14px; color: #666;">
+                    <p><i class="fas fa-info-circle"></i> Contact system administrator for credentials</p>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Dashboard Header (Initially Hidden) -->
+    <section class="dashboard-header" id="dashboardHeader" style="display: none;">
         <div class="container">
             <div class="dashboard-title">
-                <h1>Eviction Cases Dashboard</h1>
+                <div>
+                    <h1>Eviction Cases Dashboard</h1>
+                    <div class="user-info" style="margin-top: 10px;">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Admin User</span>
+                        <button class="logout-btn" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
                 <div>
                     <button class="btn btn-primary" id="refreshData">
                         <i class="fas fa-sync-alt"></i> Refresh Data
@@ -678,30 +828,23 @@
                 <h3><i class="fas fa-cloud"></i> Data Source Configuration</h3>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="dataSourceOwner">Data Source Name</label>
-                        <input type="text" id="dataSourceOwner" placeholder="nagoh" value="nagoh">
+                        <label for="dashboardDataSourceOwner">Data Source Owner</label>
+                        <input type="text" id="dashboardDataSourceOwner" placeholder="nagoh" value="nagoh">
                     </div>
                     <div class="form-group">
-                        <label for="dataSourceRepo">Repository Name</label>
-                        <input type="text" id="dataSourceRepo" placeholder="GAEVIC" value="GAEVIC">
+                        <label for="dashboardDataSourceRepo">Repository Name</label>
+                        <input type="text" id="dashboardDataSourceRepo" placeholder="GAEVIC" value="GAEVIC">
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="dataSourceBranch">Branch</label>
-                        <input type="text" id="dataSourceBranch" placeholder="main" value="main">
+                        <label for="dashboardDataSourceBranch">Branch</label>
+                        <input type="text" id="dashboardDataSourceBranch" placeholder="main" value="main">
                     </div>
                     <div class="form-group">
-                        <label for="dataSourcePath">Cases Folder Path</label>
-                        <input type="text" id="dataSourcePath" placeholder="cases/" value="cases/">
+                        <label for="dashboardDataSourcePath">Cases Folder Path</label>
+                        <input type="text" id="dashboardDataSourcePath" placeholder="cases/" value="cases/">
                     </div>
-                </div>
-                <div class="form-group">
-                    <label for="dataSourceAuth">Authorization Key (Optional)</label>
-                    <input type="password" id="dataSourceAuth" placeholder="Enter authorization key">
-                    <p style="font-size: 12px; color: #666; margin-top: 5px;">
-                        <i class="fas fa-info-circle"></i> Only required for additional security.
-                    </p>
                 </div>
                 <button class="btn btn-success" id="loadCasesBtn">
                     <i class="fas fa-cloud-download-alt"></i> Load Cases
@@ -712,7 +855,7 @@
                 <div class="stat-card">
                     <h3>Total Cases</h3>
                     <div class="stat-number" id="totalCases">0</div>
-                    <div class="stat-trend" id="casesTrend">Loading...</div>
+                    <div class="stat-trend" id="casesTrend">Please login to load data</div>
                 </div>
                 <div class="stat-card">
                     <h3>Pending Filing</h3>
@@ -733,8 +876,8 @@
         </div>
     </section>
 
-    <!-- Dashboard Content -->
-    <section class="dashboard-content">
+    <!-- Dashboard Content (Initially Hidden) -->
+    <section class="dashboard-content" id="dashboardContent">
         <div class="container">
             <!-- Charts Section -->
             <div class="charts-grid">
@@ -837,10 +980,25 @@
     <script>
         // Dashboard Logic
         document.addEventListener('DOMContentLoaded', function() {
-            // GitHub API Token from secrets - configured server-side
-            const GITHUB_TOKEN = 'GAEVIC'; // This should be set by your server/CI
+            // GitHub API Token from secrets - This should be set by your server/CI/CD pipeline
+            const GITHUB_TOKEN = 'GAEVIC'; // Replace with your actual token or set via server-side
+            
+            // Simple password authentication (in production, this should be server-side)
+            const ADMIN_CREDENTIALS = {
+                username: 'houstonadmin',
+                password: 'CourtAccess2024!' // Change this to a strong password
+            };
+            
+            // Session timeout (in minutes)
+            const SESSION_TIMEOUT = 30;
             
             // DOM Elements
+            const loginContainer = document.getElementById('loginContainer');
+            const dashboardHeader = document.getElementById('dashboardHeader');
+            const dashboardContent = document.getElementById('dashboardContent');
+            const loginForm = document.getElementById('loginForm');
+            const loginError = document.getElementById('loginError');
+            const logoutBtn = document.getElementById('logoutBtn');
             const loadingOverlay = document.getElementById('loadingOverlay');
             const loadingText = document.getElementById('loadingText');
             const casesTableBody = document.getElementById('casesTableBody');
@@ -866,6 +1024,203 @@
             // Cases data
             let casesData = [];
             
+            // Check if user is already logged in
+            function checkAuth() {
+                const isLoggedIn = localStorage.getItem('evictionDashboardLoggedIn');
+                const loginTime = localStorage.getItem('evictionDashboardLoginTime');
+                
+                if (isLoggedIn === 'true' && loginTime) {
+                    const currentTime = new Date().getTime();
+                    const loginTimeValue = parseInt(loginTime);
+                    const sessionDuration = (currentTime - loginTimeValue) / (1000 * 60); // in minutes
+                    
+                    if (sessionDuration < SESSION_TIMEOUT) {
+                        // User is logged in and session is valid
+                        showDashboard();
+                        startSessionTimer();
+                        return true;
+                    } else {
+                        // Session expired
+                        logout();
+                    }
+                }
+                return false;
+            }
+            
+            // Handle login
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                // Simple authentication (in production, this should be server-side)
+                if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                    // Successful login
+                    localStorage.setItem('evictionDashboardLoggedIn', 'true');
+                    localStorage.setItem('evictionDashboardLoginTime', new Date().getTime().toString());
+                    
+                    // Hide error message if shown
+                    loginError.style.display = 'none';
+                    
+                    // Show dashboard
+                    showDashboard();
+                    
+                    // Start session timer
+                    startSessionTimer();
+                    
+                    // Clear form
+                    document.getElementById('username').value = '';
+                    document.getElementById('password').value = '';
+                } else {
+                    // Failed login
+                    loginError.style.display = 'block';
+                    document.getElementById('password').value = '';
+                    
+                    // Shake animation for error
+                    loginError.style.animation = 'none';
+                    setTimeout(() => {
+                        loginError.style.animation = 'shake 0.5s';
+                    }, 10);
+                }
+            });
+            
+            // Handle logout
+            logoutBtn.addEventListener('click', logout);
+            
+            function logout() {
+                // Clear session
+                localStorage.removeItem('evictionDashboardLoggedIn');
+                localStorage.removeItem('evictionDashboardLoginTime');
+                
+                // Hide dashboard
+                dashboardHeader.style.display = 'none';
+                dashboardContent.style.display = 'none';
+                
+                // Show login
+                loginContainer.style.display = 'flex';
+                
+                // Clear any data
+                casesData = [];
+                clearCharts();
+                
+                // Clear table
+                casesTableBody.innerHTML = '';
+                casesTableBody.style.display = 'none';
+                noCasesMessage.style.display = 'block';
+                
+                // Reset stats
+                totalCases.textContent = '0';
+                pendingCases.textContent = '0';
+                activeCases.textContent = '0';
+                completedCases.textContent = '0';
+                document.getElementById('casesTrend').textContent = 'Please login to load data';
+            }
+            
+            // Show dashboard
+            function showDashboard() {
+                loginContainer.style.display = 'none';
+                dashboardHeader.style.display = 'block';
+                dashboardContent.style.display = 'block';
+                
+                // Load cases automatically
+                loadCasesFromDataSource();
+            }
+            
+            // Start session timer
+            function startSessionTimer() {
+                // Clear any existing timer
+                if (window.sessionTimer) {
+                    clearInterval(window.sessionTimer);
+                }
+                
+                // Set up new timer
+                window.sessionTimer = setInterval(() => {
+                    const loginTime = localStorage.getItem('evictionDashboardLoginTime');
+                    if (loginTime) {
+                        const currentTime = new Date().getTime();
+                        const sessionDuration = (currentTime - parseInt(loginTime)) / (1000 * 60); // in minutes
+                        
+                        if (sessionDuration >= SESSION_TIMEOUT - 5 && sessionDuration < SESSION_TIMEOUT) {
+                            // Show warning 5 minutes before timeout
+                            showSessionWarning();
+                        } else if (sessionDuration >= SESSION_TIMEOUT) {
+                            // Session expired
+                            clearInterval(window.sessionTimer);
+                            alert('Your session has expired due to inactivity. Please log in again.');
+                            logout();
+                        }
+                    }
+                }, 60000); // Check every minute
+            }
+            
+            // Show session warning
+            function showSessionWarning() {
+                // Create warning message if not already shown
+                if (!document.getElementById('sessionWarning')) {
+                    const warning = document.createElement('div');
+                    warning.id = 'sessionWarning';
+                    warning.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        background: #fff3cd;
+                        border: 1px solid #ffeaa7;
+                        color: #856404;
+                        padding: 15px;
+                        border-radius: var(--border-radius);
+                        box-shadow: var(--box-shadow);
+                        z-index: 1001;
+                        max-width: 300px;
+                    `;
+                    warning.innerHTML = `
+                        <strong><i class="fas fa-exclamation-triangle"></i> Session Expiring</strong>
+                        <p style="margin: 5px 0; font-size: 14px;">Your session will expire in 5 minutes due to inactivity.</p>
+                        <button onclick="extendSession()" style="
+                            background: var(--houston-blue);
+                            color: white;
+                            border: none;
+                            padding: 5px 10px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 12px;
+                            margin-top: 5px;
+                        ">
+                            <i class="fas fa-sync-alt"></i> Extend Session
+                        </button>
+                    `;
+                    document.body.appendChild(warning);
+                    
+                    // Auto-remove after 10 seconds
+                    setTimeout(() => {
+                        if (document.getElementById('sessionWarning')) {
+                            document.getElementById('sessionWarning').remove();
+                        }
+                    }, 10000);
+                }
+            }
+            
+            // Extend session function (available globally)
+            window.extendSession = function() {
+                localStorage.setItem('evictionDashboardLoginTime', new Date().getTime().toString());
+                const warning = document.getElementById('sessionWarning');
+                if (warning) {
+                    warning.remove();
+                }
+            };
+            
+            // Clear charts
+            function clearCharts() {
+                if (statusChart) {
+                    statusChart.destroy();
+                    statusChart = null;
+                }
+                if (monthlyChart) {
+                    monthlyChart.destroy();
+                    monthlyChart = null;
+                }
+            }
+            
             // Load cases from data source
             async function loadCasesFromDataSource() {
                 showLoading('Loading cases from secure storage...');
@@ -873,19 +1228,23 @@
                 try {
                     // Get configuration from form
                     const config = {
-                        owner: document.getElementById('dataSourceOwner').value.trim() || 'nagoh',
-                        repo: document.getElementById('dataSourceRepo').value.trim() || 'GAEVIC',
-                        branch: document.getElementById('dataSourceBranch').value.trim() || 'main',
-                        path: document.getElementById('dataSourcePath').value.trim() || 'cases/'
+                        owner: document.getElementById('dashboardDataSourceOwner').value.trim() || 'nagoh',
+                        repo: document.getElementById('dashboardDataSourceRepo').value.trim() || 'GAEVIC',
+                        branch: document.getElementById('dashboardDataSourceBranch').value.trim() || 'main',
+                        path: document.getElementById('dashboardDataSourcePath').value.trim() || 'cases/'
                     };
                     
                     // Validate configuration
                     if (!config.owner || !config.repo) {
-                        throw new Error('Data source name and repository name are required');
+                        throw new Error('Data source owner and repository name are required');
                     }
                     
                     // Use the GitHub token from secrets
                     const token = GITHUB_TOKEN;
+                    
+                    if (!token || token === 'GAEVIC') {
+                        throw new Error('Authentication token not configured. Please check your setup.');
+                    }
                     
                     // Get repository contents
                     const contents = await getDataSourceContents(config, config.path, token);
@@ -920,8 +1279,8 @@
                     
                     if (error.response && error.response.status === 404) {
                         alert('Data source or folder not found. Please check your configuration.');
-                    } else if (error.response && error.response.status === 401) {
-                        alert('Authentication failed. Please check your configuration.');
+                    } else if (error.response && error.response.status === 401 || error.response && error.response.status === 403) {
+                        alert('Authentication failed. Please check your token configuration.');
                     } else {
                         alert(`Error loading cases: ${error.message}`);
                     }
@@ -1233,12 +1592,68 @@
                                         <p><strong>Status:</strong> ${caseData.status}</p>
                                         <p><strong>Date Created:</strong> ${formattedDate}</p>
                                         <p><strong>Reason for Eviction:</strong> ${caseData.case.reason}</p>
-                                        <p><strong>Data Source Path:</strong> ${caseData.githubPath || 'Not specified'}</p>
+                                        <p><strong>Storage Path:</strong> ${caseData.githubPath || 'Not specified'}</p>
+                                    </div>
+                                </div>
+                                <div class="detail-group">
+                                    <h4>Property Information</h4>
+                                    <div class="detail-content">
+                                        <p><strong>Address:</strong> ${caseData.property.address}</p>
+                                        <p><strong>City:</strong> ${caseData.property.city}</p>
+                                        <p><strong>ZIP Code:</strong> ${caseData.property.zip}</p>
+                                        <p><strong>Property Type:</strong> ${caseData.property.type}</p>
+                                        ${caseData.property.unit ? `<p><strong>Unit:</strong> ${caseData.property.unit}</p>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="detail-group">
+                                    <h4>Landlord Information</h4>
+                                    <div class="detail-content">
+                                        <p><strong>Name:</strong> ${caseData.landlord.name}</p>
+                                        <p><strong>Phone:</strong> ${caseData.landlord.phone}</p>
+                                        <p><strong>Email:</strong> ${caseData.landlord.email}</p>
+                                        <p><strong>Address:</strong> ${caseData.landlord.address}</p>
+                                        <p><strong>City:</strong> ${caseData.landlord.city}, ${caseData.landlord.state} ${caseData.landlord.zip}</p>
+                                    </div>
+                                </div>
+                                <div class="detail-group">
+                                    <h4>Tenant Information</h4>
+                                    <div class="detail-content">
+                                        <p><strong>Name:</strong> ${caseData.tenant.name}</p>
+                                        ${caseData.tenant.phone ? `<p><strong>Phone:</strong> ${caseData.tenant.phone}</p>` : ''}
+                                        ${caseData.tenant.email ? `<p><strong>Email:</strong> ${caseData.tenant.email}</p>` : ''}
+                                        ${caseData.tenant.altAddress ? `<p><strong>Alternate Address:</strong> ${caseData.tenant.altAddress}</p>` : ''}
+                                        <p><strong>Military Check:</strong> ${caseData.tenant.militaryCheck ? 'Yes' : 'No'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="detail-group">
+                                    <h4>Case Details</h4>
+                                    <div class="detail-content">
+                                        <p><strong>Lease Type:</strong> ${caseData.case.leaseType}</p>
+                                        <p><strong>Reason for Eviction:</strong> ${caseData.case.reason}</p>
+                                        <p><strong>Monthly Rent:</strong> $${parseFloat(caseData.case.rentAmount).toFixed(2)}</p>
+                                        <p><strong>Amount Owed:</strong> $${parseFloat(caseData.case.amountOwed).toFixed(2)}</p>
+                                        ${caseData.case.lastPaymentDate ? `<p><strong>Last Payment Date:</strong> ${caseData.case.lastPaymentDate}</p>` : ''}
+                                        <p><strong>Notice Date:</strong> ${caseData.case.noticeDate}</p>
+                                        ${caseData.case.noticeDetails ? `<p><strong>Notice Details:</strong> ${caseData.case.noticeDetails}</p>` : ''}
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button class="btn btn-primary" id="closeDetailsBtn">
+                                <i class="fas fa-times"></i> Close Details
+                            </button>
+                        </div>
                     `;
+                    
+                    // Add event listener to close button
+                    document.getElementById('closeDetailsBtn').addEventListener('click', function() {
+                        caseDetailsModal.style.display = 'none';
+                    });
                     
                     hideLoading();
                     caseDetailsModal.style.display = 'flex';
@@ -1264,10 +1679,10 @@
                     
                     // Get configuration
                     const config = {
-                        owner: document.getElementById('dataSourceOwner').value.trim() || 'nagoh',
-                        repo: document.getElementById('dataSourceRepo').value.trim() || 'GAEVIC',
-                        branch: document.getElementById('dataSourceBranch').value.trim() || 'main',
-                        path: document.getElementById('dataSourcePath').value.trim() || 'cases/'
+                        owner: document.getElementById('dashboardDataSourceOwner').value.trim() || 'nagoh',
+                        repo: document.getElementById('dashboardDataSourceRepo').value.trim() || 'GAEVIC',
+                        branch: document.getElementById('dashboardDataSourceBranch').value.trim() || 'main',
+                        path: document.getElementById('dashboardDataSourcePath').value.trim() || 'cases/'
                     };
                     
                     const token = GITHUB_TOKEN;
@@ -1282,37 +1697,88 @@
                         file.name.endsWith('.pdf')
                     );
                     
-                    // Download PDF files
-                    const downloadPromises = pdfFiles.map(async (file) => {
-                        const fileUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${caseFolder}${file.name}`;
-                        
-                        const headers = {
-                            'Accept': 'application/vnd.github.v3+json',
-                            'Authorization': `token ${token}`
-                        };
-                        
-                        const response = await axios.get(fileUrl, { headers });
-                        const content = atob(response.data.content);
-                        
-                        // Convert to blob and download
-                        const blob = new Blob([content], { type: 'application/pdf' });
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = file.name;
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                        document.body.removeChild(a);
-                    });
+                    if (pdfFiles.length === 0) {
+                        hideLoading();
+                        alert('No PDF documents found for this case.');
+                        return;
+                    }
                     
-                    await Promise.all(downloadPromises);
+                    // Download PDF files
+                    for (const file of pdfFiles) {
+                        try {
+                            const fileUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${caseFolder}${file.name}`;
+                            
+                            const headers = {
+                                'Accept': 'application/vnd.github.v3+json',
+                                'Authorization': `token ${token}`
+                            };
+                            
+                            const response = await axios.get(fileUrl, { headers });
+                            const content = atob(response.data.content);
+                            
+                            // Convert to blob and download
+                            const blob = new Blob([content], { type: 'application/pdf' });
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = file.name;
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                            
+                            // Small delay between downloads
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                        } catch (error) {
+                            console.error(`Error downloading ${file.name}:`, error);
+                        }
+                    }
+                    
                     hideLoading();
                     
                 } catch (error) {
                     console.error('Error downloading case documents:', error);
                     hideLoading();
-                    alert('Error downloading case documents.');
+                    alert('Error downloading case documents. Please try again.');
+                }
+            }
+            
+            // Export data function
+            async function exportData() {
+                showLoading('Exporting data...');
+                
+                try {
+                    if (casesData.length === 0) {
+                        throw new Error('No data to export. Please load cases first.');
+                    }
+                    
+                    // Create CSV content
+                    let csvContent = "Case ID,Landlord,Tenant,Property Address,Amount Owed,Status,Date Filed\n";
+                    
+                    casesData.forEach(caseData => {
+                        const date = new Date(caseData.timestamp);
+                        const formattedDate = date.toLocaleDateString('en-US');
+                        
+                        csvContent += `"${caseData.caseId}","${caseData.landlord.name}","${caseData.tenant.name}","${caseData.property.address}",$${parseFloat(caseData.case.amountOwed).toFixed(2)},"${caseData.status}","${formattedDate}"\n`;
+                    });
+                    
+                    // Create blob and download
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `eviction_cases_${new Date().toISOString().split('T')[0]}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    hideLoading();
+                    
+                } catch (error) {
+                    console.error('Error exporting data:', error);
+                    hideLoading();
+                    alert(`Error exporting data: ${error.message}`);
                 }
             }
             
@@ -1332,6 +1798,7 @@
             refreshDataBtn.addEventListener('click', loadCasesFromDataSource);
             loadCasesBtn.addEventListener('click', loadCasesFromDataSource);
             loadCasesBtn2.addEventListener('click', loadCasesFromDataSource);
+            exportDataBtn.addEventListener('click', exportData);
             
             searchCases.addEventListener('input', function() {
                 updateCasesTable(casesData, this.value);
@@ -1359,8 +1826,24 @@
                 loadingOverlay.style.display = 'none';
             }
             
-            // Initial load
-            loadCasesFromDataSource();
+            // Check authentication on page load
+            if (!checkAuth()) {
+                // Show login page if not authenticated
+                loginContainer.style.display = 'flex';
+                dashboardHeader.style.display = 'none';
+                dashboardContent.style.display = 'none';
+            }
+            
+            // Add shake animation for login error
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes shake {
+                    0%, 100% {transform: translateX(0);}
+                    10%, 30%, 50%, 70%, 90% {transform: translateX(-5px);}
+                    20%, 40%, 60%, 80% {transform: translateX(5px);}
+                }
+            `;
+            document.head.appendChild(style);
         });
     </script>
 </body>
