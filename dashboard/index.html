@@ -750,12 +750,12 @@
             <form class="login-form" id="loginForm">
                 <div class="form-group">
                     <label for="username"><i class="fas fa-user"></i> Username</label>
-                    <input type="text" id="username" placeholder="Enter admin username" required>
+                    <input type="text" id="username" placeholder="Enter admin" value="admin">
                 </div>
                 
                 <div class="form-group">
                     <label for="password"><i class="fas fa-key"></i> Password</label>
-                    <input type="password" id="password" placeholder="Enter password" required>
+                    <input type="password" id="password" placeholder="Enter password" value="admin">
                 </div>
                 
                 <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">
@@ -763,7 +763,7 @@
                 </button>
                 
                 <div style="margin-top: 20px; font-size: 14px; color: #666;">
-                    <p><i class="fas fa-info-circle"></i> Contact system administrator for credentials</p>
+                    <p><i class="fas fa-info-circle"></i> Default credentials: admin/admin</p>
                 </div>
             </form>
         </div>
@@ -940,10 +940,14 @@
                 path: 'cases/'
             };
             
-            // FIXED: Simple password authentication
+            // FIXED: GitHub Token - EMBEDDED (Replace with your actual token)
+            // IMPORTANT: Replace this with your actual GitHub Personal Access Token
+            const GITHUB_TOKEN = 'GAEVIC'; // ← Replace this!
+            
+            // FIXED: Simple password authentication - "admin" for both username and password
             const ADMIN_CREDENTIALS = {
                 username: 'admin',
-                password: 'admin' // Change this to a strong password
+                password: 'admin' // Simple password
             };
             
             // Session timeout (in minutes)
@@ -983,6 +987,9 @@
             
             // Debug logging
             console.log('DOM elements loaded');
+            console.log('GitHub Config:', GITHUB_CONFIG);
+            console.log('GitHub Token set:', GITHUB_TOKEN ? 'YES (but check if valid)' : 'NO');
+            console.log('Admin Credentials:', ADMIN_CREDENTIALS);
             
             // FIXED: Handle login form submission
             loginForm.addEventListener('submit', function(e) {
@@ -993,7 +1000,7 @@
                 const password = document.getElementById('password').value;
                 
                 console.log('Username entered:', username);
-                console.log('Password length:', password.length);
+                console.log('Password entered:', password);
                 
                 // Simple authentication
                 if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
@@ -1012,10 +1019,10 @@
                     startSessionTimer();
                     
                     // Clear form
-                    document.getElementById('username').value = '';
-                    document.getElementById('password').value = '';
+                    document.getElementById('username').value = 'admin';
+                    document.getElementById('password').value = 'admin';
                 } else {
-                    console.log('Login failed');
+                    console.log('Login failed - expected:', ADMIN_CREDENTIALS);
                     // Failed login
                     loginError.style.display = 'block';
                     document.getElementById('password').value = '';
@@ -1167,18 +1174,34 @@
                 }
             }
             
-            // FIXED: Load ALL cases from repository (auto-load without configuration)
+            // FIXED: Load ALL cases from repository using embedded token
             async function loadAllCases() {
                 console.log('Loading all cases...');
                 showLoading('Loading all cases from repository...');
                 repoStatus.textContent = 'Loading cases...';
                 
                 try {
-                    console.log('GitHub Config:', GITHUB_CONFIG);
+                    console.log('Using GitHub Config:', GITHUB_CONFIG);
+                    console.log('Using GitHub Token:', GITHUB_TOKEN ? 'Token is set' : 'No token');
                     
-                    // First try without token (public repo)
+                    // First try with the embedded token
+                    if (GITHUB_TOKEN && GITHUB_TOKEN !== 'YOUR_GITHUB_PERSONAL_ACCESS_TOKEN_HERE') {
+                        console.log('Trying with embedded token...');
+                        try {
+                            const tokenContents = await getDataSourceContents(GITHUB_CONFIG, GITHUB_CONFIG.path, GITHUB_TOKEN);
+                            console.log('Token access successful, found items:', tokenContents.length);
+                            await processCaseFolders(tokenContents, GITHUB_TOKEN);
+                            repoStatus.textContent = 'Connected (Authenticated)';
+                            hideLoading();
+                            return;
+                        } catch (tokenError) {
+                            console.log('Token access failed:', tokenError.message);
+                        }
+                    }
+                    
+                    // If token fails or not set, try public access
+                    console.log('Trying public access...');
                     try {
-                        console.log('Trying public access...');
                         const publicContents = await getDataSourceContents(GITHUB_CONFIG, GITHUB_CONFIG.path, null);
                         console.log('Public access successful, found items:', publicContents.length);
                         await processCaseFolders(publicContents, null);
@@ -1187,20 +1210,7 @@
                         return;
                     } catch (publicError) {
                         console.log('Public access failed:', publicError.message);
-                        // If public fails, try with token via URL parameter
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const tokenFromUrl = urlParams.get('token');
-                        
-                        if (tokenFromUrl) {
-                            console.log('Trying with token from URL...');
-                            const tokenContents = await getDataSourceContents(GITHUB_CONFIG, GITHUB_CONFIG.path, tokenFromUrl);
-                            await processCaseFolders(tokenContents, tokenFromUrl);
-                            repoStatus.textContent = 'Connected (Token from URL)';
-                            hideLoading();
-                            return;
-                        } else {
-                            throw new Error('Repository access failed. If repository is private, add ?token=YOUR_TOKEN to URL.');
-                        }
+                        throw new Error('Repository access failed. Please check if repository is public or add GitHub token to code.');
                     }
                     
                 } catch (error) {
@@ -1215,14 +1225,14 @@
                     if (error.response) {
                         console.error('Response error:', error.response.status, error.response.statusText);
                         if (error.response.status === 401 || error.response.status === 403) {
-                            alert('GitHub authentication failed. Please check if repository is public or add token via URL parameter.\n\nExample: dashboard.html?token=YOUR_GITHUB_TOKEN');
+                            alert('GitHub authentication failed. Please:\n\n1. Make sure your repository is public, OR\n2. Replace the GITHUB_TOKEN in the code with your actual GitHub Personal Access Token');
                         } else if (error.response.status === 404) {
-                            alert('Repository or folder not found. Please check the repository configuration.');
+                            alert('Repository or folder not found. Please check the repository exists at: nagoh/GAEVIC/cases/');
                         } else {
                             alert(`Error loading cases: ${error.response.status} ${error.response.statusText}`);
                         }
                     } else {
-                        alert(`Error loading cases: ${error.message}\n\nTry accessing with: ${window.location.pathname}?token=YOUR_GITHUB_TOKEN`);
+                        alert(`Error loading cases: ${error.message}`);
                     }
                     
                     // Show no cases message
@@ -1666,7 +1676,7 @@
                     const caseFolder = `${GITHUB_CONFIG.path}${caseId}/`;
                     
                     // Get list of files in case folder
-                    const files = await getDataSourceContents(GITHUB_CONFIG, caseFolder, null); // Try without token first
+                    const files = await getDataSourceContents(GITHUB_CONFIG, caseFolder, GITHUB_TOKEN);
                     
                     // Filter for PDF files
                     const pdfFiles = files.filter(file => 
@@ -1689,7 +1699,10 @@
                                 'Accept': 'application/vnd.github.v3+json'
                             };
                             
-                            // Try without token first (public)
+                            if (GITHUB_TOKEN) {
+                                headers['Authorization'] = `token ${GITHUB_TOKEN}`;
+                            }
+                            
                             const response = await axios.get(fileUrl, { headers });
                             const content = atob(response.data.content);
                             
@@ -1849,12 +1862,6 @@
                 }
             `;
             document.head.appendChild(style);
-            
-            // For debugging: expose login function
-            window.debugLogin = function() {
-                console.log('Debug: Current credentials:', ADMIN_CREDENTIALS);
-                console.log('Debug: Try logging in with:', ADMIN_CREDENTIALS.username, ADMIN_CREDENTIALS.password);
-            };
             
             console.log('Dashboard initialization complete');
         });
