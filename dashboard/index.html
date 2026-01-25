@@ -932,22 +932,22 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Dashboard script loaded');
             
-            // FIXED: GitHub Configuration - Hardcoded for your repository
+            // FIXED: GitHub Configuration - Correct for NAGOHUSA/GAEVIC
             const GITHUB_CONFIG = {
-                owner: 'nagoh',
+                owner: 'NAGOHUSA',
                 repo: 'GAEVIC',
                 branch: 'main',
                 path: 'cases/'
             };
             
-            // FIXED: GitHub Token - EMBEDDED (Replace with your actual token)
-            // IMPORTANT: Replace this with your actual GitHub Personal Access Token
-            const GITHUB_TOKEN = 'GAEVIC'; // ← Replace this!
+            // TOKEN INSERTED: Replace this with your actual GitHub token if repository is private
+            // If repository is public, keep it as null
+            const GITHUB_TOKEN = null; // Set to null for public repo
             
-            // FIXED: Simple password authentication - "admin" for both username and password
+            // Simple password authentication
             const ADMIN_CREDENTIALS = {
                 username: 'admin',
-                password: 'admin' // Simple password
+                password: 'admin'
             };
             
             // Session timeout (in minutes)
@@ -986,25 +986,18 @@
             let casesData = [];
             
             // Debug logging
-            console.log('DOM elements loaded');
-            console.log('GitHub Config:', GITHUB_CONFIG);
-            console.log('GitHub Token set:', GITHUB_TOKEN ? 'YES (but check if valid)' : 'NO');
-            console.log('Admin Credentials:', ADMIN_CREDENTIALS);
+            console.log('GitHub Repository: https://github.com/NAGOHUSA/GAEVIC');
+            console.log('GitHub Token:', GITHUB_TOKEN ? 'Using token' : 'Using public access');
             
-            // FIXED: Handle login form submission
+            // Handle login form submission
             loginForm.addEventListener('submit', function(e) {
-                e.preventDefault(); // Prevent default form submission
-                console.log('Login form submitted');
+                e.preventDefault();
                 
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
                 
-                console.log('Username entered:', username);
-                console.log('Password entered:', password);
-                
                 // Simple authentication
                 if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-                    console.log('Login successful');
                     // Successful login
                     localStorage.setItem('evictionDashboardLoggedIn', 'true');
                     localStorage.setItem('evictionDashboardLoginTime', new Date().getTime().toString());
@@ -1022,7 +1015,6 @@
                     document.getElementById('username').value = 'admin';
                     document.getElementById('password').value = 'admin';
                 } else {
-                    console.log('Login failed - expected:', ADMIN_CREDENTIALS);
                     // Failed login
                     loginError.style.display = 'block';
                     document.getElementById('password').value = '';
@@ -1039,7 +1031,6 @@
             logoutBtn.addEventListener('click', logout);
             
             function logout() {
-                console.log('Logging out');
                 // Clear session
                 localStorage.removeItem('evictionDashboardLoggedIn');
                 localStorage.removeItem('evictionDashboardLoginTime');
@@ -1071,7 +1062,6 @@
             
             // Show dashboard
             function showDashboard() {
-                console.log('Showing dashboard');
                 loginContainer.style.display = 'none';
                 dashboardHeader.style.display = 'block';
                 dashboardContent.style.display = 'block';
@@ -1174,7 +1164,7 @@
                 }
             }
             
-            // FIXED: Load ALL cases from repository using embedded token
+            // Load ALL cases from repository
             async function loadAllCases() {
                 console.log('Loading all cases...');
                 showLoading('Loading all cases from repository...');
@@ -1182,36 +1172,46 @@
                 
                 try {
                     console.log('Using GitHub Config:', GITHUB_CONFIG);
-                    console.log('Using GitHub Token:', GITHUB_TOKEN ? 'Token is set' : 'No token');
                     
-                    // First try with the embedded token
-                    if (GITHUB_TOKEN && GITHUB_TOKEN !== 'YOUR_GITHUB_PERSONAL_ACCESS_TOKEN_HERE') {
-                        console.log('Trying with embedded token...');
-                        try {
-                            const tokenContents = await getDataSourceContents(GITHUB_CONFIG, GITHUB_CONFIG.path, GITHUB_TOKEN);
-                            console.log('Token access successful, found items:', tokenContents.length);
-                            await processCaseFolders(tokenContents, GITHUB_TOKEN);
+                    let contents;
+                    try {
+                        if (GITHUB_TOKEN) {
+                            console.log('Trying with token...');
+                            contents = await getDataSourceContents(GITHUB_CONFIG, GITHUB_CONFIG.path, GITHUB_TOKEN);
                             repoStatus.textContent = 'Connected (Authenticated)';
-                            hideLoading();
-                            return;
-                        } catch (tokenError) {
-                            console.log('Token access failed:', tokenError.message);
+                        } else {
+                            console.log('Trying public access...');
+                            contents = await getDataSourceContents(GITHUB_CONFIG, GITHUB_CONFIG.path, null);
+                            repoStatus.textContent = 'Connected (Public Repository)';
+                        }
+                    } catch (accessError) {
+                        console.error('Access error:', accessError);
+                        
+                        if (accessError.response && accessError.response.status === 404) {
+                            throw new Error(`Repository not found: ${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}`);
+                        } else if (accessError.response && (accessError.response.status === 401 || accessError.response.status === 403)) {
+                            throw new Error('Repository is private. Please add a GitHub token to the code.');
+                        } else {
+                            throw new Error('Cannot connect to repository. Check your internet connection.');
                         }
                     }
                     
-                    // If token fails or not set, try public access
-                    console.log('Trying public access...');
-                    try {
-                        const publicContents = await getDataSourceContents(GITHUB_CONFIG, GITHUB_CONFIG.path, null);
-                        console.log('Public access successful, found items:', publicContents.length);
-                        await processCaseFolders(publicContents, null);
-                        repoStatus.textContent = 'Connected (Public Repository)';
+                    console.log('Repository contents loaded:', contents.length, 'items');
+                    
+                    // Check if cases directory exists and has content
+                    if (!contents || contents.length === 0) {
+                        repoStatus.textContent = 'No cases found';
+                        casesTableBody.style.display = 'none';
+                        noCasesMessage.style.display = 'block';
+                        updateStats([]);
+                        updateCharts([]);
                         hideLoading();
                         return;
-                    } catch (publicError) {
-                        console.log('Public access failed:', publicError.message);
-                        throw new Error('Repository access failed. Please check if repository is public or add GitHub token to code.');
                     }
+                    
+                    // Process case folders
+                    await processCaseFolders(contents, GITHUB_TOKEN);
+                    hideLoading();
                     
                 } catch (error) {
                     console.error('Error loading cases:', error);
@@ -1222,22 +1222,33 @@
                     repoStatus.style.color = '#dc3545';
                     
                     // Show error message
+                    let errorMessage = error.message;
+                    
                     if (error.response) {
                         console.error('Response error:', error.response.status, error.response.statusText);
                         if (error.response.status === 401 || error.response.status === 403) {
-                            alert('GitHub authentication failed. Please:\n\n1. Make sure your repository is public, OR\n2. Replace the GITHUB_TOKEN in the code with your actual GitHub Personal Access Token');
+                            errorMessage = 'Repository is private. Please add a GitHub Personal Access Token to the code.';
                         } else if (error.response.status === 404) {
-                            alert('Repository or folder not found. Please check the repository exists at: nagoh/GAEVIC/cases/');
-                        } else {
-                            alert(`Error loading cases: ${error.response.status} ${error.response.statusText}`);
+                            errorMessage = 'Repository or folder not found. Please check the repository exists at: NAGOHUSA/GAEVIC/cases/';
                         }
-                    } else {
-                        alert(`Error loading cases: ${error.message}`);
                     }
+                    
+                    alert(`Error: ${errorMessage}`);
                     
                     // Show no cases message
                     casesTableBody.style.display = 'none';
                     noCasesMessage.style.display = 'block';
+                    noCasesMessage.innerHTML = `
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Connection Error</h3>
+                        <p>${errorMessage}</p>
+                        <button class="btn btn-primary" id="retryConnection" style="margin-top: 20px;">
+                            <i class="fas fa-sync-alt"></i> Retry Connection
+                        </button>
+                    `;
+                    
+                    // Add retry button listener
+                    document.getElementById('retryConnection').addEventListener('click', loadAllCases);
                 }
             }
             
