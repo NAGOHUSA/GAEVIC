@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Houston County Eviction Filing System | Georgia Magistrate Court</title>
+    <title>Eviction Cases Dashboard | Houston County Magistrate Court</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         :root {
@@ -24,6 +22,7 @@
             --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             --success-green: #28a745;
             --warning-orange: #fd7e14;
+            --info-blue: #17a2b8;
         }
         
         * {
@@ -40,7 +39,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 0 20px;
         }
@@ -92,20 +91,6 @@
             opacity: 0.9;
         }
         
-        .contact-info {
-            text-align: right;
-        }
-        
-        .contact-info p {
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
-        
-        .contact-info i {
-            margin-right: 8px;
-            color: var(--houston-gold);
-        }
-        
         .navigation {
             background-color: rgba(255, 255, 255, 0.1);
             border-radius: var(--border-radius);
@@ -135,232 +120,129 @@
             margin-right: 8px;
         }
         
-        /* Hero Section */
-        .hero {
-            padding: 60px 0;
-            text-align: center;
-            background: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)), url('https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Seal_of_Georgia.svg/200px-Seal_of_Georgia.svg.png') no-repeat center;
-            background-size: contain;
+        /* Dashboard Header */
+        .dashboard-header {
+            padding: 40px 0;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
         }
         
-        .hero h2 {
-            font-size: 36px;
-            color: var(--houston-blue);
-            margin-bottom: 20px;
-            font-family: 'Merriweather', serif;
-        }
-        
-        .hero p {
-            font-size: 18px;
-            max-width: 800px;
-            margin: 0 auto 30px;
-            color: var(--dark-gray);
-        }
-        
-        .cta-button {
-            display: inline-block;
-            background: linear-gradient(to right, var(--houston-red), var(--georgia-red));
-            color: white;
-            padding: 15px 40px;
-            font-size: 18px;
-            font-weight: 600;
-            text-decoration: none;
-            border-radius: var(--border-radius);
-            transition: all 0.3s ease;
-            box-shadow: var(--box-shadow);
-        }
-        
-        .cta-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-        }
-        
-        /* Features Section */
-        .features {
-            padding: 60px 0;
-            background-color: white;
-        }
-        
-        .section-title {
-            text-align: center;
-            font-size: 32px;
-            color: var(--houston-blue);
-            margin-bottom: 50px;
-            font-family: 'Merriweather', serif;
-        }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-        }
-        
-        .feature-card {
-            background-color: var(--light-gray);
-            border-radius: var(--border-radius);
-            padding: 30px;
-            text-align: center;
-            box-shadow: var(--box-shadow);
-            transition: transform 0.3s ease;
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .feature-icon {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(to right, var(--houston-blue), var(--georgia-blue));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            color: white;
-            font-size: 28px;
-        }
-        
-        .feature-card h3 {
-            color: var(--houston-blue);
-            margin-bottom: 15px;
-            font-size: 22px;
-        }
-        
-        /* Form Container */
-        .form-container {
-            background-color: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            padding: 40px;
-            margin: 40px auto;
-            max-width: 900px;
-            display: none;
-        }
-        
-        .form-progress {
+        .dashboard-title {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 40px;
-            position: relative;
-        }
-        
-        .form-progress:before {
-            content: '';
-            position: absolute;
-            top: 20px;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background-color: #e0e0e0;
-            z-index: 1;
-        }
-        
-        .progress-step {
-            text-align: center;
-            position: relative;
-            z-index: 2;
-            flex: 1;
-        }
-        
-        .step-circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #e0e0e0;
-            color: #666;
-            display: flex;
             align-items: center;
-            justify-content: center;
-            margin: 0 auto 10px;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            margin-bottom: 30px;
         }
         
-        .step-circle.active {
-            background-color: var(--houston-blue);
-            color: white;
+        .dashboard-title h1 {
+            font-size: 36px;
+            color: var(--houston-blue);
+            font-family: 'Merriweather', serif;
         }
         
-        .step-circle.completed {
-            background-color: var(--houston-gold);
-            color: white;
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
         
-        .step-label {
+        .stat-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            text-align: center;
+            border-top: 4px solid var(--houston-blue);
+        }
+        
+        .stat-card h3 {
             font-size: 14px;
             color: #666;
-            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
         }
         
-        .form-step {
-            display: none;
-        }
-        
-        .form-step.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .form-title {
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
             color: var(--houston-blue);
-            margin-bottom: 30px;
-            font-size: 24px;
-            font-family: 'Merriweather', serif;
-            border-bottom: 2px solid var(--houston-gold);
-            padding-bottom: 10px;
+            margin-bottom: 5px;
         }
         
-        .form-group {
-            margin-bottom: 25px;
+        .stat-trend {
+            font-size: 14px;
+            color: var(--success-green);
         }
         
-        .form-row {
+        .stat-trend.negative {
+            color: var(--houston-red);
+        }
+        
+        /* Data Source Configuration */
+        .datasource-config {
+            background: #f8f9fa;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin: 30px 0;
+            border: 2px solid var(--houston-blue);
+        }
+        
+        .datasource-config h3 {
+            color: var(--houston-blue);
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        
+        .datasource-config .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+            margin-bottom: 20px;
         }
         
-        label {
+        .datasource-config .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .datasource-config label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             font-weight: 600;
             color: var(--dark-gray);
         }
         
-        input, select, textarea {
+        .datasource-config input {
             width: 100%;
-            padding: 12px 15px;
+            padding: 10px 15px;
             border: 1px solid #ddd;
             border-radius: var(--border-radius);
-            font-size: 16px;
-            font-family: 'Open Sans', sans-serif;
-            transition: border 0.3s;
+            font-size: 14px;
         }
         
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--houston-blue);
-            box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.1);
+        /* Dashboard Content */
+        .dashboard-content {
+            padding: 40px 0;
         }
         
-        .form-actions {
+        .section-header {
             display: flex;
             justify-content: space-between;
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 1px solid #eee;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .section-header h2 {
+            font-size: 24px;
+            color: var(--houston-blue);
+            font-family: 'Merriweather', serif;
         }
         
         .btn {
-            padding: 12px 30px;
+            padding: 10px 20px;
             border-radius: var(--border-radius);
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -375,15 +257,6 @@
         
         .btn-primary:hover {
             background-color: var(--georgia-blue);
-        }
-        
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background-color: #5a6268;
         }
         
         .btn-outline {
@@ -406,232 +279,228 @@
             background-color: #218838;
         }
         
-        /* Info Box */
-        .info-box {
-            background-color: #e8f4fd;
-            border-left: 4px solid var(--houston-blue);
-            padding: 20px;
-            margin-bottom: 30px;
-            border-radius: var(--border-radius);
-        }
-        
-        .info-box h4 {
-            color: var(--houston-blue);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .info-box.warning {
-            background-color: #fff3cd;
-            border-left-color: var(--warning-orange);
-        }
-        
-        .info-box.success {
-            background-color: #d4edda;
-            border-left-color: var(--success-green);
-        }
-        
-        /* Document Preview Section */
-        .document-preview {
-            margin: 30px 0;
-            border: 2px solid #e0e0e0;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-        }
-        
-        .document-header {
-            background: #f8f9fa;
-            padding: 15px 20px;
-            border-bottom: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .document-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .document-frame {
-            width: 100%;
-            height: 500px;
-            border: none;
-        }
-        
-        /* Signature Pad */
-        .signature-container {
-            margin: 30px 0;
-        }
-        
-        .signature-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .signature-pad {
-            width: 100%;
-            height: 200px;
-            border: 2px dashed #ccc;
-            border-radius: var(--border-radius);
+        /* Cases Table */
+        .cases-table-container {
             background: white;
-            cursor: crosshair;
-            margin-bottom: 15px;
-        }
-        
-        .signature-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .signature-preview {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
             border-radius: var(--border-radius);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .signature-preview img {
-            max-height: 50px;
-            border: 1px solid #ccc;
-            background: white;
-            padding: 5px;
-        }
-        
-        /* Document Download Section */
-        .download-section {
-            margin: 30px 0;
-            text-align: center;
-        }
-        
-        .download-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-        
-        .download-card {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        
-        .download-card:hover {
-            border-color: var(--houston-blue);
-            transform: translateY(-5px);
             box-shadow: var(--box-shadow);
+            padding: 30px;
+            margin-bottom: 40px;
         }
         
-        .download-icon {
-            width: 60px;
-            height: 60px;
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            color: var(--houston-blue);
+            font-weight: 600;
+            text-align: left;
+            padding: 15px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+            vertical-align: top;
+        }
+        
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-filed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-hearing {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .action-btn {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+            background: #f8f9fa;
+            color: var(--houston-blue);
+        }
+        
+        .action-btn:hover {
             background: var(--houston-blue);
             color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            font-size: 24px;
         }
         
-        .download-card h3 {
-            color: var(--houston-blue);
-            margin-bottom: 10px;
-            font-size: 18px;
+        /* Charts Section */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
         }
         
-        .download-card p {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 15px;
-            min-height: 40px;
-        }
-        
-        /* GitHub Configuration */
-        .github-config {
-            margin: 30px 0;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: var(--border-radius);
-            border: 2px solid var(--houston-blue);
-        }
-        
-        .github-config h3 {
-            color: var(--houston-blue);
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-        
-        /* Case Status */
-        .case-status {
+        .chart-container {
             background: white;
-            padding: 30px;
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
-            margin: 30px 0;
+            padding: 25px;
+        }
+        
+        .chart-container h3 {
+            color: var(--houston-blue);
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        /* Case Details Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            padding: 25px 30px;
+            background: var(--houston-blue);
+            color: white;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-size: 20px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        .case-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .detail-group {
+            margin-bottom: 20px;
+        }
+        
+        .detail-group h4 {
+            color: var(--houston-blue);
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .detail-content {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--houston-blue);
+        }
+        
+        /* No Cases Message */
+        .no-cases {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .no-cases i {
+            font-size: 60px;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+        
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
             display: none;
         }
         
-        .status-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .status-timeline {
-            display: flex;
-            justify-content: space-between;
-            position: relative;
-            margin: 40px 0;
-        }
-        
-        .status-timeline:before {
-            content: '';
-            position: absolute;
-            top: 20px;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: #e0e0e0;
-            z-index: 1;
-        }
-        
-        .status-step {
-            text-align: center;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .status-icon {
-            width: 40px;
-            height: 40px;
-            background: #e0e0e0;
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--houston-blue);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 10px;
-            color: white;
-            font-size: 18px;
+            animation: spin 1s linear infinite;
         }
         
-        .status-step.active .status-icon {
-            background: var(--houston-blue);
-        }
-        
-        .status-step.completed .status-icon {
-            background: var(--success-green);
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         /* Footer */
@@ -682,52 +551,6 @@
             color: #aaa;
         }
         
-        /* Loading Overlay */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            display: none;
-        }
-        
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--houston-blue);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Success Message */
-        .success-message {
-            text-align: center;
-            padding: 30px;
-            background: #d4edda;
-            border: 2px solid #c3e6cb;
-            border-radius: var(--border-radius);
-            margin: 20px 0;
-        }
-        
-        .success-message i {
-            font-size: 60px;
-            color: #28a745;
-            margin-bottom: 20px;
-        }
-        
         /* Responsive Design */
         @media (max-width: 768px) {
             .header-top {
@@ -736,48 +559,52 @@
                 gap: 15px;
             }
             
-            .contact-info {
-                text-align: center;
-            }
-            
             .nav-links {
                 flex-wrap: wrap;
                 justify-content: center;
                 gap: 20px;
             }
             
-            .hero h2 {
-                font-size: 28px;
+            .dashboard-title {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
             }
             
-            .form-row {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .charts-grid {
                 grid-template-columns: 1fr;
             }
             
-            .form-container {
-                padding: 25px;
-            }
-            
-            .form-actions {
+            .section-header {
                 flex-direction: column;
                 gap: 15px;
+                text-align: center;
             }
             
-            .btn {
-                width: 100%;
-            }
-            
-            .form-progress {
-                flex-wrap: wrap;
-                gap: 15px;
-            }
-            
-            .progress-step {
-                flex: 0 0 calc(50% - 15px);
-            }
-            
-            .download-grid {
+            .datasource-config .form-row {
                 grid-template-columns: 1fr;
+            }
+            
+            table {
+                font-size: 14px;
+            }
+            
+            th, td {
+                padding: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
             }
         }
     </style>
@@ -786,7 +613,20 @@
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
-        <p style="color: white; margin-top: 20px;" id="loadingText">Processing your request...</p>
+        <p style="color: white; margin-top: 20px;" id="loadingText">Loading dashboard data...</p>
+    </div>
+    
+    <!-- Case Details Modal -->
+    <div class="modal-overlay" id="caseDetailsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Case Details</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body" id="caseDetailsContent">
+                <!-- Case details will be loaded here -->
+            </div>
+        </div>
     </div>
 
     <!-- Header -->
@@ -796,549 +636,154 @@
                 <div class="logo-container">
                     <div class="logo">HC</div>
                     <div class="logo-text">
-                        <h1>Houston County Eviction System 1.4 </h1>
-                        <p>Georgia Magistrate Court - Warner Robins, GA</p>
+                        <h1>Eviction Cases Dashboard 1.1</h1>
+                        <p>Houston County Magistrate Court - Warner Robins, GA</p>
                     </div>
                 </div>
                 <div class="contact-info">
-                    <p><i class="fas fa-phone"></i> (478) 542-2100</p>
-                    <p><i class="fas fa-map-marker-alt"></i> 202 Carl Vinson Pkwy, Warner Robins, GA 31088</p>
-                    <p><i class="fas fa-clock"></i> Mon-Fri: 8:00 AM - 5:00 PM</p>
+                    <p><i class="fas fa-database"></i> Secure Case Management System</p>
+                    <p><i class="fas fa-cloud"></i> Cloud-Based Case Storage</p>
                 </div>
             </div>
             
             <nav class="navigation">
                 <ul class="nav-links">
-                    <li><a href="#"><i class="fas fa-home"></i> Home</a></li>
-                    <li><a href="#" id="navStartFiling"><i class="fas fa-file-alt"></i> Start Filing</a></li>
-                    <li><a href="dashboard/index.html" target="_blank"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                    <li><a href="#"><i class="fas fa-question-circle"></i> How It Works</a></li>
-                    <li><a href="#"><i class="fas fa-gavel"></i> Court Information</a></li>
-                    <li><a href="#"><i class="fas fa-dollar-sign"></i> Fee Schedule</a></li>
-                    <li><a href="#"><i class="fas fa-envelope"></i> Contact</a></li>
+                    <li><a href="../index.html"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="../index.html"><i class="fas fa-file-alt"></i> New Filing</a></li>
+                    <li><a href="#" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                    <li><a href="#"><i class="fas fa-question-circle"></i> Help</a></li>
                 </ul>
             </nav>
         </div>
     </header>
 
-    <!-- Hero Section -->
-    <section class="hero">
+    <!-- Dashboard Header -->
+    <section class="dashboard-header">
         <div class="container">
-            <h2>File Eviction Cases Online for Houston County, Georgia</h2>
-            <p>Our secure online system allows landlords to file dispossessory affidavits, generate required notices, and submit cases directly to the Houston County Magistrate Court. Save time and ensure compliance with Georgia eviction laws.</p>
-            <a href="#" class="cta-button" id="startFilingBtn">
-                <i class="fas fa-file-signature"></i> Start Eviction Filing
-            </a>
+            <div class="dashboard-title">
+                <h1>Eviction Cases Dashboard</h1>
+                <div>
+                    <button class="btn btn-primary" id="refreshData">
+                        <i class="fas fa-sync-alt"></i> Refresh Data
+                    </button>
+                    <button class="btn btn-outline" id="exportData" style="margin-left: 10px;">
+                        <i class="fas fa-download"></i> Export Data
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Data Source Configuration -->
+            <div class="datasource-config">
+                <h3><i class="fas fa-cloud"></i> Data Source Configuration</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dashboardDataSourceOwner">Data Source Owner</label>
+                        <input type="text" id="dashboardDataSourceOwner" placeholder="nagoh" value="nagoh">
+                    </div>
+                    <div class="form-group">
+                        <label for="dashboardDataSourceRepo">Repository Name</label>
+                        <input type="text" id="dashboardDataSourceRepo" placeholder="GAEVIC" value="GAEVIC">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dashboardDataSourceBranch">Branch</label>
+                        <input type="text" id="dashboardDataSourceBranch" placeholder="main" value="main">
+                    </div>
+                    <div class="form-group">
+                        <label for="dashboardDataSourcePath">Cases Folder Path</label>
+                        <input type="text" id="dashboardDataSourcePath" placeholder="cases/" value="cases/">
+                    </div>
+                </div>
+                <button class="btn btn-success" id="loadCasesBtn">
+                    <i class="fas fa-cloud-download-alt"></i> Load Cases
+                </button>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Cases</h3>
+                    <div class="stat-number" id="totalCases">0</div>
+                    <div class="stat-trend" id="casesTrend">Loading...</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Pending Filing</h3>
+                    <div class="stat-number" id="pendingCases">0</div>
+                    <div class="stat-trend">Awaiting court submission</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Cases</h3>
+                    <div class="stat-number" id="activeCases">0</div>
+                    <div class="stat-trend">Currently in progress</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Completed</h3>
+                    <div class="stat-number" id="completedCases">0</div>
+                    <div class="stat-trend">Cases resolved</div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features">
+    <!-- Dashboard Content -->
+    <section class="dashboard-content">
         <div class="container">
-            <h2 class="section-title">Why File With Our System?</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-file-contract"></i>
-                    </div>
-                    <h3>Court-Approved Forms</h3>
-                    <p>Automatically generate Georgia dispossessory affidavits, 7-day notices, and summons forms that comply with Houston County requirements.</p>
+            <!-- Charts Section -->
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3>Cases by Status</h3>
+                    <canvas id="statusChart"></canvas>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <h3>Faster Processing</h3>
-                    <p>Reduce filing time from days to minutes. Submit directly to the court clerk's office without waiting in line.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h3>SCRA Compliance</h3>
-                    <p>Automatic Servicemembers Civil Relief Act verification to ensure compliance with federal law.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-dollar-sign"></i>
-                    </div>
-                    <h3>Transparent Fees</h3>
-                    <p>Pay Houston County's $99 filing fee securely online. No hidden charges or subscription fees.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Eviction Filing Form (Initially Hidden) -->
-    <div class="container">
-        <div class="form-container" id="evictionForm">
-            <!-- Form Progress -->
-            <div class="form-progress">
-                <div class="progress-step">
-                    <div class="step-circle active" id="step1Circle">1</div>
-                    <div class="step-label">Landlord Info</div>
-                </div>
-                <div class="progress-step">
-                    <div class="step-circle" id="step2Circle">2</div>
-                    <div class="step-label">Property Info</div>
-                </div>
-                <div class="progress-step">
-                    <div class="step-circle" id="step3Circle">3</div>
-                    <div class="step-label">Tenant Info</div>
-                </div>
-                <div class="progress-step">
-                    <div class="step-circle" id="step4Circle">4</div>
-                    <div class="step-label">Case Details</div>
-                </div>
-                <div class="progress-step">
-                    <div class="step-circle" id="step5Circle">5</div>
-                    <div class="step-label">E-Signature</div>
-                </div>
-                <div class="progress-step">
-                    <div class="step-circle" id="step6Circle">6</div>
-                    <div class="step-label">Submit & Download</div>
+                <div class="chart-container">
+                    <h3>Cases by Month</h3>
+                    <canvas id="monthlyChart"></canvas>
                 </div>
             </div>
             
-            <!-- Step 1: Landlord Information -->
-            <div class="form-step active" id="step1">
-                <h2 class="form-title">Landlord Information</h2>
-                
-                <div class="info-box">
-                    <h4><i class="fas fa-info-circle"></i> Important Notice</h4>
-                    <p>You must be the property owner or authorized agent to file an eviction. If filing as an agent, you must have written authorization from the property owner.</p>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="landlordName">Full Legal Name *</label>
-                        <input type="text" id="landlordName" placeholder="Enter your full name as it appears on the deed" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="landlordPhone">Phone Number *</label>
-                        <input type="tel" id="landlordPhone" placeholder="(478) 123-4567" required>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="landlordEmail">Email Address *</label>
-                        <input type="email" id="landlordEmail" placeholder="your@email.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="landlordType">Filing As</label>
-                        <select id="landlordType">
-                            <option value="owner">Property Owner</option>
-                            <option value="agent">Authorized Agent</option>
-                            <option value="property_manager">Property Manager</option>
-                            <option value="attorney">Attorney</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="landlordAddress">Mailing Address *</label>
-                    <input type="text" id="landlordAddress" placeholder="Street Address" required>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="landlordCity">City *</label>
-                        <input type="text" id="landlordCity" placeholder="City" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="landlordState">State *</label>
-                        <select id="landlordState">
-                            <option value="GA" selected>Georgia</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="landlordZip">ZIP Code *</label>
-                        <input type="text" id="landlordZip" placeholder="31088" required>
-                    </div>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline" id="cancelBtn">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="nextStep1">Next: Property Information</button>
-                </div>
-            </div>
-            
-            <!-- Step 2: Property Information -->
-            <div class="form-step" id="step2">
-                <h2 class="form-title">Property Information</h2>
-                
-                <div class="info-box">
-                    <h4><i class="fas fa-map-marker-alt"></i> Location Requirements</h4>
-                    <p>The property must be located within Houston County, Georgia. This system only handles evictions for properties in Houston County.</p>
-                </div>
-                
-                <div class="form-group">
-                    <label for="propertyAddress">Property Address *</label>
-                    <input type="text" id="propertyAddress" placeholder="Street Address of the rental property" required>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="propertyCity">City *</label>
-                        <select id="propertyCity" required>
-                            <option value="Warner Robins" selected>Warner Robins</option>
-                            <option value="Perry">Perry</option>
-                            <option value="Centerville">Centerville</option>
-                            <option value="Bonaire">Bonaire</option>
-                            <option value="Kathleen">Kathleen</option>
-                            <option value="Other">Other Houston County Location</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="propertyZip">ZIP Code *</label>
-                        <input type="text" id="propertyZip" placeholder="31088" required>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="propertyType">Property Type</label>
-                        <select id="propertyType">
-                            <option value="single_family">Single Family Home</option>
-                            <option value="apartment">Apartment</option>
-                            <option value="condo">Condominium</option>
-                            <option value="townhome">Townhome</option>
-                            <option value="mobile_home">Mobile Home</option>
-                            <option value="commercial">Commercial Property</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="unitNumber">Unit Number (if applicable)</label>
-                        <input type="text" id="unitNumber" placeholder="Apt 3B, Unit 12, etc.">
-                    </div>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" id="prevStep2">Previous</button>
-                    <button type="button" class="btn btn-primary" id="nextStep2">Next: Tenant Information</button>
-                </div>
-            </div>
-            
-            <!-- Step 3: Tenant Information -->
-            <div class="form-step" id="step3">
-                <h2 class="form-title">Tenant Information</h2>
-                
-                <div class="info-box">
-                    <h4><i class="fas fa-user-friends"></i> Multiple Tenants</h4>
-                    <p>If there are multiple tenants on the lease, you'll need to provide information for each one. You can add additional tenants after completing this section.</p>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="tenantName">Tenant Full Name *</label>
-                        <input type="text" id="tenantName" placeholder="Tenant's legal name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="tenantPhone">Tenant Phone Number</label>
-                        <input type="tel" id="tenantPhone" placeholder="(478) 123-4567">
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="tenantEmail">Tenant Email (if known)</label>
-                        <input type="email" id="tenantEmail" placeholder="tenant@email.com">
-                    </div>
-                    <div class="form-group">
-                        <label for="tenantAltAddress">Alternate Mailing Address</label>
-                        <input type="text" id="tenantAltAddress" placeholder="If different from property address">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                        <input type="checkbox" id="militaryCheck" style="width: auto;">
-                        <label for="militaryCheck" style="margin: 0;">I believe this tenant may be an active duty service member</label>
-                    </div>
-                    <p class="small-text"><i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i> The court will verify military status through the SCRA database. False statements may result in dismissal of your case.</p>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" id="prevStep3">Previous</button>
-                    <button type="button" class="btn btn-primary" id="nextStep3">Next: Case Details</button>
-                </div>
-            </div>
-            
-            <!-- Step 4: Case Details -->
-            <div class="form-step" id="step4">
-                <h2 class="form-title">Case Details</h2>
-                
-                <div class="info-box">
-                    <h4><i class="fas fa-balance-scale"></i> Georgia Eviction Laws</h4>
-                    <p>In Georgia, you must have legal grounds for eviction. Common reasons include non-payment of rent, lease violations, or holdover tenancy after lease expiration.</p>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="leaseType">Lease Type *</label>
-                        <select id="leaseType" required>
-                            <option value="month_to_month">Month-to-Month</option>
-                            <option value="fixed_term">Fixed Term Lease</option>
-                            <option value="week_to_week">Week-to-Week</option>
-                            <option value="verbal">Verbal Agreement</option>
-                            <option value="no_lease">No Lease Agreement</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="reason">Reason for Eviction *</label>
-                        <select id="reason" required>
-                            <option value="non_payment">Non-Payment of Rent</option>
-                            <option value="lease_violation">Lease Violation</option>
-                            <option value="holdover">Holdover (Lease Expired)</option>
-                            <option value="property_damage">Property Damage</option>
-                            <option value="illegal_activity">Illegal Activity</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="rentAmount">Monthly Rent Amount *</label>
-                        <div style="position: relative;">
-                            <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%);">$</span>
-                            <input type="number" id="rentAmount" placeholder="0.00" style="padding-left: 30px;" min="0" step="0.01" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="amountOwed">Total Amount Owed *</label>
-                        <div style="position: relative;">
-                            <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%);">$</span>
-                            <input type="number" id="amountOwed" placeholder="0.00" style="padding-left: 30px;" min="0" step="0.01" required>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="lastPaymentDate">Last Payment Received</label>
-                        <input type="date" id="lastPaymentDate">
-                    </div>
-                    <div class="form-group">
-                        <label for="noticeDate">Date Notice Was Served *</label>
-                        <input type="date" id="noticeDate" required>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="noticeDetails">Details of Notice Served</label>
-                    <textarea id="noticeDetails" rows="3" placeholder="Describe how and when the notice was delivered to the tenant (e.g., 'Posted on front door on 10/15/2023' or 'Certified mail #1234567890')"></textarea>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" id="prevStep4">Previous</button>
-                    <button type="button" class="btn btn-primary" id="nextStep4">Next: E-Signature</button>
-                </div>
-            </div>
-            
-            <!-- Step 5: E-Signature -->
-            <div class="form-step" id="step5">
-                <h2 class="form-title">E-Sign Documents</h2>
-                
-                <div class="info-box">
-                    <h4><i class="fas fa-signature"></i> Electronic Signature</h4>
-                    <p>Your electronic signature has the same legal effect as a handwritten signature for Houston County eviction filings.</p>
-                </div>
-                
-                <div class="signature-container">
-                    <div class="signature-header">
-                        <h3 style="margin: 0;">Sign Documents</h3>
-                        <div class="signature-status">
-                            <span id="signatureStatus" style="color: #666; font-weight: 600;">
-                                <i class="fas fa-pen"></i> Ready to sign
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="signerName">Full Name (as it will appear on signature)</label>
-                        <input type="text" id="signerName" placeholder="Enter your full legal name" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Draw your signature below:</label>
-                        <canvas id="signaturePad" class="signature-pad"></canvas>
-                    </div>
-                    
-                    <div class="signature-actions">
-                        <button class="btn btn-secondary" id="clearSignature">
-                            <i class="fas fa-eraser"></i> Clear Signature
-                        </button>
-                        <button class="btn btn-outline" id="typeSignature">
-                            <i class="fas fa-keyboard"></i> Type Signature
-                        </button>
-                        <button class="btn btn-success" id="saveSignature">
-                            <i class="fas fa-save"></i> Save Signature
+            <!-- Cases Table -->
+            <div class="cases-table-container">
+                <div class="section-header">
+                    <h2>All Eviction Cases</h2>
+                    <div>
+                        <input type="text" id="searchCases" placeholder="Search cases..." style="padding: 10px; border: 1px solid #ddd; border-radius: var(--border-radius); margin-right: 10px;">
+                        <button class="btn btn-outline" id="filterPending">
+                            <i class="fas fa-filter"></i> Show Pending
                         </button>
                     </div>
-                    
-                    <div id="signaturePreview" class="signature-preview" style="display: none;">
-                        <div>
-                            <strong>Signature Saved:</strong>
-                            <p style="margin: 5px 0; color: #666;">Your signature will be applied to all documents</p>
-                        </div>
-                        <img id="signatureImage" src="" alt="Signature">
-                    </div>
                 </div>
                 
-                <div class="info-box warning">
-                    <h4><i class="fas fa-shield-alt"></i> Legal Certification</h4>
-                    <div style="display: flex; align-items: flex-start; gap: 10px; margin-top: 10px;">
-                        <input type="checkbox" id="legalCertify" style="margin-top: 3px;">
-                        <label for="legalCertify" style="margin: 0;">
-                            I certify under penalty of perjury that the information provided is true and correct to the best of my knowledge, and that I am authorized to sign these documents.
-                        </label>
-                    </div>
+                <div class="table-responsive">
+                    <table id="casesTable">
+                        <thead>
+                            <tr>
+                                <th>Case ID</th>
+                                <th>Landlord</th>
+                                <th>Tenant</th>
+                                <th>Property</th>
+                                <th>Amount Owed</th>
+                                <th>Status</th>
+                                <th>Date Filed</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="casesTableBody">
+                            <!-- Cases will be loaded here -->
+                        </tbody>
+                    </table>
                 </div>
                 
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" id="prevStep5">Previous</button>
-                    <button type="button" class="btn btn-primary" id="nextStep5" disabled>Next: Submit & Download</button>
-                </div>
-            </div>
-            
-            <!-- Step 6: Submit & Download -->
-            <div class="form-step" id="step6">
-                <h2 class="form-title">Submit & Download Documents</h2>
-                
-                <div class="success-message" id="successMessage" style="display: none;">
-                    <i class="fas fa-check-circle"></i>
-                    <h3 style="color: #28a745;">Documents Generated Successfully!</h3>
-                    <p>Your eviction case has been saved and documents are ready for download.</p>
-                    <p><strong>Case ID:</strong> <span id="caseIdDisplay"></span></p>
-                    <p><strong>Status:</strong> <span id="caseStatusDisplay">Pending Court Filing</span></p>
-                </div>
-                
-                <!-- GitHub Configuration Section -->
-                <div class="github-config" id="githubConfigSection">
-                    <h3><i class="fab fa-github"></i> GitHub Repository Configuration</h3>
-                    <p>Configure your GitHub repository settings to save case data to GitHub.</p>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="githubOwner">GitHub Username or Organization</label>
-                            <input type="text" id="githubOwner" placeholder="your-username" value="nagoh">
-                        </div>
-                        <div class="form-group">
-                            <label for="githubRepo">Repository Name</label>
-                            <input type="text" id="githubRepo" placeholder="repository-name" value="GAEVIC">
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="githubBranch">Branch</label>
-                            <input type="text" id="githubBranch" placeholder="main" value="main">
-                        </div>
-                        <div class="form-group">
-                            <label for="githubPath">Case Folder Path</label>
-                            <input type="text" id="githubPath" placeholder="cases/" value="cases/">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="githubToken">GitHub Personal Access Token (Optional)</label>
-                        <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-                        <p style="font-size: 12px; color: #666; margin-top: 5px;">
-                            <i class="fas fa-info-circle"></i> Only required for private repositories. 
-                            <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--houston-blue);">Create token</a>
-                        </p>
-                    </div>
-                </div>
-                
-                <div class="info-box">
-                    <h4><i class="fas fa-file-invoice-dollar"></i> Filing Fee Information</h4>
-                    <p>Houston County filing fee: <strong>$99.00</strong>. Payment can be made directly to the court when you file these documents.</p>
-                    <p><em>Note: This system generates the required documents. You must take them to the Houston County Magistrate Court to file and pay the fee.</em></p>
-                </div>
-                
-                <div class="download-section">
-                    <h3 style="color: var(--houston-blue); margin-bottom: 20px;">Download Your Eviction Documents</h3>
-                    <p style="margin-bottom: 30px;">All required Houston County eviction forms have been generated with your information. Download each document individually or get all documents in a single ZIP file.</p>
-                    
-                    <div class="download-grid">
-                        <div class="download-card">
-                            <div class="download-icon">
-                                <i class="fas fa-file-contract"></i>
-                            </div>
-                            <h3>7-Day Demand Notice</h3>
-                            <p>Official notice to tenant as required by OCGA § 44-7-50</p>
-                            <button class="btn btn-outline download-doc" data-doc="demand_notice">
-                                <i class="fas fa-download"></i> Download PDF
-                            </button>
-                        </div>
-                        
-                        <div class="download-card">
-                            <div class="download-icon">
-                                <i class="fas fa-gavel"></i>
-                            </div>
-                            <h3>Dispossessory Affidavit</h3>
-                            <p>Court filing affidavit for eviction proceedings</p>
-                            <button class="btn btn-outline download-doc" data-doc="affidavit">
-                                <i class="fas fa-download"></i> Download PDF
-                            </button>
-                        </div>
-                        
-                        <div class="download-card">
-                            <div class="download-icon">
-                                <i class="fas fa-file-signature"></i>
-                            </div>
-                            <h3>Summons</h3>
-                            <p>Official court summons for the tenant</p>
-                            <button class="btn btn-outline download-doc" data-doc="summons">
-                                <i class="fas fa-download"></i> Download PDF
-                            </button>
-                        </div>
-                        
-                        <div class="download-card">
-                            <div class="download-icon">
-                                <i class="fas fa-shield-alt"></i>
-                            </div>
-                            <h3>SCRA Verification</h3>
-                            <p>Military service verification form</p>
-                            <button class="btn btn-outline download-doc" data-doc="scra_form">
-                                <i class="fas fa-download"></i> Download PDF
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 40px;">
-                        <button class="btn btn-success" id="downloadAllBtn" style="padding: 15px 40px; font-size: 18px;">
-                            <i class="fas fa-file-archive"></i> Download All Documents (ZIP)
-                        </button>
-                        
-                        <button class="btn btn-primary" id="saveToGitHubBtn" style="padding: 15px 40px; font-size: 18px; margin-left: 15px;">
-                            <i class="fab fa-github"></i> Save Case to GitHub
-                        </button>
-                    </div>
-                    
-                    <div class="info-box warning" style="margin-top: 30px;">
-                        <h4><i class="fas fa-exclamation-triangle"></i> Next Steps</h4>
-                        <ol style="margin: 10px 0 0 20px;">
-                            <li>Print all downloaded documents</li>
-                            <li>Sign the printed documents (if not already e-signed)</li>
-                            <li>Take documents to Houston County Magistrate Court</li>
-                            <li>Pay the $99 filing fee at the court</li>
-                            <li>The court will issue a case number and schedule service</li>
-                        </ol>
-                    </div>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" id="prevStep6">Previous</button>
-                    <button type="button" class="btn btn-outline" id="startNewBtn">
-                        <i class="fas fa-plus"></i> Start New Filing
+                <div id="noCasesMessage" class="no-cases" style="display: none;">
+                    <i class="fas fa-folder-open"></i>
+                    <h3>No Cases Found</h3>
+                    <p>No cases found in the data source. Configure your settings and load cases.</p>
+                    <button class="btn btn-primary" id="loadCasesBtn2" style="margin-top: 20px;">
+                        <i class="fas fa-cloud-download-alt"></i> Load Cases
                     </button>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
     <!-- Footer -->
     <footer class="footer">
@@ -1355,9 +800,8 @@
                 <div class="footer-section">
                     <h3>Quick Links</h3>
                     <ul class="footer-links">
-                        <li><a href="#" id="footerStartFiling">Start New Filing</a></li>
-                        <li><a href="dashboard/index.html" target="_blank">Dashboard</a></li>
-                        <li><a href="#">Check Case Status</a></li>
+                        <li><a href="../index.html">Start New Filing</a></li>
+                        <li><a href="index.html">Dashboard</a></li>
                         <li><a href="#">Court Rules & Procedures</a></li>
                         <li><a href="#">Eviction Timeline</a></li>
                         <li><a href="#">Fee Schedule</a></li>
@@ -1377,939 +821,643 @@
             </div>
             
             <div class="copyright">
-                <p>© 2026 This is a system for filing eviction cases in Houston County. Unauthorized use is prohibited.</p>
-                <p style="margin-top: 10px;">This system is designed to assist with proper filing but does not constitute legal advice. Consult an attorney for legal questions.</p>
+                <p>© 2026 Houston County Eviction System Dashboard. Case data is stored securely in the cloud.</p>
+                <p style="margin-top: 10px;">This dashboard provides case management functionality but does not constitute legal advice.</p>
             </div>
         </div>
     </footer>
 
     <script>
-        // Initialize jsPDF
-        const { jsPDF } = window.jspdf;
-        
-        // GitHub API Configuration
-        const GITHUB_API = {
-            baseURL: 'https://api.github.com',
-            owner: 'nagoh',
-            repo: 'GAEVIC',
-            branch: 'main',
-            path: 'cases/',
-            token: null // Will be set from input or environment
-        };
-        
-        // Form Navigation Logic
+        // Dashboard Logic
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize variables
-            let currentStep = 1;
-            let caseId = null;
-            let signatureData = null;
-            let formData = {};
-            let generatedDocuments = {};
+            // GitHub API Token from secrets - This should be set by your server/CI/CD pipeline
+            // In a real workflow, this would be injected server-side or via environment variables
+            const GITHUB_TOKEN = 'GAEVIC'; // Replace with your actual token or set via server-side
             
             // DOM Elements
-            const startFilingBtn = document.getElementById('startFilingBtn');
-            const navStartFiling = document.getElementById('navStartFiling');
-            const footerStartFiling = document.getElementById('footerStartFiling');
-            const evictionForm = document.getElementById('evictionForm');
-            const cancelBtn = document.getElementById('cancelBtn');
             const loadingOverlay = document.getElementById('loadingOverlay');
             const loadingText = document.getElementById('loadingText');
+            const casesTableBody = document.getElementById('casesTableBody');
+            const noCasesMessage = document.getElementById('noCasesMessage');
+            const totalCases = document.getElementById('totalCases');
+            const pendingCases = document.getElementById('pendingCases');
+            const activeCases = document.getElementById('activeCases');
+            const completedCases = document.getElementById('completedCases');
+            const refreshDataBtn = document.getElementById('refreshData');
+            const exportDataBtn = document.getElementById('exportData');
+            const loadCasesBtn = document.getElementById('loadCasesBtn');
+            const loadCasesBtn2 = document.getElementById('loadCasesBtn2');
+            const searchCases = document.getElementById('searchCases');
+            const filterPendingBtn = document.getElementById('filterPending');
+            const caseDetailsModal = document.getElementById('caseDetailsModal');
+            const closeModalBtn = document.getElementById('closeModal');
+            const caseDetailsContent = document.getElementById('caseDetailsContent');
             
-            // Show/Hide Form
-            function showForm() {
-                evictionForm.style.display = 'block';
-                window.scrollTo({
-                    top: evictionForm.offsetTop - 20,
-                    behavior: 'smooth'
-                });
-            }
+            // Charts
+            let statusChart = null;
+            let monthlyChart = null;
             
-            startFilingBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                showForm();
-            });
+            // Cases data
+            let casesData = [];
             
-            navStartFiling.addEventListener('click', function(e) {
-                e.preventDefault();
-                showForm();
-            });
-            
-            footerStartFiling.addEventListener('click', function(e) {
-                e.preventDefault();
-                showForm();
-            });
-            
-            cancelBtn.addEventListener('click', function() {
-                if (confirm('Are you sure you want to cancel? All entered information will be lost.')) {
-                    evictionForm.style.display = 'none';
-                    resetForm();
-                }
-            });
-            
-            // Step Navigation
-            function goToStep(step) {
-                // Hide current step
-                document.getElementById(`step${currentStep}`).classList.remove('active');
-                document.getElementById(`step${currentStep}Circle`).classList.remove('active');
-                
-                // Update current step
-                currentStep = step;
-                
-                // Show new step
-                document.getElementById(`step${currentStep}`).classList.add('active');
-                document.getElementById(`step${currentStep}Circle`).classList.add('active');
-                
-                // Mark previous steps as completed
-                for (let i = 1; i < currentStep; i++) {
-                    document.getElementById(`step${i}Circle`).classList.add('completed');
-                }
-                
-                // Clear completed status for steps after current
-                for (let i = currentStep + 1; i <= 6; i++) {
-                    document.getElementById(`step${i}Circle`).classList.remove('completed');
-                }
-                
-                // Handle step-specific initialization
-                if (currentStep === 5) {
-                    initializeSignaturePad();
-                    document.getElementById('signerName').value = document.getElementById('landlordName').value;
-                } else if (currentStep === 6) {
-                    generateCaseId();
-                    generateAllDocuments();
-                }
-                
-                // Scroll to top of form
-                evictionForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-            
-            // Next Step Buttons
-            document.getElementById('nextStep1').addEventListener('click', () => goToStep(2));
-            document.getElementById('nextStep2').addEventListener('click', () => goToStep(3));
-            document.getElementById('nextStep3').addEventListener('click', () => goToStep(4));
-            document.getElementById('nextStep4').addEventListener('click', () => goToStep(5));
-            
-            // Previous Step Buttons
-            document.getElementById('prevStep2').addEventListener('click', () => goToStep(1));
-            document.getElementById('prevStep3').addEventListener('click', () => goToStep(2));
-            document.getElementById('prevStep4').addEventListener('click', () => goToStep(3));
-            document.getElementById('prevStep5').addEventListener('click', () => goToStep(4));
-            document.getElementById('prevStep6').addEventListener('click', () => goToStep(5));
-            
-            // Generate Case ID
-            function generateCaseId() {
-                const timestamp = Date.now();
-                const randomNum = Math.floor(Math.random() * 10000);
-                caseId = `HOU-${new Date().getFullYear()}-${timestamp.toString().slice(-6)}-${randomNum.toString().padStart(4, '0')}`;
-                document.getElementById('caseIdDisplay').textContent = caseId;
-                return caseId;
-            }
-            
-            // Collect Form Data
-            function collectFormData() {
-                formData = {
-                    caseId: caseId,
-                    landlord: {
-                        name: document.getElementById('landlordName').value,
-                        phone: document.getElementById('landlordPhone').value,
-                        email: document.getElementById('landlordEmail').value,
-                        type: document.getElementById('landlordType').value,
-                        address: document.getElementById('landlordAddress').value,
-                        city: document.getElementById('landlordCity').value,
-                        state: document.getElementById('landlordState').value,
-                        zip: document.getElementById('landlordZip').value
-                    },
-                    property: {
-                        address: document.getElementById('propertyAddress').value,
-                        city: document.getElementById('propertyCity').value,
-                        zip: document.getElementById('propertyZip').value,
-                        type: document.getElementById('propertyType').value,
-                        unit: document.getElementById('unitNumber').value
-                    },
-                    tenant: {
-                        name: document.getElementById('tenantName').value,
-                        phone: document.getElementById('tenantPhone').value,
-                        email: document.getElementById('tenantEmail').value,
-                        altAddress: document.getElementById('tenantAltAddress').value,
-                        militaryCheck: document.getElementById('militaryCheck').checked
-                    },
-                    case: {
-                        leaseType: document.getElementById('leaseType').value,
-                        reason: document.getElementById('reason').value,
-                        rentAmount: document.getElementById('rentAmount').value,
-                        amountOwed: document.getElementById('amountOwed').value,
-                        lastPaymentDate: document.getElementById('lastPaymentDate').value,
-                        noticeDate: document.getElementById('noticeDate').value,
-                        noticeDetails: document.getElementById('noticeDetails').value
-                    },
-                    signature: signatureData,
-                    timestamp: new Date().toISOString(),
-                    status: 'Pending Court Filing',
-                    documentsGenerated: true
-                };
-                return formData;
-            }
-            
-            // Generate All Documents
-            function generateAllDocuments() {
-                collectFormData();
-                generatedDocuments = {
-                    demand_notice: generateDemandNotice(),
-                    affidavit: generateAffidavit(),
-                    summons: generateSummons(),
-                    scra_form: generateSCRACertification()
-                };
-                
-                // Show success message
-                document.getElementById('successMessage').style.display = 'block';
-                
-                // Set up download buttons
-                setupDownloadButtons();
-            }
-            
-            // Document Generation Functions
-            function generateDemandNotice() {
-                const doc = new jsPDF();
-                const pageWidth = doc.internal.pageSize.getWidth();
-                const pageHeight = doc.internal.pageSize.getHeight();
-                
-                // Header
-                doc.setFontSize(16);
-                doc.setFont("helvetica", "bold");
-                doc.text("STATE OF GEORGIA", pageWidth / 2, 20, { align: "center" });
-                doc.text("COUNTY OF HOUSTON", pageWidth / 2, 30, { align: "center" });
-                doc.text("7-DAY DEMAND FOR POSSESSION OF PREMISES", pageWidth / 2, 45, { align: "center" });
-                
-                doc.setFontSize(10);
-                doc.setFont("helvetica", "normal");
-                doc.text("(Pursuant to O.C.G.A. § 44-7-50)", pageWidth / 2, 52, { align: "center" });
-                
-                // Tenant Information
-                doc.setFontSize(12);
-                doc.text(`TO: ${formData.tenant.name}`, 20, 70);
-                doc.text(`PROPERTY ADDRESS: ${formData.property.address}, ${formData.property.city}, GA ${formData.property.zip}`, 20, 80);
-                
-                // Body Text
-                doc.setFontSize(11);
-                const bodyText = [
-                    `You are hereby notified that you are in arrears in the payment of rent for the premises`,
-                    `located at the above address in the amount of $${parseFloat(formData.case.amountOwed).toFixed(2)}.`,
-                    "",
-                    `Monthly rent for the premises is $${parseFloat(formData.case.rentAmount).toFixed(2)}. The rent became due`,
-                    `on ${formData.case.lastPaymentDate || 'the due date'} and has not been paid.`,
-                    "",
-                    "You are further notified that unless said rent is paid in full within SEVEN (7) DAYS",
-                    "from the date of service of this notice, your lease will be terminated and dispossessory",
-                    "proceedings will be instituted against you.",
-                    "",
-                    "You are also liable for any court costs and attorney's fees incurred in this matter."
-                ];
-                
-                let yPosition = 100;
-                bodyText.forEach(line => {
-                    if (yPosition > pageHeight - 40) {
-                        doc.addPage();
-                        yPosition = 20;
-                    }
-                    doc.text(line, 20, yPosition);
-                    yPosition += 7;
-                });
-                
-                // Signature Section
-                yPosition += 10;
-                doc.text("Dated this _____ day of ____________________, 20____", 20, yPosition);
-                
-                yPosition += 20;
-                doc.line(20, yPosition, 120, yPosition);
-                doc.text(`${formData.landlord.name}`, 20, yPosition + 10);
-                doc.text("Landlord/Agent", 20, yPosition + 20);
-                
-                // Footer
-                doc.setFontSize(9);
-                doc.setFont("helvetica", "italic");
-                doc.text("This notice must be served at least 7 days before filing dispossessory proceedings.", 20, pageHeight - 20);
-                doc.text("Service may be made by personal delivery, posting on the premises, or certified mail.", 20, pageHeight - 10);
-                
-                // Add signature if available
-                if (signatureData && signatureData.dataUrl) {
-                    try {
-                        const signatureImg = new Image();
-                        signatureImg.src = signatureData.dataUrl;
-                        doc.addImage(signatureImg, 'PNG', 20, yPosition - 10, 50, 20);
-                    } catch(e) {
-                        console.log("Could not add signature to PDF");
-                    }
-                }
-                
-                return doc;
-            }
-            
-            function generateAffidavit() {
-                const doc = new jsPDF();
-                const pageWidth = doc.internal.pageSize.getWidth();
-                
-                // Header
-                doc.setFontSize(14);
-                doc.setFont("helvetica", "bold");
-                doc.text("MAGISTRATE COURT OF HOUSTON COUNTY", pageWidth / 2, 20, { align: "center" });
-                doc.text("STATE OF GEORGIA", pageWidth / 2, 30, { align: "center" });
-                doc.text("DISPOSSESSORY AFFIDAVIT", pageWidth / 2, 45, { align: "center" });
-                
-                // Case Information
-                doc.setFontSize(11);
-                doc.setFont("helvetica", "normal");
-                doc.text(`Plaintiff (Landlord): ${formData.landlord.name}`, 20, 70);
-                doc.text(`Address: ${formData.landlord.address}, ${formData.landlord.city}, GA ${formData.landlord.zip}`, 20, 80);
-                doc.text(`Phone: ${formData.landlord.phone}`, 20, 90);
-                doc.text("", 20, 100);
-                doc.text(`Defendant (Tenant): ${formData.tenant.name}`, 20, 110);
-                doc.text(`Property Address: ${formData.property.address}, ${formData.property.city}, GA ${formData.property.zip}`, 20, 120);
-                
-                // Affidavit Text
-                doc.setFontSize(11);
-                const affidavitText = [
-                    "STATE OF GEORGIA",
-                    "COUNTY OF HOUSTON",
-                    "",
-                    `I, ${formData.landlord.name}, being duly sworn, depose and say:`,
-                    "",
-                    "1. I am the landlord/agent of the premises located at the above address.",
-                    "",
-                    `2. The tenant, ${formData.tenant.name}, is in possession of said premises.`,
-                    "",
-                    `3. The tenant is indebted to me in the amount of $${parseFloat(formData.case.amountOwed).toFixed(2)} for rent which`,
-                    `   became due on ${formData.case.lastPaymentDate || 'the due date'} and has failed and refused to pay the same.`,
-                    "",
-                    `4. On ${formData.case.noticeDate}, I made a demand for possession of the premises,`,
-                    "   and the tenant has failed to deliver possession.",
-                    "",
-                    "5. The tenant is not in the military service of the United States, to the best of my knowledge.",
-                    "",
-                    "WHEREFORE, affiant prays that a warrant issue directing the tenant to appear and answer",
-                    "this complaint and that judgment be granted for possession of the premises, past due rent,",
-                    "and costs of this action."
-                ];
-                
-                let yPosition = 140;
-                affidavitText.forEach(line => {
-                    if (yPosition > 250) {
-                        doc.addPage();
-                        yPosition = 20;
-                    }
-                    doc.text(line, 20, yPosition);
-                    yPosition += 7;
-                });
-                
-                // Signature Section
-                yPosition += 10;
-                doc.text("Sworn to and subscribed before me this _____ day of ____________________, 20____", 20, yPosition);
-                
-                yPosition += 20;
-                doc.line(20, yPosition, 120, yPosition);
-                doc.text("___________________________________________", 20, yPosition + 10);
-                doc.text(`${formData.landlord.name}, Affiant`, 20, yPosition + 20);
-                
-                // Add signature if available
-                if (signatureData && signatureData.dataUrl) {
-                    try {
-                        const signatureImg = new Image();
-                        signatureImg.src = signatureData.dataUrl;
-                        doc.addImage(signatureImg, 'PNG', 20, yPosition - 5, 50, 20);
-                    } catch(e) {
-                        console.log("Could not add signature to PDF");
-                    }
-                }
-                
-                return doc;
-            }
-            
-            function generateSummons() {
-                const doc = new jsPDF();
-                const pageWidth = doc.internal.pageSize.getWidth();
-                
-                // Header
-                doc.setFontSize(16);
-                doc.setFont("helvetica", "bold");
-                doc.text("MAGISTRATE COURT OF HOUSTON COUNTY", pageWidth / 2, 20, { align: "center" });
-                doc.text("STATE OF GEORGIA", pageWidth / 2, 30, { align: "center" });
-                doc.text("SUMMONS", pageWidth / 2, 45, { align: "center" });
-                doc.text("(DISPOSSESSORY PROCEEDINGS)", pageWidth / 2, 55, { align: "center" });
-                
-                // Case Number
-                doc.setFontSize(12);
-                doc.text(`Case No.: ${caseId}`, pageWidth - 40, 45);
-                
-                // Parties
-                doc.setFontSize(12);
-                doc.setFont("helvetica", "bold");
-                doc.text("TO:", 20, 80);
-                doc.setFont("helvetica", "normal");
-                doc.text(`${formData.tenant.name}`, 40, 80);
-                doc.text(`${formData.property.address}`, 40, 90);
-                doc.text(`${formData.property.city}, GA ${formData.property.zip}`, 40, 100);
-                
-                // Body Text
-                doc.setFontSize(11);
-                const bodyText = [
-                    "You are hereby summoned and required to file with the Clerk of this Court and serve upon",
-                    `${formData.landlord.name}, whose address is ${formData.landlord.address},`,
-                    "an answer to the complaint which is herewith served upon you, within SEVEN (7) DAYS after",
-                    "service of this summons upon you, exclusive of the day of service.",
-                    "",
-                    "If you fail to do so, judgment by default will be taken against you for the relief demanded",
-                    "in the complaint.",
-                    "",
-                    "This is an action to recover possession of the premises described above and for rent due",
-                    `in the amount of $${parseFloat(formData.case.amountOwed).toFixed(2)}.`,
-                    "",
-                    "NOTICE: You have the right to a trial by jury. If you desire a jury trial, you must demand",
-                    "it in your answer. If you do not demand a jury trial, the case will be heard by the judge."
-                ];
-                
-                let yPosition = 130;
-                bodyText.forEach(line => {
-                    doc.text(line, 20, yPosition);
-                    yPosition += 7;
-                });
-                
-                // Clerk Signature
-                yPosition += 20;
-                doc.line(20, yPosition, 120, yPosition);
-                doc.text("Clerk, Magistrate Court of Houston County", 20, yPosition + 10);
-                
-                return doc;
-            }
-            
-            function generateSCRACertification() {
-                const doc = new jsPDF();
-                const pageWidth = doc.internal.pageSize.getWidth();
-                
-                // Header
-                doc.setFontSize(14);
-                doc.setFont("helvetica", "bold");
-                doc.text("VERIFICATION OF MILITARY SERVICE", pageWidth / 2, 20, { align: "center" });
-                doc.text("(Servicemembers Civil Relief Act)", pageWidth / 2, 30, { align: "center" });
-                doc.text("MAGISTRATE COURT OF HOUSTON COUNTY", pageWidth / 2, 40, { align: "center" });
-                
-                // Case Info
-                doc.setFontSize(11);
-                doc.setFont("helvetica", "normal");
-                doc.text(`Case: ${formData.landlord.name} vs. ${formData.tenant.name}`, 20, 70);
-                doc.text(`Property: ${formData.property.address}`, 20, 80);
-                
-                // Verification Text
-                doc.setFontSize(11);
-                const verificationText = [
-                    `I, ${formData.landlord.name}, being duly sworn, depose and state:`,
-                    "",
-                    "1. I am the plaintiff/agent in the above-stated dispossessory action.",
-                    "",
-                    `2. The defendant, ${formData.tenant.name},`,
-                    "",
-                    `   ${formData.tenant.militaryCheck ? '☐' : '☑'} is NOT in the military service of the United States, to the best of my knowledge,`,
-                    "     information, and belief.",
-                    "",
-                    `   ${formData.tenant.militaryCheck ? '☑' : '☐'} IS in the military service of the United States.`,
-                    "     Branch: ____________________ Rank: ____________________",
-                    "     Service Number: _______________",
-                    "",
-                    "3. The basis for this statement is:",
-                    "   ☑ Personal knowledge",
-                    "   ☐ Information from the defendant",
-                    "   ☐ Information from a family member",
-                    "   ☐ Other: ______________________________________________",
-                    "",
-                    "I understand that false statements on this form may result in dismissal of the",
-                    "action and/or penalties under federal law."
-                ];
-                
-                let yPosition = 100;
-                verificationText.forEach(line => {
-                    if (yPosition > 240) {
-                        doc.addPage();
-                        yPosition = 20;
-                    }
-                    doc.text(line, 20, yPosition);
-                    yPosition += 7;
-                });
-                
-                // Signature Section
-                yPosition += 10;
-                doc.text("Sworn to and subscribed before me this _____ day of ____________________, 20____", 20, yPosition);
-                
-                yPosition += 20;
-                doc.line(20, yPosition, 120, yPosition);
-                doc.text("___________________________________________", 20, yPosition + 10);
-                doc.text("Signature of Affiant", 20, yPosition + 20);
-                
-                // Add signature if available
-                if (signatureData && signatureData.dataUrl) {
-                    try {
-                        const signatureImg = new Image();
-                        signatureImg.src = signatureData.dataUrl;
-                        doc.addImage(signatureImg, 'PNG', 20, yPosition - 5, 50, 20);
-                    } catch(e) {
-                        console.log("Could not add signature to PDF");
-                    }
-                }
-                
-                return doc;
-            }
-            
-            // Setup Download Buttons
-            function setupDownloadButtons() {
-                // Individual document downloads
-                document.querySelectorAll('.download-doc').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const docType = this.getAttribute('data-doc');
-                        downloadDocument(docType);
-                    });
-                });
-                
-                // Download all as ZIP
-                document.getElementById('downloadAllBtn').addEventListener('click', downloadAllDocuments);
-                
-                // Save to GitHub button
-                document.getElementById('saveToGitHubBtn').addEventListener('click', saveToGitHub);
-                
-                // Start new filing
-                document.getElementById('startNewBtn').addEventListener('click', function() {
-                    evictionForm.style.display = 'none';
-                    resetForm();
-                    setTimeout(() => {
-                        evictionForm.style.display = 'block';
-                        goToStep(1);
-                    }, 100);
-                });
-            }
-            
-            // Download individual document
-            function downloadDocument(docType) {
-                const doc = generatedDocuments[docType];
-                if (doc) {
-                    const filename = getFilename(docType);
-                    doc.save(filename);
-                }
-            }
-            
-            // Download all documents as ZIP
-            function downloadAllDocuments() {
-                showLoading('Creating document package...');
+            // Load cases from data source
+            async function loadCasesFromDataSource() {
+                showLoading('Loading cases from secure storage...');
                 
                 try {
-                    const zip = new JSZip();
-                    const caseFolder = zip.folder(caseId);
-                    
-                    // Add each document to the ZIP
-                    Object.keys(generatedDocuments).forEach(docType => {
-                        const doc = generatedDocuments[docType];
-                        const filename = getFilename(docType);
-                        const pdfOutput = doc.output('blob');
-                        caseFolder.file(filename, pdfOutput);
-                    });
-                    
-                    // Add form data as JSON
-                    const formDataJson = JSON.stringify(formData, null, 2);
-                    caseFolder.file('case_data.json', formDataJson);
-                    
-                    // Generate and download ZIP
-                    zip.generateAsync({type: 'blob'})
-                        .then(function(content) {
-                            saveAs(content, `${caseId}_eviction_documents.zip`);
-                            hideLoading();
-                        })
-                        .catch(function(error) {
-                            console.error('Error creating ZIP:', error);
-                            hideLoading();
-                            alert('Error creating document package. Please try downloading documents individually.');
-                        });
-                    
-                } catch (error) {
-                    console.error('Error:', error);
-                    hideLoading();
-                    alert('Error creating document package. Please try downloading documents individually.');
-                }
-            }
-            
-            // Get filename for document type
-            function getFilename(docType) {
-                const filenames = {
-                    demand_notice: '7-Day_Demand_Notice.pdf',
-                    affidavit: 'Dispossessory_Affidavit.pdf',
-                    summons: 'Summons.pdf',
-                    scra_form: 'SCRA_Verification.pdf'
-                };
-                return filenames[docType] || 'document.pdf';
-            }
-            
-            // Save Case to GitHub Repository
-            async function saveToGitHub() {
-                showLoading('Saving case to GitHub repository...');
-                
-                try {
-                    // Get GitHub configuration from form
-                    const githubConfig = {
-                        owner: document.getElementById('githubOwner').value.trim() || GITHUB_API.owner,
-                        repo: document.getElementById('githubRepo').value.trim() || GITHUB_API.repo,
-                        branch: document.getElementById('githubBranch').value.trim() || GITHUB_API.branch,
-                        path: document.getElementById('githubPath').value.trim() || GITHUB_API.path,
-                        token: document.getElementById('githubToken').value.trim() || null
+                    // Get configuration from form
+                    const config = {
+                        owner: document.getElementById('dashboardDataSourceOwner').value.trim() || 'nagoh',
+                        repo: document.getElementById('dashboardDataSourceRepo').value.trim() || 'GAEVIC',
+                        branch: document.getElementById('dashboardDataSourceBranch').value.trim() || 'main',
+                        path: document.getElementById('dashboardDataSourcePath').value.trim() || 'cases/'
                     };
                     
                     // Validate configuration
-                    if (!githubConfig.owner || !githubConfig.repo) {
-                        throw new Error('GitHub owner and repository name are required');
+                    if (!config.owner || !config.repo) {
+                        throw new Error('Data source owner and repository name are required');
                     }
                     
-                    // Prepare case data
-                    collectFormData();
+                    // Use the GitHub token from secrets
+                    // Note: In a real deployment, this should be handled server-side
+                    const token = GITHUB_TOKEN;
                     
-                    // Create case folder structure
-                    const caseFolder = `${githubConfig.path}${caseId}/`;
-                    const caseData = {
-                        ...formData,
-                        githubPath: caseFolder,
-                        savedAt: new Date().toISOString()
-                    };
-                    
-                    // Prepare files to upload
-                    const files = [
-                        {
-                            path: `${caseFolder}case_data.json`,
-                            content: JSON.stringify(caseData, null, 2),
-                            message: `Add case ${caseId} data`
-                        }
-                    ];
-                    
-                    // Generate and add PDF documents
-                    const documentTypes = ['demand_notice', 'affidavit', 'summons', 'scra_form'];
-                    for (const docType of documentTypes) {
-                        const doc = generatedDocuments[docType];
-                        if (doc) {
-                            const filename = getFilename(docType);
-                            const pdfBase64 = doc.output('datauristring').split(',')[1];
-                            files.push({
-                                path: `${caseFolder}${filename}`,
-                                content: pdfBase64,
-                                message: `Add ${filename} for case ${caseId}`,
-                                isBinary: true
-                            });
-                        }
+                    if (!token || token === 'GAEVIC') {
+                        throw new Error('Authentication token not configured. Please check your setup.');
                     }
                     
-                    // Upload files to GitHub
-                    const uploadPromises = files.map(file => 
-                        uploadFileToGitHub(githubConfig, file)
+                    // Get repository contents
+                    const contents = await getDataSourceContents(config, config.path, token);
+                    
+                    // Filter for case folders
+                    const caseFolders = contents.filter(item => 
+                        item.type === 'dir' && 
+                        item.name.startsWith('HOU-')
                     );
                     
-                    // Execute all uploads
-                    const results = await Promise.allSettled(uploadPromises);
+                    // Load case data from each folder
+                    casesData = [];
+                    for (const folder of caseFolders) {
+                        try {
+                            const caseData = await loadCaseData(config, folder.name, token);
+                            if (caseData) {
+                                casesData.push(caseData);
+                            }
+                        } catch (error) {
+                            console.error(`Error loading case ${folder.name}:`, error);
+                        }
+                    }
                     
-                    // Check results
-                    const successfulUploads = results.filter(r => r.status === 'fulfilled').length;
-                    const failedUploads = results.filter(r => r.status === 'rejected').length;
+                    // Update dashboard
+                    updateDashboard();
                     
                     hideLoading();
-                    
-                    if (failedUploads === 0) {
-                        // All files uploaded successfully
-                        showSuccessMessage(`
-                            <i class="fas fa-check-circle"></i>
-                            <h3 style="color: #28a745;">Case Saved to GitHub Successfully!</h3>
-                            <p>All case files have been saved to your GitHub repository.</p>
-                            <p><strong>Case ID:</strong> ${caseId}</p>
-                            <p><strong>GitHub Path:</strong> ${caseFolder}</p>
-                            <p><strong>Files Uploaded:</strong> ${successfulUploads}</p>
-                            <p><a href="https://github.com/${githubConfig.owner}/${githubConfig.repo}/tree/main/${caseFolder}" 
-                                  target="_blank" style="color: var(--houston-blue); text-decoration: underline;">
-                                View on GitHub
-                            </a></p>
-                        `);
-                    } else if (successfulUploads > 0) {
-                        // Some files uploaded
-                        showWarningMessage(`
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <h3 style="color: var(--warning-orange);">Partial Upload Complete</h3>
-                            <p>${successfulUploads} of ${files.length} files uploaded successfully.</p>
-                            <p><strong>Case ID:</strong> ${caseId}</p>
-                            <p><strong>Failed Uploads:</strong> ${failedUploads}</p>
-                            <p>Some documents may need to be uploaded manually.</p>
-                        `);
-                    } else {
-                        // All uploads failed
-                        throw new Error('All file uploads failed');
-                    }
                     
                 } catch (error) {
-                    console.error('Error saving to GitHub:', error);
+                    console.error('Error loading cases:', error);
                     hideLoading();
                     
-                    // Check if it's an authentication error
-                    if (error.response && error.response.status === 401) {
-                        showErrorMessage(`
-                            <i class="fas fa-lock"></i>
-                            <h3 style="color: #dc3545;">Authentication Failed</h3>
-                            <p>GitHub authentication failed. Please check:</p>
-                            <ul style="text-align: left; margin: 15px 0;">
-                                <li>Your GitHub username and repository name</li>
-                                <li>If repository is private, a valid token is required</li>
-                                <li>Token must have "repo" scope permissions</li>
-                            </ul>
-                            <p><a href="https://github.com/settings/tokens" target="_blank" 
-                                  style="color: var(--houston-blue);">
-                                Generate a new token
-                            </a></p>
-                        `);
-                    } else if (error.response && error.response.status === 404) {
-                        showErrorMessage(`
-                            <i class="fas fa-search"></i>
-                            <h3 style="color: #dc3545;">Repository Not Found</h3>
-                            <p>The GitHub repository was not found. Please check:</p>
-                            <ul style="text-align: left; margin: 15px 0;">
-                                <li>GitHub username/organization is correct</li>
-                                <li>Repository name is correct</li>
-                                <li>Repository exists and you have access</li>
-                            </ul>
-                        `);
+                    if (error.response && error.response.status === 404) {
+                        alert('Data source or folder not found. Please check your configuration.');
+                    } else if (error.response && error.response.status === 401 || error.response && error.response.status === 403) {
+                        alert('Authentication failed. Please check your token configuration.');
                     } else {
-                        showErrorMessage(`
-                            <i class="fas fa-exclamation-circle"></i>
-                            <h3 style="color: #dc3545;">Error Saving to GitHub</h3>
-                            <p>${error.message || 'An unexpected error occurred'}</p>
-                            <p>Please try again or save documents locally.</p>
-                        `);
+                        alert(`Error loading cases: ${error.message}`);
                     }
+                    
+                    // Show no cases message
+                    casesTableBody.style.display = 'none';
+                    noCasesMessage.style.display = 'block';
                 }
             }
             
-            // Upload file to GitHub
-            async function uploadFileToGitHub(config, file) {
-                const url = `${GITHUB_API.baseURL}/repos/${config.owner}/${config.repo}/contents/${file.path}`;
+            // Get data source contents
+            async function getDataSourceContents(config, path, token) {
+                const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${path}`;
                 
                 const headers = {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/vnd.github.v3+json'
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Authorization': `token ${token}`
                 };
                 
-                // Add authorization header if token is provided
-                if (config.token) {
-                    headers['Authorization'] = `token ${config.token}`;
-                }
-                
-                const payload = {
-                    message: file.message,
-                    content: file.content,
-                    branch: config.branch
-                };
+                const response = await axios.get(url, { headers });
+                return response.data;
+            }
+            
+            // Load case data from folder
+            async function loadCaseData(config, caseId, token) {
+                const caseFolder = `${config.path}${caseId}/`;
                 
                 try {
-                    const response = await axios.put(url, payload, { headers });
-                    return response.data;
+                    // Get case data file
+                    const caseDataUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${caseFolder}case_data.json`;
+                    
+                    const headers = {
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Authorization': `token ${token}`
+                    };
+                    
+                    const response = await axios.get(caseDataUrl, { headers });
+                    
+                    // Decode base64 content
+                    const content = atob(response.data.content);
+                    const caseData = JSON.parse(content);
+                    
+                    return caseData;
+                    
                 } catch (error) {
-                    console.error(`Error uploading ${file.path}:`, error);
-                    throw error;
+                    console.error(`Error loading case data for ${caseId}:`, error);
+                    return null;
                 }
             }
             
-            // Show success message
-            function showSuccessMessage(html) {
-                const successMsg = document.createElement('div');
-                successMsg.className = 'success-message';
-                successMsg.style.marginTop = '20px';
-                successMsg.innerHTML = html;
+            // Update dashboard with loaded data
+            function updateDashboard() {
+                // Update statistics
+                updateStats(casesData);
                 
-                const downloadSection = document.querySelector('.download-section');
-                downloadSection.insertBefore(successMsg, downloadSection.firstChild);
+                // Update table
+                updateCasesTable(casesData);
                 
-                // Scroll to show message
-                successMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Update charts
+                updateCharts(casesData);
             }
             
-            // Show warning message
-            function showWarningMessage(html) {
-                const warningMsg = document.createElement('div');
-                warningMsg.className = 'info-box warning';
-                warningMsg.style.marginTop = '20px';
-                warningMsg.innerHTML = html;
+            // Update statistics
+            function updateStats(cases) {
+                const total = cases.length;
+                const pending = cases.filter(c => c.status === 'Pending Court Filing').length;
+                const active = cases.filter(c => c.status === 'Filed with Court' || c.status === 'Hearing Scheduled').length;
+                const completed = cases.filter(c => c.status === 'Completed' || c.status === 'Dismissed').length;
                 
-                const downloadSection = document.querySelector('.download-section');
-                downloadSection.insertBefore(warningMsg, downloadSection.firstChild);
+                totalCases.textContent = total;
+                pendingCases.textContent = pending;
+                activeCases.textContent = active;
+                completedCases.textContent = completed;
                 
-                // Scroll to show message
-                warningMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-            
-            // Show error message
-            function showErrorMessage(html) {
-                const errorMsg = document.createElement('div');
-                errorMsg.className = 'info-box warning';
-                errorMsg.style.marginTop = '20px';
-                errorMsg.style.backgroundColor = '#f8d7da';
-                errorMsg.style.borderLeftColor = '#dc3545';
-                errorMsg.innerHTML = html;
-                
-                const downloadSection = document.querySelector('.download-section');
-                downloadSection.insertBefore(errorMsg, downloadSection.firstChild);
-                
-                // Scroll to show message
-                errorMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-            
-            // Signature Pad Functions
-            function initializeSignaturePad() {
-                const canvas = document.getElementById('signaturePad');
-                const ctx = canvas.getContext('2d');
-                let drawing = false;
-                
-                // Set canvas size
-                canvas.width = canvas.offsetWidth;
-                canvas.height = canvas.offsetHeight;
-                
-                // Draw border
-                ctx.strokeStyle = '#ccc';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(0, 0, canvas.width, canvas.height);
-                
-                // Drawing functions
-                function startDrawing(e) {
-                    drawing = true;
-                    draw(e);
+                // Update trend
+                const casesTrend = document.getElementById('casesTrend');
+                if (total > 0) {
+                    casesTrend.textContent = `${total} case${total !== 1 ? 's' : ''} loaded`;
+                    casesTrend.className = 'stat-trend';
+                } else {
+                    casesTrend.textContent = 'No cases found';
+                    casesTrend.className = 'stat-trend';
                 }
-                
-                function stopDrawing() {
-                    drawing = false;
-                    ctx.beginPath();
-                    updateSignatureStatus();
-                }
-                
-                function draw(e) {
-                    if (!drawing) return;
-                    
-                    ctx.lineWidth = 2;
-                    ctx.lineCap = 'round';
-                    ctx.strokeStyle = '#000';
-                    
-                    ctx.lineTo(
-                        e.clientX - canvas.getBoundingClientRect().left,
-                        e.clientY - canvas.getBoundingClientRect().top
-                    );
-                    ctx.stroke();
-                    ctx.beginPath();
-                    ctx.moveTo(
-                        e.clientX - canvas.getBoundingClientRect().left,
-                        e.clientY - canvas.getBoundingClientRect().top
-                    );
-                }
-                
-                // Event listeners
-                canvas.addEventListener('mousedown', startDrawing);
-                canvas.addEventListener('mouseup', stopDrawing);
-                canvas.addEventListener('mousemove', draw);
-                
-                canvas.addEventListener('touchstart', function(e) {
-                    e.preventDefault();
-                    const touch = e.touches[0];
-                    startDrawing(touch);
-                });
-                
-                canvas.addEventListener('touchend', stopDrawing);
-                
-                canvas.addEventListener('touchmove', function(e) {
-                    e.preventDefault();
-                    const touch = e.touches[0];
-                    draw(touch);
-                });
-                
-                // Clear signature button
-                document.getElementById('clearSignature').addEventListener('click', function() {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.strokeRect(0, 0, canvas.width, canvas.height);
-                    document.getElementById('signaturePreview').style.display = 'none';
-                    document.getElementById('nextStep5').disabled = true;
-                    signatureData = null;
-                    updateSignatureStatus();
-                });
-                
-                // Type signature button
-                document.getElementById('typeSignature').addEventListener('click', function() {
-                    const typedName = prompt('Enter your signature text:', document.getElementById('signerName').value);
-                    if (typedName) {
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        ctx.font = '40px cursive';
-                        ctx.fillStyle = '#000';
-                        ctx.textAlign = 'center';
-                        ctx.fillText(typedName, canvas.width/2, canvas.height/2 + 15);
-                        saveSignatureData();
-                    }
-                });
-                
-                // Save signature button
-                document.getElementById('saveSignature').addEventListener('click', saveSignatureData);
-                
-                // Legal certification checkbox
-                document.getElementById('legalCertify').addEventListener('change', function() {
-                    const signBtn = document.getElementById('nextStep5');
-                    signBtn.disabled = !(this.checked && signatureData);
-                });
             }
             
-            function saveSignatureData() {
-                const canvas = document.getElementById('signaturePad');
-                const signerName = document.getElementById('signerName').value;
+            // Update cases table
+            function updateCasesTable(cases, filterText = '', filterPending = false) {
+                casesTableBody.innerHTML = '';
                 
-                if (!signerName.trim()) {
-                    alert('Please enter your name before saving signature.');
+                if (cases.length === 0) {
+                    casesTableBody.style.display = 'none';
+                    noCasesMessage.style.display = 'block';
                     return;
                 }
                 
-                // Check if signature is not empty
-                const ctx = canvas.getContext('2d');
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                let isEmpty = true;
+                casesTableBody.style.display = 'table-row-group';
+                noCasesMessage.style.display = 'none';
                 
-                for (let i = 3; i < imageData.data.length; i += 4) {
-                    if (imageData.data[i] > 0) {
-                        isEmpty = false;
-                        break;
-                    }
+                // Filter cases
+                let filteredCases = cases;
+                
+                if (filterText) {
+                    filterText = filterText.toLowerCase();
+                    filteredCases = cases.filter(caseData => {
+                        return (
+                            caseData.caseId.toLowerCase().includes(filterText) ||
+                            caseData.landlord.name.toLowerCase().includes(filterText) ||
+                            caseData.tenant.name.toLowerCase().includes(filterText) ||
+                            caseData.property.address.toLowerCase().includes(filterText)
+                        );
+                    });
                 }
                 
-                if (isEmpty) {
-                    alert('Please draw or type your signature before saving.');
-                    return;
+                if (filterPending) {
+                    filteredCases = filteredCases.filter(c => c.status === 'Pending Court Filing');
                 }
                 
-                // Save signature data
-                signatureData = {
-                    name: signerName,
-                    dataUrl: canvas.toDataURL(),
-                    timestamp: new Date().toISOString()
+                // Sort by date (newest first)
+                filteredCases.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                // Populate table
+                filteredCases.forEach(caseData => {
+                    const row = document.createElement('tr');
+                    
+                    // Format date
+                    const date = new Date(caseData.timestamp);
+                    const formattedDate = date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    
+                    // Get status badge class
+                    let statusClass = 'status-pending';
+                    if (caseData.status === 'Filed with Court') statusClass = 'status-filed';
+                    if (caseData.status === 'Hearing Scheduled') statusClass = 'status-hearing';
+                    if (caseData.status === 'Completed' || caseData.status === 'Dismissed') statusClass = 'status-completed';
+                    
+                    row.innerHTML = `
+                        <td><strong>${caseData.caseId}</strong></td>
+                        <td>${caseData.landlord.name}</td>
+                        <td>${caseData.tenant.name}</td>
+                        <td>${caseData.property.address}</td>
+                        <td>$${parseFloat(caseData.case.amountOwed).toFixed(2)}</td>
+                        <td><span class="status-badge ${statusClass}">${caseData.status}</span></td>
+                        <td>${formattedDate}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-btn view-case" data-case-id="${caseData.caseId}">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="action-btn download-case" data-case-id="${caseData.caseId}">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    
+                    casesTableBody.appendChild(row);
+                });
+                
+                // Add event listeners to action buttons
+                document.querySelectorAll('.view-case').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const caseId = this.getAttribute('data-case-id');
+                        showCaseDetails(caseId);
+                    });
+                });
+                
+                document.querySelectorAll('.download-case').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const caseId = this.getAttribute('data-case-id');
+                        downloadCaseDocuments(caseId);
+                    });
+                });
+            }
+            
+            // Update charts
+            function updateCharts(cases) {
+                // Status Distribution Chart
+                const statusCounts = {
+                    'Pending Court Filing': 0,
+                    'Filed with Court': 0,
+                    'Hearing Scheduled': 0,
+                    'Completed': 0,
+                    'Dismissed': 0
                 };
                 
-                // Show preview
-                const preview = document.getElementById('signaturePreview');
-                const previewImg = document.getElementById('signatureImage');
-                previewImg.src = signatureData.dataUrl;
-                preview.style.display = 'flex';
+                cases.forEach(caseData => {
+                    if (statusCounts.hasOwnProperty(caseData.status)) {
+                        statusCounts[caseData.status]++;
+                    }
+                });
                 
-                // Enable next button if legal certification is checked
-                const signBtn = document.getElementById('nextStep5');
-                const legalCertify = document.getElementById('legalCertify');
-                signBtn.disabled = !legalCertify.checked;
+                // Destroy existing chart if it exists
+                if (statusChart) {
+                    statusChart.destroy();
+                }
                 
-                updateSignatureStatus('Signed and saved');
+                const statusCtx = document.getElementById('statusChart').getContext('2d');
+                statusChart = new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(statusCounts),
+                        datasets: [{
+                            data: Object.values(statusCounts),
+                            backgroundColor: [
+                                '#ffc107', // Pending - yellow
+                                '#17a2b8', // Filed - teal
+                                '#007bff', // Hearing - blue
+                                '#28a745', // Completed - green
+                                '#dc3545'  // Dismissed - red
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+                
+                // Monthly Cases Chart
+                const monthlyCounts = {};
+                cases.forEach(caseData => {
+                    const date = new Date(caseData.timestamp);
+                    const monthYear = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                    
+                    if (!monthlyCounts[monthYear]) {
+                        monthlyCounts[monthYear] = 0;
+                    }
+                    monthlyCounts[monthYear]++;
+                });
+                
+                // Sort months chronologically
+                const sortedMonths = Object.keys(monthlyCounts).sort((a, b) => {
+                    return new Date(a) - new Date(b);
+                });
+                
+                // Destroy existing chart if it exists
+                if (monthlyChart) {
+                    monthlyChart.destroy();
+                }
+                
+                const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+                monthlyChart = new Chart(monthlyCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: sortedMonths,
+                        datasets: [{
+                            label: 'Cases Filed',
+                            data: sortedMonths.map(month => monthlyCounts[month]),
+                            backgroundColor: 'rgba(0, 51, 102, 0.7)',
+                            borderColor: 'rgba(0, 51, 102, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
             }
             
-            function updateSignatureStatus(status = 'Ready to sign') {
-                const statusEl = document.getElementById('signatureStatus');
-                if (status === 'Signed and saved') {
-                    statusEl.innerHTML = '<i class="fas fa-check-circle" style="color: #28a745;"></i> ' + status;
-                } else {
-                    statusEl.innerHTML = '<i class="fas fa-pen"></i> ' + status;
+            // Show case details
+            async function showCaseDetails(caseId) {
+                showLoading('Loading case details...');
+                
+                try {
+                    // Find case in loaded data
+                    const caseData = casesData.find(c => c.caseId === caseId);
+                    
+                    if (!caseData) {
+                        hideLoading();
+                        alert('Case not found in loaded data.');
+                        return;
+                    }
+                    
+                    // Format date
+                    const date = new Date(caseData.timestamp);
+                    const formattedDate = date.toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    // Create case details HTML
+                    caseDetailsContent.innerHTML = `
+                        <div class="case-details-grid">
+                            <div>
+                                <div class="detail-group">
+                                    <h4>Case Information</h4>
+                                    <div class="detail-content">
+                                        <p><strong>Case ID:</strong> ${caseData.caseId}</p>
+                                        <p><strong>Status:</strong> ${caseData.status}</p>
+                                        <p><strong>Date Created:</strong> ${formattedDate}</p>
+                                        <p><strong>Reason for Eviction:</strong> ${caseData.case.reason}</p>
+                                        <p><strong>Storage Path:</strong> ${caseData.githubPath || 'Not specified'}</p>
+                                    </div>
+                                </div>
+                                <div class="detail-group">
+                                    <h4>Property Information</h4>
+                                    <div class="detail-content">
+                                        <p><strong>Address:</strong> ${caseData.property.address}</p>
+                                        <p><strong>City:</strong> ${caseData.property.city}</p>
+                                        <p><strong>ZIP Code:</strong> ${caseData.property.zip}</p>
+                                        <p><strong>Property Type:</strong> ${caseData.property.type}</p>
+                                        ${caseData.property.unit ? `<p><strong>Unit:</strong> ${caseData.property.unit}</p>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="detail-group">
+                                    <h4>Landlord Information</h4>
+                                    <div class="detail-content">
+                                        <p><strong>Name:</strong> ${caseData.landlord.name}</p>
+                                        <p><strong>Phone:</strong> ${caseData.landlord.phone}</p>
+                                        <p><strong>Email:</strong> ${caseData.landlord.email}</p>
+                                        <p><strong>Address:</strong> ${caseData.landlord.address}</p>
+                                        <p><strong>City:</strong> ${caseData.landlord.city}, ${caseData.landlord.state} ${caseData.landlord.zip}</p>
+                                    </div>
+                                </div>
+                                <div class="detail-group">
+                                    <h4>Tenant Information</h4>
+                                    <div class="detail-content">
+                                        <p><strong>Name:</strong> ${caseData.tenant.name}</p>
+                                        ${caseData.tenant.phone ? `<p><strong>Phone:</strong> ${caseData.tenant.phone}</p>` : ''}
+                                        ${caseData.tenant.email ? `<p><strong>Email:</strong> ${caseData.tenant.email}</p>` : ''}
+                                        ${caseData.tenant.altAddress ? `<p><strong>Alternate Address:</strong> ${caseData.tenant.altAddress}</p>` : ''}
+                                        <p><strong>Military Check:</strong> ${caseData.tenant.militaryCheck ? 'Yes' : 'No'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="detail-group">
+                                    <h4>Case Details</h4>
+                                    <div class="detail-content">
+                                        <p><strong>Lease Type:</strong> ${caseData.case.leaseType}</p>
+                                        <p><strong>Reason for Eviction:</strong> ${caseData.case.reason}</p>
+                                        <p><strong>Monthly Rent:</strong> $${parseFloat(caseData.case.rentAmount).toFixed(2)}</p>
+                                        <p><strong>Amount Owed:</strong> $${parseFloat(caseData.case.amountOwed).toFixed(2)}</p>
+                                        ${caseData.case.lastPaymentDate ? `<p><strong>Last Payment Date:</strong> ${caseData.case.lastPaymentDate}</p>` : ''}
+                                        <p><strong>Notice Date:</strong> ${caseData.case.noticeDate}</p>
+                                        ${caseData.case.noticeDetails ? `<p><strong>Notice Details:</strong> ${caseData.case.noticeDetails}</p>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button class="btn btn-primary" id="closeDetailsBtn">
+                                <i class="fas fa-times"></i> Close Details
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Add event listener to close button
+                    document.getElementById('closeDetailsBtn').addEventListener('click', function() {
+                        caseDetailsModal.style.display = 'none';
+                    });
+                    
+                    hideLoading();
+                    caseDetailsModal.style.display = 'flex';
+                    
+                } catch (error) {
+                    console.error('Error showing case details:', error);
+                    hideLoading();
+                    alert('Error loading case details.');
                 }
             }
             
-            // Utility Functions
-            function showLoading(message = 'Processing...') {
+            // Download case documents
+            async function downloadCaseDocuments(caseId) {
+                showLoading('Downloading case documents...');
+                
+                try {
+                    // Find case in loaded data
+                    const caseData = casesData.find(c => c.caseId === caseId);
+                    
+                    if (!caseData) {
+                        throw new Error('Case not found in loaded data.');
+                    }
+                    
+                    // Get configuration
+                    const config = {
+                        owner: document.getElementById('dashboardDataSourceOwner').value.trim() || 'nagoh',
+                        repo: document.getElementById('dashboardDataSourceRepo').value.trim() || 'GAEVIC',
+                        branch: document.getElementById('dashboardDataSourceBranch').value.trim() || 'main',
+                        path: document.getElementById('dashboardDataSourcePath').value.trim() || 'cases/'
+                    };
+                    
+                    const token = GITHUB_TOKEN;
+                    const caseFolder = `${config.path}${caseId}/`;
+                    
+                    // Get list of files in case folder
+                    const files = await getDataSourceContents(config, caseFolder, token);
+                    
+                    // Filter for PDF files
+                    const pdfFiles = files.filter(file => 
+                        file.type === 'file' && 
+                        file.name.endsWith('.pdf')
+                    );
+                    
+                    if (pdfFiles.length === 0) {
+                        hideLoading();
+                        alert('No PDF documents found for this case.');
+                        return;
+                    }
+                    
+                    // Download PDF files
+                    for (const file of pdfFiles) {
+                        try {
+                            const fileUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${caseFolder}${file.name}`;
+                            
+                            const headers = {
+                                'Accept': 'application/vnd.github.v3+json',
+                                'Authorization': `token ${token}`
+                            };
+                            
+                            const response = await axios.get(fileUrl, { headers });
+                            const content = atob(response.data.content);
+                            
+                            // Convert to blob and download
+                            const blob = new Blob([content], { type: 'application/pdf' });
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = file.name;
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                            
+                            // Small delay between downloads
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                        } catch (error) {
+                            console.error(`Error downloading ${file.name}:`, error);
+                        }
+                    }
+                    
+                    hideLoading();
+                    
+                } catch (error) {
+                    console.error('Error downloading case documents:', error);
+                    hideLoading();
+                    alert('Error downloading case documents. Please try again.');
+                }
+            }
+            
+            // Export data function
+            async function exportData() {
+                showLoading('Exporting data...');
+                
+                try {
+                    if (casesData.length === 0) {
+                        throw new Error('No data to export. Please load cases first.');
+                    }
+                    
+                    // Create CSV content
+                    let csvContent = "Case ID,Landlord,Tenant,Property Address,Amount Owed,Status,Date Filed\n";
+                    
+                    casesData.forEach(caseData => {
+                        const date = new Date(caseData.timestamp);
+                        const formattedDate = date.toLocaleDateString('en-US');
+                        
+                        csvContent += `"${caseData.caseId}","${caseData.landlord.name}","${caseData.tenant.name}","${caseData.property.address}",$${parseFloat(caseData.case.amountOwed).toFixed(2)},"${caseData.status}","${formattedDate}"\n`;
+                    });
+                    
+                    // Create blob and download
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `eviction_cases_${new Date().toISOString().split('T')[0]}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    hideLoading();
+                    
+                } catch (error) {
+                    console.error('Error exporting data:', error);
+                    hideLoading();
+                    alert(`Error exporting data: ${error.message}`);
+                }
+            }
+            
+            // Close modal
+            closeModalBtn.addEventListener('click', function() {
+                caseDetailsModal.style.display = 'none';
+            });
+            
+            // Click outside modal to close
+            caseDetailsModal.addEventListener('click', function(e) {
+                if (e.target === caseDetailsModal) {
+                    caseDetailsModal.style.display = 'none';
+                }
+            });
+            
+            // Event listeners
+            refreshDataBtn.addEventListener('click', loadCasesFromDataSource);
+            loadCasesBtn.addEventListener('click', loadCasesFromDataSource);
+            loadCasesBtn2.addEventListener('click', loadCasesFromDataSource);
+            exportDataBtn.addEventListener('click', exportData);
+            
+            searchCases.addEventListener('input', function() {
+                updateCasesTable(casesData, this.value);
+            });
+            
+            filterPendingBtn.addEventListener('click', function() {
+                const isFiltering = this.classList.contains('active');
+                
+                if (isFiltering) {
+                    this.classList.remove('active');
+                    updateCasesTable(casesData, searchCases.value, false);
+                } else {
+                    this.classList.add('active');
+                    updateCasesTable(casesData, searchCases.value, true);
+                }
+            });
+            
+            // Utility functions
+            function showLoading(message) {
                 loadingText.textContent = message;
                 loadingOverlay.style.display = 'flex';
             }
@@ -2318,83 +1466,8 @@
                 loadingOverlay.style.display = 'none';
             }
             
-            function resetForm() {
-                // Reset to step 1
-                currentStep = 1;
-                
-                // Hide all steps except first
-                const steps = document.querySelectorAll('.form-step');
-                steps.forEach(step => step.classList.remove('active'));
-                document.getElementById('step1').classList.add('active');
-                
-                // Reset progress indicators
-                const circles = document.querySelectorAll('.step-circle');
-                circles.forEach(circle => {
-                    circle.classList.remove('active', 'completed');
-                });
-                document.getElementById('step1Circle').classList.add('active');
-                
-                // Clear form fields
-                const form = document.getElementById('evictionForm');
-                const inputs = form.querySelectorAll('input, select, textarea');
-                inputs.forEach(input => {
-                    if (input.type === 'checkbox') {
-                        input.checked = false;
-                    } else if (input.type !== 'button' && input.type !== 'submit') {
-                        input.value = '';
-                    }
-                });
-                
-                // Reset signature
-                document.getElementById('legalCertify').checked = false;
-                document.getElementById('nextStep5').disabled = true;
-                signatureData = null;
-                document.getElementById('signaturePreview').style.display = 'none';
-                
-                // Reset success message
-                document.getElementById('successMessage').style.display = 'none';
-                
-                // Clear case ID
-                caseId = null;
-                formData = {};
-                generatedDocuments = {};
-                
-                // Remove any added messages
-                const messages = document.querySelectorAll('.success-message, .info-box.warning');
-                messages.forEach(msg => {
-                    if (msg.id !== 'successMessage') {
-                        msg.remove();
-                    }
-                });
-            }
-            
-            // Pre-fill today's date in notice date field
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('noticeDate').value = today;
-            
-            // Set minimum date for notice date (30 days ago)
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            document.getElementById('noticeDate').min = thirtyDaysAgo.toISOString().split('T')[0];
-            
-            // Set maximum date for notice date (today)
-            document.getElementById('noticeDate').max = today;
-            
-            // Set last payment date max to today
-            document.getElementById('lastPaymentDate').max = today;
-            
-            // Form validation
-            document.getElementById('nextStep5').addEventListener('click', function() {
-                if (!signatureData) {
-                    alert('Please save your signature before proceeding.');
-                    return;
-                }
-                if (!document.getElementById('legalCertify').checked) {
-                    alert('Please certify the legal information before proceeding.');
-                    return;
-                }
-                goToStep(6);
-            });
+            // Initial load on page load
+            loadCasesFromDataSource();
         });
     </script>
 </body>
