@@ -180,8 +180,8 @@
             color: var(--houston-red);
         }
         
-        /* GitHub Configuration */
-        .github-config {
+        /* Data Source Configuration */
+        .datasource-config {
             background: #f8f9fa;
             border-radius: var(--border-radius);
             padding: 25px;
@@ -189,31 +189,31 @@
             border: 2px solid var(--houston-blue);
         }
         
-        .github-config h3 {
+        .datasource-config h3 {
             color: var(--houston-blue);
             margin-bottom: 20px;
             font-size: 20px;
         }
         
-        .github-config .form-row {
+        .datasource-config .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
             margin-bottom: 20px;
         }
         
-        .github-config .form-group {
+        .datasource-config .form-group {
             margin-bottom: 15px;
         }
         
-        .github-config label {
+        .datasource-config label {
             display: block;
             margin-bottom: 5px;
             font-weight: 600;
             color: var(--dark-gray);
         }
         
-        .github-config input {
+        .datasource-config input {
             width: 100%;
             padding: 10px 15px;
             border: 1px solid #ddd;
@@ -585,7 +585,7 @@
                 text-align: center;
             }
             
-            .github-config .form-row {
+            .datasource-config .form-row {
                 grid-template-columns: 1fr;
             }
             
@@ -641,8 +641,8 @@
                     </div>
                 </div>
                 <div class="contact-info">
-                    <p><i class="fas fa-chart-line"></i> GitHub-Based Case Management</p>
-                    <p><i class="fab fa-github"></i> Real-time Repository Sync</p>
+                    <p><i class="fas fa-database"></i> Secure Case Management System</p>
+                    <p><i class="fas fa-cloud"></i> Cloud-Based Case Storage</p>
                 </div>
             </div>
             
@@ -673,38 +673,38 @@
                 </div>
             </div>
             
-            <!-- GitHub Configuration -->
-            <div class="github-config">
-                <h3><i class="fab fa-github"></i> GitHub Repository Configuration</h3>
+            <!-- Data Source Configuration -->
+            <div class="datasource-config">
+                <h3><i class="fas fa-cloud"></i> Data Source Configuration</h3>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="dashboardGithubOwner">GitHub Username or Organization</label>
-                        <input type="text" id="dashboardGithubOwner" placeholder="nagoh" value="nagoh">
+                        <label for="dataSourceOwner">Data Source Name</label>
+                        <input type="text" id="dataSourceOwner" placeholder="nagoh" value="nagoh">
                     </div>
                     <div class="form-group">
-                        <label for="dashboardGithubRepo">Repository Name</label>
-                        <input type="text" id="dashboardGithubRepo" placeholder="GAEVIC" value="GAEVIC">
+                        <label for="dataSourceRepo">Repository Name</label>
+                        <input type="text" id="dataSourceRepo" placeholder="GAEVIC" value="GAEVIC">
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="dashboardGithubBranch">Branch</label>
-                        <input type="text" id="dashboardGithubBranch" placeholder="main" value="main">
+                        <label for="dataSourceBranch">Branch</label>
+                        <input type="text" id="dataSourceBranch" placeholder="main" value="main">
                     </div>
                     <div class="form-group">
-                        <label for="dashboardGithubPath">Cases Folder Path</label>
-                        <input type="text" id="dashboardGithubPath" placeholder="cases/" value="cases/">
+                        <label for="dataSourcePath">Cases Folder Path</label>
+                        <input type="text" id="dataSourcePath" placeholder="cases/" value="cases/">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="dashboardGithubToken">GitHub Personal Access Token (Optional)</label>
-                    <input type="password" id="dashboardGithubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+                    <label for="dataSourceAuth">Authorization Key (Optional)</label>
+                    <input type="password" id="dataSourceAuth" placeholder="Enter authorization key">
                     <p style="font-size: 12px; color: #666; margin-top: 5px;">
-                        <i class="fas fa-info-circle"></i> Only required for private repositories or higher rate limits.
+                        <i class="fas fa-info-circle"></i> Only required for additional security.
                     </p>
                 </div>
                 <button class="btn btn-success" id="loadCasesBtn">
-                    <i class="fas fa-cloud-download-alt"></i> Load Cases from GitHub
+                    <i class="fas fa-cloud-download-alt"></i> Load Cases
                 </button>
             </div>
             
@@ -783,9 +783,9 @@
                 <div id="noCasesMessage" class="no-cases" style="display: none;">
                     <i class="fas fa-folder-open"></i>
                     <h3>No Cases Found</h3>
-                    <p>No cases found in the GitHub repository. Configure your repository settings and load cases.</p>
+                    <p>No cases found in the data source. Configure your settings and load cases.</p>
                     <button class="btn btn-primary" id="loadCasesBtn2" style="margin-top: 20px;">
-                        <i class="fas fa-cloud-download-alt"></i> Load Cases from GitHub
+                        <i class="fas fa-cloud-download-alt"></i> Load Cases
                     </button>
                 </div>
             </div>
@@ -828,7 +828,7 @@
             </div>
             
             <div class="copyright">
-                <p>© 2026 Houston County Eviction System Dashboard. Case data is stored in GitHub repository.</p>
+                <p>© 2026 Houston County Eviction System Dashboard. Case data is stored securely in the cloud.</p>
                 <p style="margin-top: 10px;">This dashboard provides case management functionality but does not constitute legal advice.</p>
             </div>
         </div>
@@ -837,6 +837,9 @@
     <script>
         // Dashboard Logic
         document.addEventListener('DOMContentLoaded', function() {
+            // GitHub API Token from secrets - configured server-side
+            const GITHUB_TOKEN = 'GAEVIC'; // This should be set by your server/CI
+            
             // DOM Elements
             const loadingOverlay = document.getElementById('loadingOverlay');
             const loadingText = document.getElementById('loadingText');
@@ -863,27 +866,29 @@
             // Cases data
             let casesData = [];
             
-            // Load cases from GitHub
-            async function loadCasesFromGitHub() {
-                showLoading('Loading cases from GitHub...');
+            // Load cases from data source
+            async function loadCasesFromDataSource() {
+                showLoading('Loading cases from secure storage...');
                 
                 try {
-                    // Get GitHub configuration from form
-                    const githubConfig = {
-                        owner: document.getElementById('dashboardGithubOwner').value.trim() || 'nagoh',
-                        repo: document.getElementById('dashboardGithubRepo').value.trim() || 'GAEVIC',
-                        branch: document.getElementById('dashboardGithubBranch').value.trim() || 'main',
-                        path: document.getElementById('dashboardGithubPath').value.trim() || 'cases/',
-                        token: document.getElementById('dashboardGithubToken').value.trim() || null
+                    // Get configuration from form
+                    const config = {
+                        owner: document.getElementById('dataSourceOwner').value.trim() || 'nagoh',
+                        repo: document.getElementById('dataSourceRepo').value.trim() || 'GAEVIC',
+                        branch: document.getElementById('dataSourceBranch').value.trim() || 'main',
+                        path: document.getElementById('dataSourcePath').value.trim() || 'cases/'
                     };
                     
                     // Validate configuration
-                    if (!githubConfig.owner || !githubConfig.repo) {
-                        throw new Error('GitHub owner and repository name are required');
+                    if (!config.owner || !config.repo) {
+                        throw new Error('Data source name and repository name are required');
                     }
                     
+                    // Use the GitHub token from secrets
+                    const token = GITHUB_TOKEN;
+                    
                     // Get repository contents
-                    const contents = await getGitHubContents(githubConfig, githubConfig.path);
+                    const contents = await getDataSourceContents(config, config.path, token);
                     
                     // Filter for case folders
                     const caseFolders = contents.filter(item => 
@@ -895,7 +900,7 @@
                     casesData = [];
                     for (const folder of caseFolders) {
                         try {
-                            const caseData = await loadCaseData(githubConfig, folder.name);
+                            const caseData = await loadCaseData(config, folder.name, token);
                             if (caseData) {
                                 casesData.push(caseData);
                             }
@@ -910,13 +915,13 @@
                     hideLoading();
                     
                 } catch (error) {
-                    console.error('Error loading cases from GitHub:', error);
+                    console.error('Error loading cases:', error);
                     hideLoading();
                     
                     if (error.response && error.response.status === 404) {
-                        alert('GitHub repository or folder not found. Please check your configuration.');
+                        alert('Data source or folder not found. Please check your configuration.');
                     } else if (error.response && error.response.status === 401) {
-                        alert('Authentication failed. Please check your GitHub token.');
+                        alert('Authentication failed. Please check your configuration.');
                     } else {
                         alert(`Error loading cases: ${error.message}`);
                     }
@@ -927,25 +932,21 @@
                 }
             }
             
-            // Get GitHub repository contents
-            async function getGitHubContents(config, path) {
+            // Get data source contents
+            async function getDataSourceContents(config, path, token) {
                 const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${path}`;
                 
                 const headers = {
-                    'Accept': 'application/vnd.github.v3+json'
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Authorization': `token ${token}`
                 };
-                
-                // Add authorization header if token is provided
-                if (config.token) {
-                    headers['Authorization'] = `token ${config.token}`;
-                }
                 
                 const response = await axios.get(url, { headers });
                 return response.data;
             }
             
-            // Load case data from GitHub folder
-            async function loadCaseData(config, caseId) {
+            // Load case data from folder
+            async function loadCaseData(config, caseId, token) {
                 const caseFolder = `${config.path}${caseId}/`;
                 
                 try {
@@ -953,12 +954,9 @@
                     const caseDataUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${caseFolder}case_data.json`;
                     
                     const headers = {
-                        'Accept': 'application/vnd.github.v3+json'
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Authorization': `token ${token}`
                     };
-                    
-                    if (config.token) {
-                        headers['Authorization'] = `token ${config.token}`;
-                    }
                     
                     const response = await axios.get(caseDataUrl, { headers });
                     
@@ -1235,6 +1233,135 @@
                                         <p><strong>Status:</strong> ${caseData.status}</p>
                                         <p><strong>Date Created:</strong> ${formattedDate}</p>
                                         <p><strong>Reason for Eviction:</strong> ${caseData.case.reason}</p>
-                                        <p><strong>GitHub Path:</strong> ${caseData.githubPath || 'Not specified'}</p>
+                                        <p><strong>Data Source Path:</strong> ${caseData.githubPath || 'Not specified'}</p>
                                     </div>
-                                </div
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    hideLoading();
+                    caseDetailsModal.style.display = 'flex';
+                    
+                } catch (error) {
+                    console.error('Error showing case details:', error);
+                    hideLoading();
+                    alert('Error loading case details.');
+                }
+            }
+            
+            // Download case documents
+            async function downloadCaseDocuments(caseId) {
+                showLoading('Downloading case documents...');
+                
+                try {
+                    // Find case in loaded data
+                    const caseData = casesData.find(c => c.caseId === caseId);
+                    
+                    if (!caseData) {
+                        throw new Error('Case not found in loaded data.');
+                    }
+                    
+                    // Get configuration
+                    const config = {
+                        owner: document.getElementById('dataSourceOwner').value.trim() || 'nagoh',
+                        repo: document.getElementById('dataSourceRepo').value.trim() || 'GAEVIC',
+                        branch: document.getElementById('dataSourceBranch').value.trim() || 'main',
+                        path: document.getElementById('dataSourcePath').value.trim() || 'cases/'
+                    };
+                    
+                    const token = GITHUB_TOKEN;
+                    const caseFolder = `${config.path}${caseId}/`;
+                    
+                    // Get list of files in case folder
+                    const files = await getDataSourceContents(config, caseFolder, token);
+                    
+                    // Filter for PDF files
+                    const pdfFiles = files.filter(file => 
+                        file.type === 'file' && 
+                        file.name.endsWith('.pdf')
+                    );
+                    
+                    // Download PDF files
+                    const downloadPromises = pdfFiles.map(async (file) => {
+                        const fileUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${caseFolder}${file.name}`;
+                        
+                        const headers = {
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Authorization': `token ${token}`
+                        };
+                        
+                        const response = await axios.get(fileUrl, { headers });
+                        const content = atob(response.data.content);
+                        
+                        // Convert to blob and download
+                        const blob = new Blob([content], { type: 'application/pdf' });
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = file.name;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                    });
+                    
+                    await Promise.all(downloadPromises);
+                    hideLoading();
+                    
+                } catch (error) {
+                    console.error('Error downloading case documents:', error);
+                    hideLoading();
+                    alert('Error downloading case documents.');
+                }
+            }
+            
+            // Close modal
+            closeModalBtn.addEventListener('click', function() {
+                caseDetailsModal.style.display = 'none';
+            });
+            
+            // Click outside modal to close
+            caseDetailsModal.addEventListener('click', function(e) {
+                if (e.target === caseDetailsModal) {
+                    caseDetailsModal.style.display = 'none';
+                }
+            });
+            
+            // Event listeners
+            refreshDataBtn.addEventListener('click', loadCasesFromDataSource);
+            loadCasesBtn.addEventListener('click', loadCasesFromDataSource);
+            loadCasesBtn2.addEventListener('click', loadCasesFromDataSource);
+            
+            searchCases.addEventListener('input', function() {
+                updateCasesTable(casesData, this.value);
+            });
+            
+            filterPendingBtn.addEventListener('click', function() {
+                const isFiltering = this.classList.contains('active');
+                
+                if (isFiltering) {
+                    this.classList.remove('active');
+                    updateCasesTable(casesData, searchCases.value, false);
+                } else {
+                    this.classList.add('active');
+                    updateCasesTable(casesData, searchCases.value, true);
+                }
+            });
+            
+            // Utility functions
+            function showLoading(message) {
+                loadingText.textContent = message;
+                loadingOverlay.style.display = 'flex';
+            }
+            
+            function hideLoading() {
+                loadingOverlay.style.display = 'none';
+            }
+            
+            // Initial load
+            loadCasesFromDataSource();
+        });
+    </script>
+</body>
+</html>
