@@ -1,0 +1,382 @@
+[
+  {
+    "caseId": "HOU-2024-123456-0001",
+    "status": "Pending Court Filing",
+    "filingDate": "2024-03-15T14:30:00Z",
+    "landlord": {
+      "name": "John Smith Properties LLC",
+      "phone": "(478) 555-1234",
+      "email": "john@smithproperties.com",
+      "type": "property_manager",
+      "address": "123 Business Ave, Suite 100",
+      "city": "Warner Robins",
+      "state": "GA",
+      "zip": "31088"
+    },
+    "property": {
+      "address": "456 Peach Street",
+      "city": "Warner Robins",
+      "zip": "31088",
+      "type": "single_family",
+      "unit": ""
+    },
+    "tenant": {
+      "name": "Michael Johnson",
+      "phone": "(478) 555-9876",
+      "email": "m.johnson@email.com",
+      "altAddress": "",
+      "militaryCheck": false
+    },
+    "case": {
+      "leaseType": "month_to_month",
+      "reason": "non_payment",
+      "rentAmount": 1200.00,
+      "amountOwed": 3600.00,
+      "lastPaymentDate": "2024-01-15",
+      "noticeDate": "2024-03-10",
+      "noticeDetails": "Posted on front door on 03/10/2024"
+    }
+  },
+  {
+    "caseId": "HOU-2024-123456-0002",
+    "status": "Court Filed - Awaiting Service",
+    "filingDate": "2024-03-10T09:15:00Z",
+    "landlord": {
+      "name": "Sarah Williams",
+      "phone": "(478) 555-2345",
+      "email": "sarah.williams@email.com",
+      "type": "owner",
+      "address": "789 Homeowner Lane",
+      "city": "Perry",
+      "state": "GA",
+      "zip": "31069"
+    },
+    "property": {
+      "address": "321 Oak Avenue, Apt 3B",
+      "city": "Perry",
+      "zip": "31069",
+      "type": "apartment",
+      "unit": "Apt 3B"
+    },
+    "tenant": {
+      "name": "Robert Chen",
+      "phone": "(478) 555-8765",
+      "email": "",
+      "altAddress": "PO Box 123, Perry, GA 31069",
+      "militaryCheck": true
+    },
+    "case": {
+      "leaseType": "fixed_term",
+      "reason": "lease_violation",
+      "rentAmount": 950.00,
+      "amountOwed": 2850.00,
+      "lastPaymentDate": "2024-02-01",
+      "noticeDate": "2024-03-05",
+      "noticeDetails": "Certified mail #70123456789012345678"
+    }
+  },
+  {
+    "caseId": "HOU-2024-123456-0003",
+    "status": "Served - Awaiting Hearing",
+    "filingDate": "2024-03-05T11:45:00Z",
+    "landlord": {
+      "name": "Georgia Realty Management Inc.",
+      "phone": "(478) 555-3456",
+      "email": "legal@georgiarealty.com",
+      "type": "property_manager",
+      "address": "500 Corporate Blvd",
+      "city": "Warner Robins",
+      "state": "GA",
+      "zip": "31088"
+    },
+    "property": {
+      "address": "789 Maple Street",
+      "city": "Centerville",
+      "zip": "31028",
+      "type": "townhome",
+      "unit": "Unit 12"
+    },
+    "tenant": {
+      "name": "Maria Garcia",
+      "phone": "(478) 555-7654",
+      "email": "maria.g@email.com",
+      "altAddress": "",
+      "militaryCheck": false
+    },
+    "case": {
+      "leaseType": "fixed_term",
+      "reason": "property_damage",
+      "rentAmount": 1350.00,
+      "amountOwed": 2700.00,
+      "lastPaymentDate": "2024-02-15",
+      "noticeDate": "2024-03-01",
+      "noticeDetails": "Personally delivered on 03/01/2024"
+    }
+  },
+  {
+    "caseId": "HOU-2024-123456-0004",
+    "status": "Hearing Scheduled",
+    "filingDate": "2024-03-01T13:20:00Z",
+    "landlord": {
+      "name": "Thomas Wilson",
+      "phone": "(478) 555-4567",
+      "email": "twilson@email.com",
+      "type": "owner",
+      "address": "2468 Rental Drive",
+      "city": "Bonaire",
+      "state": "GA",
+      "zip": "31005"
+    },
+    "property": {
+      "address": "135 Mobile Home Park, Lot 42",
+      "city": "Bonaire",
+      "zip": "31005",
+      "type": "mobile_home",
+      "unit": "Lot 42"
+    },
+    "tenant": {
+      "name": "James Miller",
+      "phone": "(478) 555-6543",
+      "email": "",
+      "altAddress": "",
+      "militaryCheck": false
+    },
+    "case": {
+      "leaseType": "month_to_month",
+      "reason": "non_payment",
+      "rentAmount": 600.00,
+      "amountOwed": 1800.00,
+      "lastPaymentDate": "2024-01-01",
+      "noticeDate": "2024-02-25",
+      "noticeDetails": "Posted on mobile home door on 02/25/2024"
+    }
+  },
+  {
+    "caseId": "HOU-2024-123456-0005",
+    "status": "Writ of Possession Issued",
+    "filingDate": "2024-02-25T10:10:00Z",
+    "landlord": {
+      "name": "Elite Property Group",
+      "phone": "(478) 555-5678",
+      "email": "info@eliteproperty.com",
+      "type": "property_manager",
+      "address": "1000 Executive Way",
+      "city": "Warner Robins",
+      "state": "GA",
+      "zip": "31088"
+    },
+    "property": {
+      "address": "555 Commerce Street",
+      "city": "Warner Robins",
+      "zip": "31088",
+      "type": "commercial",
+      "unit": "Suite 200"
+    },
+    "tenant": {
+      "name": "ABC Retail LLC",
+      "phone": "(478) 555-5432",
+      "email": "contact@abcretail.com",
+      "altAddress": "",
+      "militaryCheck": false
+    },
+    "case": {
+      "leaseType": "fixed_term",
+      "reason": "non_payment",
+      "rentAmount": 2500.00,
+      "amountOwed": 7500.00,
+      "lastPaymentDate": "2023-12-15",
+      "noticeDate": "2024-02-20",
+      "noticeDetails": "Delivered to business manager on 02/20/2024"
+    }
+  },
+  {
+    "caseId": "HOU-2024-123456-0006",
+    "status": "Eviction Completed",
+    "filingDate": "2024-02-20T15:45:00Z",
+    "landlord": {
+      "name": "Patricia Brown",
+      "phone": "(478) 555-6789",
+      "email": "patricia.b@email.com",
+      "type": "owner",
+      "address": "369 Landlord Lane",
+      "city": "Kathleen",
+      "state": "GA",
+      "zip": "31047"
+    },
+    "property": {
+      "address": "888 Farm Road",
+      "city": "Kathleen",
+      "zip": "31047",
+      "type": "single_family",
+      "unit": ""
+    },
+    "tenant": {
+      "name": "David Wilson",
+      "phone": "(478) 555-4321",
+      "email": "dwilson@email.com",
+      "altAddress": "",
+      "militaryCheck": true
+    },
+    "case": {
+      "leaseType": "fixed_term",
+      "reason": "holdover",
+      "rentAmount": 1100.00,
+      "amountOwed": 2200.00,
+      "lastPaymentDate": "2024-01-31",
+      "noticeDate": "2024-02-15",
+      "noticeDetails": "Certified mail #70123456789012345679"
+    }
+  },
+  {
+    "caseId": "HOU-2024-123456-0007",
+    "status": "Dismissed - Tenant Paid",
+    "filingDate": "2024-02-15T08:30:00Z",
+    "landlord": {
+      "name": "Miller & Sons Properties",
+      "phone": "(478) 555-7890",
+      "email": "management@millerproperties.com",
+      "type": "property_manager",
+      "address": "222 Business Circle",
+      "city": "Warner Robins",
+      "state": "GA",
+      "zip": "31088"
+    },
+    "property": {
+      "address": "777 Pine Street, Apt 5C",
+      "city": "Warner Robins",
+      "zip": "31088",
+      "type": "apartment",
+      "unit": "Apt 5C"
+    },
+    "tenant": {
+      "name": "Jennifer Taylor",
+      "phone": "(478) 555-3210",
+      "email": "j.taylor@email.com",
+      "altAddress": "",
+      "militaryCheck": false
+    },
+    "case": {
+      "leaseType": "month_to_month",
+      "reason": "non_payment",
+      "rentAmount": 850.00,
+      "amountOwed": 1700.00,
+      "lastPaymentDate": "2024-01-15",
+      "noticeDate": "2024-02-10",
+      "noticeDetails": "Posted on apartment door on 02/10/2024"
+    }
+  },
+  {
+    "caseId": "HOU-2024-123456-0008",
+    "status": "Active - Payment Plan",
+    "filingDate": "2024-02-10T16:20:00Z",
+    "landlord": {
+      "name": "Jackson Legal Services",
+      "phone": "(478) 555-8901",
+      "email": "filing@jacksonlegal.com",
+      "type": "attorney",
+      "address": "444 Court Street",
+      "city": "Perry",
+      "state": "GA",
+      "zip": "31069"
+    },
+    "property": {
+      "address": "999 Walnut Avenue",
+      "city": "Perry",
+      "zip": "31069",
+      "type": "condo",
+      "unit": "Unit 8"
+    },
+    "tenant": {
+      "name": "Christopher Lee",
+      "phone": "(478) 555-2109",
+      "email": "chris.lee@email.com",
+      "altAddress": "",
+      "militaryCheck": false
+    },
+    "case": {
+      "leaseType": "fixed_term",
+      "reason": "non_payment",
+      "rentAmount": 1250.00,
+      "amountOwed": 3750.00,
+      "lastPaymentDate": "2023-12-01",
+      "noticeDate": "2024-02-05",
+      "noticeDetails": "Personally delivered on 02/05/2024"
+    }
+  },
+  {
+    "caseId": "HOU-2024-123456-0009",
+    "status": "Awaiting SCRA Verification",
+    "filingDate": "2024-02-05T09:55:00Z",
+    "landlord": {
+      "name": "Southern Properties GA",
+      "phone": "(478) 555-9012",
+      "email": "evictions@southernproperties.com",
+      "type": "property_manager",
+      "address": "333 Management Drive",
+      "city": "Centerville",
+      "state": "GA",
+      "zip": "31028"
+    },
+    "property": {
+      "address": "222 River Road",
+      "city": "Centerville",
+      "zip": "31028",
+      "type": "single_family",
+      "unit": ""
+    },
+    "tenant": {
+      "name": "Kevin Rodriguez",
+      "phone": "(478) 555-1098",
+      "email": "",
+      "altAddress": "",
+      "militaryCheck": true
+    },
+    "case": {
+      "leaseType": "week_to_week",
+      "reason": "lease_violation",
+      "rentAmount": 300.00,
+      "amountOwed": 900.00,
+      "lastPaymentDate": "2024-01-20",
+      "noticeDate": "2024-01-31",
+      "noticeDetails": "Posted on property on 01/31/2024"
+    }
+  },
+  {
+    "caseId": "HOU-2024-123456-0010",
+    "status": "Contested - Awaiting Trial",
+    "filingDate": "2024-01-31T14:05:00Z",
+    "landlord": {
+      "name": "Lisa Anderson",
+      "phone": "(478) 555-0123",
+      "email": "landerson@email.com",
+      "type": "owner",
+      "address": "147 Rental Way",
+      "city": "Bonaire",
+      "state": "GA",
+      "zip": "31005"
+    },
+    "property": {
+      "address": "369 Garden Lane",
+      "city": "Bonaire",
+      "zip": "31005",
+      "type": "townhome",
+      "unit": "Unit B"
+    },
+    "tenant": {
+      "name": "Amanda White",
+      "phone": "(478) 555-0987",
+      "email": "a.white@email.com",
+      "altAddress": "",
+      "militaryCheck": false
+    },
+    "case": {
+      "leaseType": "fixed_term",
+      "reason": "illegal_activity",
+      "rentAmount": 1400.00,
+      "amountOwed": 2800.00,
+      "lastPaymentDate": "2024-01-01",
+      "noticeDate": "2024-01-25",
+      "noticeDetails": "Posted and mailed on 01/25/2024"
+    }
+  }
+]
