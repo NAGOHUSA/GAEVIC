@@ -568,20 +568,39 @@
             min-height: 40px;
         }
         
-        /* Webhook Status */
-        .webhook-status {
-            margin: 30px 0;
-            padding: 20px;
+        /* GitHub Configuration */
+        .github-config {
             background: #f8f9fa;
-            border-radius: var(--border-radius);
-            border: 2px solid var(--houston-blue);
-            display: none;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+            border: 1px solid #dee2e6;
         }
         
-        .webhook-status h3 {
+        .github-config h4 {
             color: var(--houston-blue);
             margin-bottom: 15px;
             font-size: 18px;
+        }
+        
+        .github-status {
+            margin-top: 10px;
+            font-size: 0.95em;
+        }
+        
+        .github-status.success {
+            color: var(--success-green);
+        }
+        
+        .github-status.warning {
+            color: var(--warning-orange);
+        }
+        
+        .backup-note {
+            color: var(--success-green);
+            font-size: 0.95em;
+            margin: 12px 0;
+            text-align: center;
         }
         
         /* Case Status */
@@ -738,22 +757,6 @@
             margin-bottom: 20px;
         }
         
-        /* Webhook Notification */
-        .webhook-notification {
-            text-align: center;
-            padding: 20px;
-            background: #e8f4fd;
-            border: 2px solid var(--houston-blue);
-            border-radius: var(--border-radius);
-            margin: 20px 0;
-        }
-        
-        .webhook-notification i {
-            font-size: 40px;
-            color: var(--houston-blue);
-            margin-bottom: 15px;
-        }
-        
         /* Responsive Design */
         @media (max-width: 768px) {
             .header-top {
@@ -822,7 +825,7 @@
                 <div class="logo-container">
                     <div class="logo">HC</div>
                     <div class="logo-text">
-                        <h1>Houston County Eviction System 1.1</h1>
+                        <h1>Houston County Eviction System 2.0</h1>
                         <p>Georgia Magistrate Court - Warner Robins, GA</p>
                     </div>
                 </div>
@@ -886,10 +889,10 @@
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-sync-alt"></i>
+                        <i class="fas fa-cloud"></i>
                     </div>
-                    <h3>Auto-Sync to Court</h3>
-                    <p>Case data automatically synchronized with court systems via secure webhook integration.</p>
+                    <h3>Automatic Backup</h3>
+                    <p>All cases automatically saved to GitHub for secure backup and easy retrieval.</p>
                 </div>
             </div>
         </div>
@@ -898,6 +901,23 @@
     <!-- Eviction Filing Form (Initially Hidden) -->
     <div class="container">
         <div class="form-container" id="evictionForm">
+            <!-- GitHub Configuration (Visible by default) -->
+            <div class="github-config">
+                <h4><i class="fab fa-github"></i> Automatic GitHub Backup</h4>
+                <p style="font-size:0.9em; margin-bottom:15px;">
+                    Enter your GitHub token once (classic token with <strong>repo</strong> scope).<br>
+                    Every filed case will be saved automatically to your repository.
+                </p>
+                <div class="form-group">
+                    <label for="githubToken">Personal Access Token</label>
+                    <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                </div>
+                <label style="display:block; margin:10px 0;">
+                    <input type="checkbox" id="githubEnabled" checked> Enable automatic backup
+                </label>
+                <div id="githubStatus" class="github-status"></div>
+            </div>
+
             <!-- Form Progress -->
             <div class="form-progress">
                 <div class="progress-step">
@@ -1241,15 +1261,6 @@
                     <p><strong>Status:</strong> <span id="caseStatusDisplay">Pending Court Filing</span></p>
                 </div>
                 
-                <!-- Webhook Status -->
-                <div class="webhook-notification" id="webhookNotification" style="display: none;">
-                    <i class="fas fa-sync-alt"></i>
-                    <h3 style="color: var(--houston-blue);">Auto-Sync to Court System</h3>
-                    <p>Your case data is being automatically synchronized with the GAEVIC.</p>
-                    <p><strong>Webhook:</strong> https://nagoh.us/GAEVIC/webhook/</p>
-                    <p><strong>Status:</strong> <span id="webhookStatus">Processing...</span></p>
-                </div>
-                
                 <div class="info-box">
                     <h4><i class="fas fa-file-invoice-dollar"></i> Filing Fee Information</h4>
                     <p>Houston County filing fee: <strong>$99.00</strong>. Payment can be made directly to the court when you file these documents.</p>
@@ -1309,10 +1320,6 @@
                     <div style="margin-top: 40px;">
                         <button class="btn btn-success" id="downloadAllBtn" style="padding: 15px 40px; font-size: 18px;">
                             <i class="fas fa-file-archive"></i> Download All Documents (ZIP)
-                        </button>
-                        
-                        <button class="btn btn-primary" id="syncToCourtBtn" style="padding: 15px 40px; font-size: 18px; margin-left: 15px;">
-                            <i class="fas fa-sync-alt"></i> Sync Case to Court System
                         </button>
                     </div>
                     
@@ -1382,25 +1389,65 @@
     </footer>
 
     <script>
-        // Initialize jsPDF
+        // === VARIABLES ===
         const { jsPDF } = window.jspdf;
-        
-        // Webhook Configuration
-        const WEBHOOK_CONFIG = {
-            url: 'https://nagoh.us/GAEVIC/webhook/',
-            method: 'POST',
-            contentType: 'application/json'
+        let currentStep = 1;
+        let formData = {};
+        let generatedDocuments = {};
+        let signatureData = null;
+        let caseId = null;
+
+        // === GITHUB CONFIG ===
+        const GITHUB = {
+            owner: 'NAGOHUSA',
+            repo: 'GAEVIC',
+            branch: 'main',
+            basePath: 'cases/'
         };
-        
-        // Form Navigation Logic
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize variables
-            let currentStep = 1;
-            let caseId = null;
-            let signatureData = null;
-            let formData = {};
-            let generatedDocuments = {};
-            
+
+        let githubToken = localStorage.getItem('githubToken') || '';
+        let githubEnabled = localStorage.getItem('githubEnabled') !== 'false';
+
+        // === UI INIT ===
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize GitHub UI
+            const tokenInput = document.getElementById('githubToken');
+            const enabledInput = document.getElementById('githubEnabled');
+            const statusDiv = document.getElementById('githubStatus');
+
+            if (tokenInput) {
+                tokenInput.value = githubToken;
+                tokenInput.addEventListener('input', e => {
+                    githubToken = e.target.value.trim();
+                    localStorage.setItem('githubToken', githubToken);
+                    updateStatus();
+                });
+            }
+
+            if (enabledInput) {
+                enabledInput.checked = githubEnabled;
+                enabledInput.addEventListener('change', e => {
+                    githubEnabled = e.target.checked;
+                    localStorage.setItem('githubEnabled', githubEnabled);
+                    updateStatus();
+                });
+            }
+
+            function updateStatus() {
+                if (!statusDiv) return;
+                if (!githubEnabled) {
+                    statusDiv.textContent = 'Automatic backup is turned off';
+                    statusDiv.className = 'github-status';
+                } else if (!githubToken) {
+                    statusDiv.textContent = 'Enter token to enable backup';
+                    statusDiv.className = 'github-status warning';
+                } else {
+                    statusDiv.textContent = 'Automatic backup enabled';
+                    statusDiv.className = 'github-status success';
+                }
+            }
+            updateStatus();
+
             // DOM Elements
             const startFilingBtn = document.getElementById('startFilingBtn');
             const navStartFiling = document.getElementById('navStartFiling');
@@ -1409,7 +1456,7 @@
             const cancelBtn = document.getElementById('cancelBtn');
             const loadingOverlay = document.getElementById('loadingOverlay');
             const loadingText = document.getElementById('loadingText');
-            
+
             // Show/Hide Form
             function showForm() {
                 evictionForm.style.display = 'block';
@@ -1471,8 +1518,8 @@
                 } else if (currentStep === 6) {
                     generateCaseId();
                     generateAllDocuments();
-                    // Automatically send to webhook when reaching step 6
-                    setTimeout(sendToWebhook, 500);
+                    // Auto upload to GitHub
+                    uploadCaseToGitHub();
                 }
                 
                 // Scroll to top of form
@@ -1507,7 +1554,6 @@
                     caseId: caseId,
                     status: 'Pending Court Filing',
                     filingDate: new Date().toISOString(),
-                    timestamp: new Date().toISOString(),
                     landlord: {
                         name: document.getElementById('landlordName').value,
                         phone: document.getElementById('landlordPhone').value,
@@ -1545,9 +1591,9 @@
                         name: signatureData.name,
                         timestamp: signatureData.timestamp
                     } : null,
+                    timestamp: new Date().toISOString(),
                     documentsGenerated: true,
-                    systemVersion: '2.0',
-                    source: 'Houston County Eviction System'
+                    version: '2.0'
                 };
                 return formData;
             }
@@ -1565,14 +1611,11 @@
                 // Show success message
                 document.getElementById('successMessage').style.display = 'block';
                 
-                // Show webhook notification
-                document.getElementById('webhookNotification').style.display = 'block';
-                
                 // Set up download buttons
                 setupDownloadButtons();
             }
             
-            // Document Generation Functions (same as before)
+            // Document Generation Functions
             function generateDemandNotice() {
                 const doc = new jsPDF();
                 const pageWidth = doc.internal.pageSize.getWidth();
@@ -1629,24 +1672,22 @@
                 doc.text(`${formData.landlord.name}`, 20, yPosition + 10);
                 doc.text("Landlord/Agent", 20, yPosition + 20);
                 
-                // Add signature if available
-                if (signatureData && signatureData.dataUrl) {
-                    try {
-                        const signatureImg = new Image();
-                        signatureImg.onload = function() {
-                            doc.addImage(signatureImg, 'PNG', 20, yPosition - 10, 50, 20);
-                        };
-                        signatureImg.src = signatureData.dataUrl;
-                    } catch(e) {
-                        console.log("Could not add signature to PDF");
-                    }
-                }
-                
                 // Footer
                 doc.setFontSize(9);
                 doc.setFont("helvetica", "italic");
                 doc.text("This notice must be served at least 7 days before filing dispossessory proceedings.", 20, pageHeight - 20);
                 doc.text("Service may be made by personal delivery, posting on the premises, or certified mail.", 20, pageHeight - 10);
+                
+                // Add signature if available
+                if (signatureData && signatureData.dataUrl) {
+                    try {
+                        const signatureImg = new Image();
+                        signatureImg.src = signatureData.dataUrl;
+                        doc.addImage(signatureImg, 'PNG', 20, yPosition - 10, 50, 20);
+                    } catch(e) {
+                        console.log("Could not add signature to PDF");
+                    }
+                }
                 
                 return doc;
             }
@@ -1654,7 +1695,6 @@
             function generateAffidavit() {
                 const doc = new jsPDF();
                 const pageWidth = doc.internal.pageSize.getWidth();
-                const pageHeight = doc.internal.pageSize.getHeight();
                 
                 // Header
                 doc.setFontSize(14);
@@ -1700,7 +1740,7 @@
                 
                 let yPosition = 140;
                 affidavitText.forEach(line => {
-                    if (yPosition > pageHeight - 40) {
+                    if (yPosition > 250) {
                         doc.addPage();
                         yPosition = 20;
                     }
@@ -1721,10 +1761,8 @@
                 if (signatureData && signatureData.dataUrl) {
                     try {
                         const signatureImg = new Image();
-                        signatureImg.onload = function() {
-                            doc.addImage(signatureImg, 'PNG', 20, yPosition - 5, 50, 20);
-                        };
                         signatureImg.src = signatureData.dataUrl;
+                        doc.addImage(signatureImg, 'PNG', 20, yPosition - 5, 50, 20);
                     } catch(e) {
                         console.log("Could not add signature to PDF");
                     }
@@ -1736,7 +1774,6 @@
             function generateSummons() {
                 const doc = new jsPDF();
                 const pageWidth = doc.internal.pageSize.getWidth();
-                const pageHeight = doc.internal.pageSize.getHeight();
                 
                 // Header
                 doc.setFontSize(16);
@@ -1779,10 +1816,6 @@
                 
                 let yPosition = 130;
                 bodyText.forEach(line => {
-                    if (yPosition > pageHeight - 40) {
-                        doc.addPage();
-                        yPosition = 20;
-                    }
                     doc.text(line, 20, yPosition);
                     yPosition += 7;
                 });
@@ -1798,7 +1831,6 @@
             function generateSCRACertification() {
                 const doc = new jsPDF();
                 const pageWidth = doc.internal.pageSize.getWidth();
-                const pageHeight = doc.internal.pageSize.getHeight();
                 
                 // Header
                 doc.setFontSize(14);
@@ -1814,7 +1846,7 @@
                 doc.text(`Property: ${formData.property.address}`, 20, 80);
                 
                 // Verification Text
-                doc.setFontSize(12);
+                doc.setFontSize(11);
                 const verificationText = [
                     `I, ${formData.landlord.name}, being duly sworn, depose and state:`,
                     "",
@@ -1822,15 +1854,18 @@
                     "",
                     `2. The defendant, ${formData.tenant.name},`,
                     "",
+                    `   ${formData.tenant.militaryCheck ? '☐' : '☑'} is NOT in the military service of the United States, to the best of my knowledge,`,
+                    "     information, and belief.",
                     "",
-                    "",
-                    "",
+                    `   ${formData.tenant.militaryCheck ? '☑' : '☐'} IS in the military service of the United States.`,
+                    "     Branch: ____________________ Rank: ____________________",
+                    "     Service Number: _______________",
                     "",
                     "3. The basis for this statement is:",
-                    "",
-                    "",
-                    "",
-                    "",
+                    "   ☑ Personal knowledge",
+                    "   ☐ Information from the defendant",
+                    "   ☐ Information from a family member",
+                    "   ☐ Other: ______________________________________________",
                     "",
                     "I understand that false statements on this form may result in dismissal of the",
                     "action and/or penalties under federal law."
@@ -1838,7 +1873,7 @@
                 
                 let yPosition = 100;
                 verificationText.forEach(line => {
-                    if (yPosition > pageHeight - 40) {
+                    if (yPosition > 240) {
                         doc.addPage();
                         yPosition = 20;
                     }
@@ -1846,53 +1881,8 @@
                     yPosition += 7;
                 });
                 
-                // Draw checkboxes
-                const checkY = 140;
-                doc.setFontSize(14);
-                
-                // First checkbox (NOT in military service)
-                doc.text(formData.tenant.militaryCheck ? "□" : "■", 20, checkY);
-                doc.setFontSize(11);
-                doc.text("is NOT in the military service of the United States, to the best of my knowledge,", 35, checkY);
-                doc.text("information, and belief.", 35, checkY + 7);
-                
-                // Second checkbox (IS in military service)
-                doc.setFontSize(14);
-                doc.text(formData.tenant.militaryCheck ? "■" : "□", 20, checkY + 20);
-                doc.setFontSize(11);
-                doc.text("IS in the military service of the United States.", 35, checkY + 20);
-                doc.text("Branch: ____________________ Rank: ____________________", 35, checkY + 30);
-                doc.text("Service Number: _______________", 35, checkY + 37);
-                
-                // Checkboxes for basis
-                const basisY = checkY + 50;
-                doc.setFontSize(14);
-                doc.text("■", 20, basisY);
-                doc.setFontSize(11);
-                doc.text("Personal knowledge", 35, basisY);
-                
-                doc.setFontSize(14);
-                doc.text("□", 20, basisY + 7);
-                doc.setFontSize(11);
-                doc.text("Information from the defendant", 35, basisY + 7);
-                
-                doc.setFontSize(14);
-                doc.text("□", 20, basisY + 14);
-                doc.setFontSize(11);
-                doc.text("Information from a family member", 35, basisY + 14);
-                
-                doc.setFontSize(14);
-                doc.text("□", 20, basisY + 21);
-                doc.setFontSize(11);
-                doc.text("Other: ______________________________________________", 35, basisY + 21);
-                
                 // Signature Section
-                yPosition = basisY + 40;
-                if (yPosition > pageHeight - 40) {
-                    doc.addPage();
-                    yPosition = 20;
-                }
-                
+                yPosition += 10;
                 doc.text("Sworn to and subscribed before me this _____ day of ____________________, 20____", 20, yPosition);
                 
                 yPosition += 20;
@@ -1904,88 +1894,14 @@
                 if (signatureData && signatureData.dataUrl) {
                     try {
                         const signatureImg = new Image();
-                        signatureImg.onload = function() {
-                            doc.addImage(signatureImg, 'PNG', 20, yPosition - 5, 50, 20);
-                        };
                         signatureImg.src = signatureData.dataUrl;
+                        doc.addImage(signatureImg, 'PNG', 20, yPosition - 5, 50, 20);
                     } catch(e) {
                         console.log("Could not add signature to PDF");
                     }
                 }
                 
                 return doc;
-            }
-            
-            // Send Data to Webhook
-            async function sendToWebhook() {
-                showLoading('Syncing case data to court system...');
-                document.getElementById('webhookStatus').textContent = 'Sending...';
-                
-                try {
-                    // Prepare webhook data
-                    const webhookData = {
-                        event: 'eviction_case_created',
-                        caseId: caseId,
-                        timestamp: new Date().toISOString(),
-                        data: formData,
-                        documents: {
-                            count: 4,
-                            types: ['7-Day Demand Notice', 'Dispossessory Affidavit', 'Summons', 'SCRA Verification'],
-                            generated: true
-                        },
-                        source: 'Houston County Eviction System 2.0',
-                        webhookUrl: WEBHOOK_CONFIG.url
-                    };
-                    
-                    // Send to webhook
-                    const response = await fetch(WEBHOOK_CONFIG.url, {
-                        method: WEBHOOK_CONFIG.method,
-                        headers: {
-                            'Content-Type': WEBHOOK_CONFIG.contentType,
-                            'X-Event-Type': 'eviction_case_created',
-                            'X-Case-ID': caseId,
-                            'X-Source': 'Houston_County_Eviction_System'
-                        },
-                        body: JSON.stringify(webhookData)
-                    });
-                    
-                    hideLoading();
-                    
-                    if (response.ok) {
-                        document.getElementById('webhookStatus').textContent = 'Synced Successfully';
-                        document.getElementById('webhookStatus').style.color = '#28a745';
-                        
-                        // Show success message
-                        showSuccessNotification(`
-                            <i class="fas fa-check-circle" style="color: #28a745;"></i>
-                            <h4 style="color: #28a745; margin: 10px 0;">Case Data Synced to Court System</h4>
-                            <p>Your eviction case has been successfully synchronized with the GAEVIc.</p>
-                            <p><strong>Webhook Status:</strong> Successfully sent to https://nagoh.us/GAEVIC/webhook/</p>
-                            <p><strong>Case ID:</strong> ${caseId}</p>
-                            <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
-                        `);
-                    } else {
-                        throw new Error(`Webhook responded with status: ${response.status}`);
-                    }
-                    
-                } catch (error) {
-                    hideLoading();
-                    console.error('Webhook Error:', error);
-                    
-                    // Update status but don't show error to user (fail silently)
-                    document.getElementById('webhookStatus').textContent = 'Sync Completed (Offline Mode)';
-                    document.getElementById('webhookStatus').style.color = '#fd7e14';
-                    
-                    // Show offline notification
-                    showSuccessNotification(`
-                        <i class="fas fa-sync-alt" style="color: #fd7e14;"></i>
-                        <h4 style="color: #fd7e14; margin: 10px 0;">Case Data Saved (Offline Mode)</h4>
-                        <p>Your eviction case has been saved locally. Documents are ready for download.</p>
-                        <p><strong>Note:</strong> Court system sync will be completed when online.</p>
-                        <p><strong>Case ID:</strong> ${caseId}</p>
-                        <p>You can proceed to download and print your documents.</p>
-                    `);
-                }
             }
             
             // Setup Download Buttons
@@ -2000,11 +1916,6 @@
                 
                 // Download all as ZIP
                 document.getElementById('downloadAllBtn').addEventListener('click', downloadAllDocuments);
-                
-                // Sync to court button (resend webhook)
-                document.getElementById('syncToCourtBtn').addEventListener('click', function() {
-                    sendToWebhook();
-                });
                 
                 // Start new filing
                 document.getElementById('startNewBtn').addEventListener('click', function() {
@@ -2046,29 +1957,11 @@
                     const formDataJson = JSON.stringify(formData, null, 2);
                     caseFolder.file('case_data.json', formDataJson);
                     
-                    // Add webhook info
-                    const webhookInfo = {
-                        webhookUrl: WEBHOOK_CONFIG.url,
-                        caseId: caseId,
-                        sentAt: new Date().toISOString(),
-                        status: 'pending'
-                    };
-                    caseFolder.file('webhook_info.json', JSON.stringify(webhookInfo, null, 2));
-                    
                     // Generate and download ZIP
                     zip.generateAsync({type: 'blob'})
                         .then(function(content) {
                             saveAs(content, `${caseId}_eviction_documents.zip`);
                             hideLoading();
-                            
-                            // Show download success
-                            showSuccessNotification(`
-                                <i class="fas fa-download" style="color: #28a745;"></i>
-                                <h4 style="color: #28a745; margin: 10px 0;">Documents Downloaded Successfully</h4>
-                                <p>All eviction documents have been downloaded as a ZIP file.</p>
-                                <p><strong>File:</strong> ${caseId}_eviction_documents.zip</p>
-                                <p><strong>Contains:</strong> 4 PDF documents + case data</p>
-                            `);
                         })
                         .catch(function(error) {
                             console.error('Error creating ZIP:', error);
@@ -2093,23 +1986,79 @@
                 };
                 return filenames[docType] || 'document.pdf';
             }
-            
-            // Show success notification
-            function showSuccessNotification(html) {
-                const notification = document.createElement('div');
-                notification.className = 'info-box success';
-                notification.style.marginTop = '20px';
-                notification.innerHTML = html;
-                
-                const downloadSection = document.querySelector('.download-section');
-                downloadSection.insertBefore(notification, downloadSection.firstChild);
-                
-                // Auto-remove after 10 seconds
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.remove();
+
+            // === AUTO UPLOAD FUNCTION ===
+            async function uploadCaseToGitHub() {
+                if (!githubEnabled || !githubToken) return;
+
+                if (!caseId) caseId = 'CASE-' + Date.now().toString(36).toUpperCase();
+
+                const folder = `${GITHUB.basePath}${caseId}/`;
+
+                try {
+                    // 1. JSON
+                    const jsonContent = JSON.stringify({
+                        ...formData,
+                        caseId,
+                        timestamp: new Date().toISOString()
+                    }, null, 2);
+
+                    await uploadToGitHub(folder + 'case.json', btoa(unescape(encodeURIComponent(jsonContent))), `Add case data ${caseId}`);
+
+                    // 2. PDFs
+                    const pdfs = [
+                        {key: 'demand_notice', filename: 'Demand_Notice.pdf'},
+                        {key: 'affidavit',     filename: 'Dispossessory_Affidavit.pdf'},
+                        {key: 'summons',       filename: 'Summons.pdf'},
+                        {key: 'scra_form',     filename: 'SCRA_Verification.pdf'}
+                    ];
+
+                    for (const pdf of pdfs) {
+                        if (generatedDocuments[pdf.key]) {
+                            const base64 = generatedDocuments[pdf.key].output('datauristring').split(',')[1];
+                            await uploadToGitHub(folder + pdf.filename, base64, `Add ${pdf.filename} for ${caseId}`, true);
+                        }
                     }
-                }, 10000);
+
+                    // Minimal success feedback
+                    const note = document.createElement('p');
+                    note.className = 'backup-note';
+                    note.innerHTML = '<i class="fas fa-check-circle"></i> Case automatically saved to GitHub';
+                    document.querySelector('.download-section').appendChild(note);
+
+                } catch (err) {
+                    console.error('GitHub upload failed:', err.message);
+                    // No popup – keep silent for user
+                }
+            }
+
+            async function uploadToGitHub(path, content, message, isBase64 = false) {
+                const url = `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${path}`;
+                let encoded = isBase64 ? content : btoa(unescape(encodeURIComponent(content)));
+
+                const payload = {
+                    message: message,
+                    content: encoded,
+                    branch: GITHUB.branch
+                };
+
+                const headers = {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Authorization': `token ${githubToken}`,
+                    'Content-Type': 'application/json'
+                };
+
+                try {
+                    await axios.put(url, payload, { headers });
+                } catch (err) {
+                    if (err.response?.status === 422 || err.response?.data?.message?.includes('sha')) {
+                        const { data } = await axios.get(url, { headers });
+                        payload.sha = data.sha;
+                        await axios.put(url, payload, { headers });
+                    } else {
+                        throw err;
+                    }
+                }
             }
             
             // Signature Pad Functions
@@ -2121,11 +2070,6 @@
                 // Set canvas size
                 canvas.width = canvas.offsetWidth;
                 canvas.height = canvas.offsetHeight;
-                
-                // Clear canvas
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
                 // Draw border
                 ctx.strokeStyle = '#ccc';
@@ -2149,17 +2093,18 @@
                     
                     ctx.lineWidth = 2;
                     ctx.lineCap = 'round';
-                    ctx.lineJoin = 'round';
                     ctx.strokeStyle = '#000';
                     
-                    const rect = canvas.getBoundingClientRect();
-                    const x = (e.clientX || e.touches[0].clientX) - rect.left;
-                    const y = (e.clientY || e.touches[0].clientY) - rect.top;
-                    
-                    ctx.lineTo(x, y);
+                    ctx.lineTo(
+                        e.clientX - canvas.getBoundingClientRect().left,
+                        e.clientY - canvas.getBoundingClientRect().top
+                    );
                     ctx.stroke();
                     ctx.beginPath();
-                    ctx.moveTo(x, y);
+                    ctx.moveTo(
+                        e.clientX - canvas.getBoundingClientRect().left,
+                        e.clientY - canvas.getBoundingClientRect().top
+                    );
                 }
                 
                 // Event listeners
@@ -2184,10 +2129,6 @@
                 // Clear signature button
                 document.getElementById('clearSignature').addEventListener('click', function() {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.fillStyle = 'white';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.strokeStyle = '#ccc';
-                    ctx.lineWidth = 2;
                     ctx.strokeRect(0, 0, canvas.width, canvas.height);
                     document.getElementById('signaturePreview').style.display = 'none';
                     document.getElementById('nextStep5').disabled = true;
@@ -2200,16 +2141,10 @@
                     const typedName = prompt('Enter your signature text:', document.getElementById('signerName').value);
                     if (typedName) {
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        ctx.fillStyle = 'white';
-                        ctx.fillRect(0, 0, canvas.width, canvas.height);
                         ctx.font = '40px cursive';
                         ctx.fillStyle = '#000';
                         ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(typedName, canvas.width/2, canvas.height/2);
-                        ctx.strokeStyle = '#ccc';
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+                        ctx.fillText(typedName, canvas.width/2, canvas.height/2 + 15);
                         saveSignatureData();
                     }
                 });
@@ -2312,127 +2247,73 @@
                 inputs.forEach(input => {
                     if (input.type === 'checkbox') {
                         input.checked = false;
+                    } else if (input.type === 'password') {
+                        // Don't clear token field
+                        if (input.id !== 'githubToken') {
+                            input.value = '';
+                        }
                     } else if (input.type !== 'button' && input.type !== 'submit') {
-                        input.value = input.defaultValue || '';
+                        input.value = '';
                     }
                 });
                 
                 // Reset signature
-                const legalCertify = document.getElementById('legalCertify');
-                if (legalCertify) legalCertify.checked = false;
-                const nextStep5 = document.getElementById('nextStep5');
-                if (nextStep5) nextStep5.disabled = true;
+                document.getElementById('legalCertify').checked = false;
+                document.getElementById('nextStep5').disabled = true;
                 signatureData = null;
-                const signaturePreview = document.getElementById('signaturePreview');
-                if (signaturePreview) signaturePreview.style.display = 'none';
+                document.getElementById('signaturePreview').style.display = 'none';
                 
                 // Reset success message
-                const successMessage = document.getElementById('successMessage');
-                if (successMessage) successMessage.style.display = 'none';
-                
-                // Reset webhook notification
-                const webhookNotification = document.getElementById('webhookNotification');
-                if (webhookNotification) webhookNotification.style.display = 'none';
+                document.getElementById('successMessage').style.display = 'none';
                 
                 // Clear case ID
                 caseId = null;
                 formData = {};
                 generatedDocuments = {};
                 
-                // Remove any added notifications
-                const notifications = document.querySelectorAll('.info-box.success, .info-box.warning');
-                notifications.forEach(notification => {
-                    if (!notification.id) {
-                        notification.remove();
+                // Remove backup note if exists
+                const backupNote = document.querySelector('.backup-note');
+                if (backupNote) {
+                    backupNote.remove();
+                }
+                
+                // Remove any added messages
+                const messages = document.querySelectorAll('.success-message, .info-box.warning');
+                messages.forEach(msg => {
+                    if (msg.id !== 'successMessage') {
+                        msg.remove();
                     }
                 });
-                
-                // Reset date fields
-                const today = new Date().toISOString().split('T')[0];
-                const noticeDate = document.getElementById('noticeDate');
-                if (noticeDate) {
-                    noticeDate.value = today;
-                    noticeDate.min = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-                    noticeDate.max = today;
-                }
-                
-                const lastPaymentDate = document.getElementById('lastPaymentDate');
-                if (lastPaymentDate) {
-                    lastPaymentDate.max = today;
-                }
             }
             
             // Pre-fill today's date in notice date field
             const today = new Date().toISOString().split('T')[0];
-            const noticeDate = document.getElementById('noticeDate');
-            if (noticeDate) {
-                noticeDate.value = today;
-                
-                // Set minimum date for notice date (30 days ago)
-                const thirtyDaysAgo = new Date();
-                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                noticeDate.min = thirtyDaysAgo.toISOString().split('T')[0];
-                
-                // Set maximum date for notice date (today)
-                noticeDate.max = today;
-            }
+            document.getElementById('noticeDate').value = today;
+            
+            // Set minimum date for notice date (30 days ago)
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            document.getElementById('noticeDate').min = thirtyDaysAgo.toISOString().split('T')[0];
+            
+            // Set maximum date for notice date (today)
+            document.getElementById('noticeDate').max = today;
             
             // Set last payment date max to today
-            const lastPaymentDate = document.getElementById('lastPaymentDate');
-            if (lastPaymentDate) {
-                lastPaymentDate.max = today;
-            }
+            document.getElementById('lastPaymentDate').max = today;
             
-            // Form validation for step 5
-            const nextStep5Btn = document.getElementById('nextStep5');
-            if (nextStep5Btn) {
-                nextStep5Btn.addEventListener('click', function() {
-                    if (!signatureData) {
-                        alert('Please save your signature before proceeding.');
-                        return;
-                    }
-                    if (!document.getElementById('legalCertify').checked) {
-                        alert('Please certify the legal information before proceeding.');
-                        return;
-                    }
-                    goToStep(6);
-                });
-            }
-            
-            // Form validation helper
-            function validateFormStep(step) {
-                const inputs = document.querySelectorAll(`#step${step} input[required], #step${step} select[required]`);
-                for (let input of inputs) {
-                    if (!input.value.trim()) {
-                        alert(`Please fill in all required fields in step ${step}`);
-                        return false;
-                    }
+            // Form validation
+            document.getElementById('nextStep5').addEventListener('click', function() {
+                if (!signatureData) {
+                    alert('Please save your signature before proceeding.');
+                    return;
                 }
-                return true;
-            }
-            
-            // Enhanced next step handlers with validation
-            document.getElementById('nextStep1').addEventListener('click', function() {
-                if (validateFormStep(1)) goToStep(2);
+                if (!document.getElementById('legalCertify').checked) {
+                    alert('Please certify the legal information before proceeding.');
+                    return;
+                }
+                goToStep(6);
             });
-            
-            document.getElementById('nextStep2').addEventListener('click', function() {
-                if (validateFormStep(2)) goToStep(3);
-            });
-            
-            document.getElementById('nextStep3').addEventListener('click', function() {
-                if (validateFormStep(3)) goToStep(4);
-            });
-            
-            document.getElementById('nextStep4').addEventListener('click', function() {
-                if (validateFormStep(4)) goToStep(5);
-            });
-            
-            // Auto-send to webhook when form is completed
-            // This happens automatically in goToStep(6)
         });
     </script>
-    <script src="upload.js"></script>
-</body>
 </body>
 </html>
