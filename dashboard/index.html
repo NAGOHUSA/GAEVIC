@@ -192,6 +192,7 @@
             padding: 40px 0;
             background: white;
             border-bottom: 1px solid #e0e0e0;
+            display: none;
         }
         
         .dashboard-title {
@@ -640,6 +641,24 @@
             font-size: 16px;
         }
         
+        /* GitHub Status */
+        .github-status {
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        .github-status.success {
+            color: #28a745;
+        }
+        
+        .github-status.error {
+            color: #dc3545;
+        }
+        
+        .github-status.warning {
+            color: #fd7e14;
+        }
+        
         /* Responsive Design */
         @media (max-width: 768px) {
             .header-top {
@@ -725,13 +744,13 @@
                 <div class="logo-container">
                     <div class="logo">HC</div>
                     <div class="logo-text">
-                        <h1>Eviction Cases Dashboard 1.2</h1>
+                        <h1>Eviction Cases Dashboard 2.0</h1>
                         <p>Houston County Magistrate Court - Warner Robins, GA</p>
                     </div>
                 </div>
                 <div class="contact-info">
-                    <p><i class="fas fa-database"></i> Secure Case Management System</p>
-                    <p><i class="fas fa-cloud"></i> Cloud-Based Case Storage</p>
+                    <p><i class="fas fa-database"></i> Real-time GitHub Case Management</p>
+                    <p><i class="fab fa-github"></i> Repository: NAGOHUSA/GAEVIC</p>
                 </div>
             </div>
             
@@ -798,24 +817,25 @@
                         <i class="fas fa-sync-alt"></i> Refresh Data
                     </button>
                     <button class="btn btn-outline" id="exportData" style="margin-left: 10px;">
-                        <i class="fas fa-download"></i> Export Data
+                        <i class="fas fa-download"></i> Export CSV
                     </button>
                 </div>
             </div>
             
             <!-- Repository Info -->
             <div class="repo-info">
-                <h4><i class="fas fa-database"></i> Data Source Information</h4>
+                <h4><i class="fab fa-github"></i> GitHub Repository Status</h4>
                 <p><strong>Repository:</strong> NAGOHUSA/GAEVIC</p>
                 <p><strong>Path:</strong> cases/case_data.json</p>
                 <p><strong>Status:</strong> <span id="repoStatus">Loading...</span></p>
+                <div id="githubStatus" class="github-status"></div>
             </div>
             
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3>Total Cases</h3>
                     <div class="stat-number" id="totalCases">0</div>
-                    <div class="stat-trend" id="casesTrend">Please login to load data</div>
+                    <div class="stat-trend" id="casesTrend">Loading...</div>
                 </div>
                 <div class="stat-card">
                     <h3>Pending Filing</h3>
@@ -860,6 +880,9 @@
                         <button class="btn btn-outline" id="filterPending">
                             <i class="fas fa-filter"></i> Show Pending
                         </button>
+                        <button class="btn btn-outline" id="clearFilter" style="margin-left: 5px;">
+                            <i class="fas fa-times"></i> Clear Filter
+                        </button>
                     </div>
                 </div>
                 
@@ -886,7 +909,7 @@
                 <div id="noCasesMessage" class="no-cases" style="display: none;">
                     <i class="fas fa-folder-open"></i>
                     <h3>No Cases Found</h3>
-                    <p>No cases found in the repository. Cases will appear here as they are filed.</p>
+                    <p>No cases found in the GitHub repository. Cases will appear here as they are filed.</p>
                     <button class="btn btn-primary" id="refreshData2" style="margin-top: 20px;">
                         <i class="fas fa-sync-alt"></i> Refresh Data
                     </button>
@@ -931,7 +954,7 @@
             </div>
             
             <div class="copyright">
-                <p>© 2026 Houston County Eviction System Dashboard. Case data is stored securely in the cloud.</p>
+                <p>© 2026 Houston County Eviction System Dashboard. All case data is stored in GitHub repository.</p>
                 <p style="margin-top: 10px;">This dashboard provides case management functionality but does not constitute legal advice.</p>
             </div>
         </div>
@@ -979,10 +1002,12 @@
             const exportDataBtn = document.getElementById('exportData');
             const searchCases = document.getElementById('searchCases');
             const filterPendingBtn = document.getElementById('filterPending');
+            const clearFilterBtn = document.getElementById('clearFilter');
             const caseDetailsModal = document.getElementById('caseDetailsModal');
             const closeModalBtn = document.getElementById('closeModal');
             const caseDetailsContent = document.getElementById('caseDetailsContent');
             const repoStatus = document.getElementById('repoStatus');
+            const githubStatus = document.getElementById('githubStatus');
             
             // Charts
             let statusChart = null;
@@ -990,6 +1015,7 @@
             
             // Cases data
             let casesData = [];
+            let isFilteringPending = false;
             
             // Handle login form submission
             loginForm.addEventListener('submit', function(e) {
@@ -1041,6 +1067,8 @@
                 activeCases.textContent = '0';
                 completedCases.textContent = '0';
                 repoStatus.textContent = 'Logged out';
+                githubStatus.textContent = '';
+                githubStatus.className = 'github-status';
                 document.getElementById('casesTrend').textContent = 'Please login to load data';
             }
             
@@ -1143,31 +1171,37 @@
             // Load cases from GitHub
             async function loadAllCases() {
                 console.log('Loading cases from GitHub...');
-                showLoading('Loading case data from repository...');
-                repoStatus.textContent = 'Connecting to repository...';
+                showLoading('Loading case data from GitHub repository...');
+                repoStatus.textContent = 'Connecting to GitHub...';
+                githubStatus.textContent = '🔄 Connecting...';
+                githubStatus.className = 'github-status';
                 
                 try {
-                    const caseData = await getCaseDataFile(GITHUB_CONFIG, null);
+                    const caseData = await getCaseDataFile(GITHUB_CONFIG);
                     
                     if (caseData && Array.isArray(caseData)) {
                         casesData = caseData;
-                        console.log(`Loaded ${casesData.length} cases`);
+                        console.log(`Loaded ${casesData.length} cases from GitHub`);
                         
                         repoStatus.textContent = `Loaded ${casesData.length} cases`;
                         repoStatus.style.color = '#28a745';
+                        githubStatus.textContent = `✅ Loaded ${casesData.length} cases`;
+                        githubStatus.className = 'github-status success';
                         
                         updateDashboard();
                         hideLoading();
                     } else {
-                        throw new Error('Invalid data format');
+                        throw new Error('Invalid data format in case_data.json');
                     }
                     
                 } catch (error) {
-                    console.error('Error loading cases:', error);
+                    console.error('Error loading cases from GitHub:', error);
                     hideLoading();
                     
                     repoStatus.textContent = 'Connection Failed';
                     repoStatus.style.color = '#dc3545';
+                    githubStatus.textContent = `❌ Error: ${error.message || 'Connection failed'}`;
+                    githubStatus.className = 'github-status error';
                     
                     let errorMessage = error.message;
                     
@@ -1175,7 +1209,7 @@
                         if (error.response.status === 404) {
                             errorMessage = `File not found: cases/case_data.json`;
                         } else if (error.response.status === 403) {
-                            errorMessage = 'Rate limit exceeded. Please wait a few minutes and try again.';
+                            errorMessage = 'GitHub rate limit exceeded. Please wait a few minutes and try again.';
                         }
                     }
                     
@@ -1183,9 +1217,9 @@
                     noCasesMessage.style.display = 'block';
                     noCasesMessage.innerHTML = `
                         <i class="fas fa-exclamation-triangle"></i>
-                        <h3>Connection Error</h3>
+                        <h3>GitHub Connection Error</h3>
                         <p>${errorMessage}</p>
-                        <p>Repository: https://github.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/tree/main/cases</p>
+                        <p>Repository: <a href="https://github.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/tree/main/cases" target="_blank">${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/cases</a></p>
                         <button class="btn btn-primary" id="retryConnection" style="margin-top: 20px;">
                             <i class="fas fa-sync-alt"></i> Retry Connection
                         </button>
@@ -1196,30 +1230,27 @@
             }
             
             // Get case data from GitHub
-            async function getCaseDataFile(config, token) {
+            async function getCaseDataFile(config) {
                 const filePath = 'case_data.json';
                 const fullPath = config.path ? `${config.path}/${filePath}` : filePath;
                 const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${fullPath}`;
                 
-                console.log(`Fetching from: ${url}`);
+                console.log(`Fetching from GitHub: ${url}`);
                 
                 const headers = {
                     'Accept': 'application/vnd.github.v3+json',
-                    'User-Agent': 'EvictionDashboard/1.0'
+                    'User-Agent': 'EvictionDashboard/2.0'
                 };
-                
-                if (token) {
-                    headers['Authorization'] = `token ${token}`;
-                }
                 
                 const response = await axios.get(url, { 
                     headers: headers,
-                    timeout: 10000
+                    timeout: 15000
                 });
                 
                 const content = atob(response.data.content);
                 const caseData = JSON.parse(content);
                 
+                // Add timestamp from filingDate for sorting if not present
                 caseData.forEach(caseItem => {
                     if (caseItem.filingDate && !caseItem.timestamp) {
                         caseItem.timestamp = caseItem.filingDate;
@@ -1231,8 +1262,14 @@
             
             // Update dashboard with loaded data
             function updateDashboard() {
+                console.log('Updating dashboard with', casesData.length, 'cases');
+                // Update statistics
                 updateStats(casesData);
+                
+                // Update table
                 updateCasesTable(casesData);
+                
+                // Update charts
                 updateCharts(casesData);
             }
             
@@ -1240,6 +1277,8 @@
             function updateStats(cases) {
                 const total = cases.length;
                 const pending = cases.filter(c => c.status === 'Pending Court Filing').length;
+                
+                // Active cases: All cases that are in progress
                 const active = cases.filter(c => 
                     c.status === 'Court Filed - Awaiting Service' || 
                     c.status === 'Served - Awaiting Hearing' ||
@@ -1248,6 +1287,8 @@
                     c.status === 'Active - Payment Plan' ||
                     c.status === 'Awaiting SCRA Verification'
                 ).length;
+                
+                // Completed cases: Cases that have reached a final resolution
                 const completed = cases.filter(c => 
                     c.status === 'Writ of Possession Issued' || 
                     c.status === 'Eviction Completed' ||
@@ -1259,20 +1300,21 @@
                 activeCases.textContent = active;
                 completedCases.textContent = completed;
                 
+                // Update trend
                 const casesTrend = document.getElementById('casesTrend');
                 if (total > 0) {
-                    casesTrend.textContent = `${total} case${total !== 1 ? 's' : ''} loaded`;
+                    casesTrend.textContent = `${total} case${total !== 1 ? 's' : ''} loaded from GitHub`;
                     casesTrend.className = 'stat-trend';
                     casesTrend.style.color = '#28a745';
                 } else {
-                    casesTrend.textContent = 'No cases found';
+                    casesTrend.textContent = 'No cases found in repository';
                     casesTrend.className = 'stat-trend';
                     casesTrend.style.color = '#666';
                 }
             }
             
             // Update cases table
-            function updateCasesTable(cases, filterText = '', filterPending = false) {
+            function updateCasesTable(cases, filterText = '') {
                 casesTableBody.innerHTML = '';
                 
                 if (cases.length === 0) {
@@ -1284,6 +1326,7 @@
                 casesTableBody.style.display = 'table-row-group';
                 noCasesMessage.style.display = 'none';
                 
+                // Filter cases
                 let filteredCases = cases;
                 
                 if (filterText) {
@@ -1298,19 +1341,22 @@
                     });
                 }
                 
-                if (filterPending) {
+                if (isFilteringPending) {
                     filteredCases = filteredCases.filter(c => c.status === 'Pending Court Filing');
                 }
                 
+                // Sort by filing date (newest first)
                 filteredCases.sort((a, b) => {
                     const dateA = a.filingDate ? new Date(a.filingDate) : new Date(0);
                     const dateB = b.filingDate ? new Date(b.filingDate) : new Date(0);
                     return dateB - dateA;
                 });
                 
+                // Populate table
                 filteredCases.forEach(caseData => {
                     const row = document.createElement('tr');
                     
+                    // Format date
                     let formattedDate = 'No date';
                     if (caseData.filingDate) {
                         const date = new Date(caseData.filingDate);
@@ -1321,6 +1367,7 @@
                         });
                     }
                     
+                    // Get status badge class
                     let statusClass = 'status-pending';
                     if (caseData.status === 'Pending Court Filing') statusClass = 'status-pending';
                     if (caseData.status === 'Court Filed - Awaiting Service') statusClass = 'status-filed';
@@ -1329,6 +1376,7 @@
                     if (caseData.status === 'Writ of Possession Issued' || caseData.status === 'Eviction Completed') statusClass = 'status-completed';
                     if (caseData.status === 'Dismissed - Tenant Paid') statusClass = 'status-dismissed';
                     
+                    // Get amount owed
                     let amountOwed = '0.00';
                     if (caseData.case && caseData.case.amountOwed) {
                         amountOwed = parseFloat(caseData.case.amountOwed).toFixed(2);
@@ -1347,8 +1395,8 @@
                                 <button class="action-btn view-case" data-case-id="${caseData.caseId || ''}">
                                     <i class="fas fa-eye"></i> View
                                 </button>
-                                <button class="action-btn download-case" data-case-id="${caseData.caseId || ''}">
-                                    <i class="fas fa-download"></i> Download
+                                <button class="action-btn github-case" data-case-id="${caseData.caseId || ''}">
+                                    <i class="fab fa-github"></i> GitHub
                                 </button>
                             </div>
                         </td>
@@ -1357,6 +1405,7 @@
                     casesTableBody.appendChild(row);
                 });
                 
+                // Add event listeners to action buttons
                 document.querySelectorAll('.view-case').forEach(button => {
                     button.addEventListener('click', function() {
                         const caseId = this.getAttribute('data-case-id');
@@ -1364,25 +1413,32 @@
                     });
                 });
                 
-                document.querySelectorAll('.download-case').forEach(button => {
+                document.querySelectorAll('.github-case').forEach(button => {
                     button.addEventListener('click', function() {
                         const caseId = this.getAttribute('data-case-id');
-                        downloadCaseDocuments(caseId);
+                        window.open(`https://github.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/tree/main/cases/${caseId}`, '_blank');
                     });
                 });
             }
             
             // Update charts
             function updateCharts(cases) {
+                // Status Distribution Chart
                 const statusCounts = {};
+                
                 cases.forEach(caseData => {
                     const status = caseData.status || 'Unknown';
-                    statusCounts[status] = (statusCounts[status] || 0) + 1;
+                    if (!statusCounts[status]) {
+                        statusCounts[status] = 0;
+                    }
+                    statusCounts[status]++;
                 });
                 
+                // Filter out zero counts and sort
                 const labels = Object.keys(statusCounts).sort();
                 const data = labels.map(status => statusCounts[status]);
                 
+                // Color mapping for different statuses
                 const statusColors = {
                     'Pending Court Filing': '#ffc107',
                     'Court Filed - Awaiting Service': '#17a2b8',
@@ -1399,6 +1455,7 @@
                 
                 const colors = labels.map(status => statusColors[status] || '#6c757d');
                 
+                // Destroy existing chart if it exists
                 if (statusChart) {
                     statusChart.destroy();
                 }
@@ -1430,19 +1487,26 @@
                     });
                 }
                 
+                // Monthly Cases Chart
                 const monthlyCounts = {};
                 cases.forEach(caseData => {
                     if (caseData.filingDate) {
                         const date = new Date(caseData.filingDate);
                         const monthYear = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                        monthlyCounts[monthYear] = (monthlyCounts[monthYear] || 0) + 1;
+                        
+                        if (!monthlyCounts[monthYear]) {
+                            monthlyCounts[monthYear] = 0;
+                        }
+                        monthlyCounts[monthYear]++;
                     }
                 });
                 
+                // Sort months chronologically
                 const sortedMonths = Object.keys(monthlyCounts).sort((a, b) => {
                     return new Date(a) - new Date(b);
                 });
                 
+                // Destroy existing chart if it exists
                 if (monthlyChart) {
                     monthlyChart.destroy();
                 }
@@ -1481,6 +1545,7 @@
                 showLoading('Loading case details...');
                 
                 try {
+                    // Find case in loaded data
                     const caseData = casesData.find(c => c.caseId === caseId);
                     
                     if (!caseData) {
@@ -1489,6 +1554,7 @@
                         return;
                     }
                     
+                    // Format dates
                     let formattedFilingDate = 'No date available';
                     let formattedNoticeDate = 'No date available';
                     let formattedLastPaymentDate = 'No date available';
@@ -1523,6 +1589,7 @@
                         });
                     }
                     
+                    // Format lease type
                     let leaseTypeFormatted = 'Unknown';
                     if (caseData.case && caseData.case.leaseType) {
                         const leaseTypes = {
@@ -1533,6 +1600,7 @@
                         leaseTypeFormatted = leaseTypes[caseData.case.leaseType] || caseData.case.leaseType;
                     }
                     
+                    // Format reason
                     let reasonFormatted = 'Not specified';
                     if (caseData.case && caseData.case.reason) {
                         const reasons = {
@@ -1545,6 +1613,7 @@
                         reasonFormatted = reasons[caseData.case.reason] || caseData.case.reason;
                     }
                     
+                    // Create case details HTML
                     caseDetailsContent.innerHTML = `
                         <div class="case-details-grid">
                             <div>
@@ -1556,6 +1625,7 @@
                                         <p><strong>Date Filed:</strong> ${formattedFilingDate}</p>
                                         <p><strong>Reason for Eviction:</strong> ${reasonFormatted}</p>
                                         <p><strong>Lease Type:</strong> ${leaseTypeFormatted}</p>
+                                        <p><strong>GitHub:</strong> <a href="https://github.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/tree/main/cases/${caseData.caseId}" target="_blank">View on GitHub</a></p>
                                     </div>
                                 </div>
                                 ${caseData.property ? `
@@ -1620,6 +1690,7 @@
                         </div>
                     `;
                     
+                    // Add event listener to close button
                     document.getElementById('closeDetailsBtn').addEventListener('click', function() {
                         caseDetailsModal.style.display = 'none';
                     });
@@ -1634,11 +1705,6 @@
                 }
             }
             
-            // Download case documents
-            async function downloadCaseDocuments(caseId) {
-                alert('Document download feature would require specific file paths in the repository. This feature needs case files to be properly organized.');
-            }
-            
             // Export data function
             async function exportData() {
                 showLoading('Exporting data...');
@@ -1648,6 +1714,7 @@
                         throw new Error('No data to export. Please load cases first.');
                     }
                     
+                    // Create CSV content
                     let csvContent = "Case ID,Landlord,Tenant,Property Address,City,Amount Owed,Status,Date Filed\n";
                     
                     casesData.forEach(caseData => {
@@ -1666,6 +1733,7 @@
                         csvContent += `"${caseData.caseId || 'Unknown'}","${landlordName}","${tenantName}","${propertyAddress}","${propertyCity}",$${amountOwed},"${caseData.status || 'Unknown'}","${formattedDate}"\n`;
                     });
                     
+                    // Create blob and download
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -1690,6 +1758,7 @@
                 caseDetailsModal.style.display = 'none';
             });
             
+            // Click outside modal to close
             caseDetailsModal.addEventListener('click', function(e) {
                 if (e.target === caseDetailsModal) {
                     caseDetailsModal.style.display = 'none';
@@ -1706,15 +1775,25 @@
             });
             
             filterPendingBtn.addEventListener('click', function() {
-                const isFiltering = this.classList.contains('active');
+                isFilteringPending = !isFilteringPending;
                 
-                if (isFiltering) {
-                    this.classList.remove('active');
-                    updateCasesTable(casesData, searchCases.value, false);
-                } else {
+                if (isFilteringPending) {
                     this.classList.add('active');
-                    updateCasesTable(casesData, searchCases.value, true);
+                    this.innerHTML = '<i class="fas fa-filter"></i> Showing Pending';
+                } else {
+                    this.classList.remove('active');
+                    this.innerHTML = '<i class="fas fa-filter"></i> Show Pending';
                 }
+                
+                updateCasesTable(casesData, searchCases.value);
+            });
+            
+            clearFilterBtn.addEventListener('click', function() {
+                searchCases.value = '';
+                isFilteringPending = false;
+                filterPendingBtn.classList.remove('active');
+                filterPendingBtn.innerHTML = '<i class="fas fa-filter"></i> Show Pending';
+                updateCasesTable(casesData, '');
             });
             
             // Utility functions
