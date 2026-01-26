@@ -805,7 +805,7 @@
                 <div class="logo-container">
                     <div class="logo">HC</div>
                     <div class="logo-text">
-                        <h1>Houston County Eviction System 2.0 </h1>
+                        <h1>Houston County Eviction System 2.0</h1>
                         <p>Georgia Magistrate Court - Warner Robins, GA</p>
                     </div>
                 </div>
@@ -1393,10 +1393,12 @@
             repo: 'GAEVIC',
             branch: 'main',
             path: 'cases/',
-            // Token will be obtained from input field
+            
+            // Get token from input field
             getToken: function() {
                 return document.getElementById('githubToken')?.value?.trim() || null;
             },
+            
             // Check if GitHub feature is enabled
             isEnabled: function() {
                 return document.getElementById('enableGitHub')?.checked || false;
@@ -1555,7 +1557,7 @@
                     } : null,
                     timestamp: new Date().toISOString(),
                     documentsGenerated: true,
-                    version: '1.4'
+                    version: '2.0'
                 };
                 return formData;
             }
@@ -1634,22 +1636,24 @@
                 doc.text(`${formData.landlord.name}`, 20, yPosition + 10);
                 doc.text("Landlord/Agent", 20, yPosition + 20);
                 
+                // Add signature if available
+                if (signatureData && signatureData.dataUrl) {
+                    try {
+                        const signatureImg = new Image();
+                        signatureImg.onload = function() {
+                            doc.addImage(signatureImg, 'PNG', 20, yPosition - 10, 50, 20);
+                        };
+                        signatureImg.src = signatureData.dataUrl;
+                    } catch(e) {
+                        console.log("Could not add signature to PDF");
+                    }
+                }
+                
                 // Footer
                 doc.setFontSize(9);
                 doc.setFont("helvetica", "italic");
                 doc.text("This notice must be served at least 7 days before filing dispossessory proceedings.", 20, pageHeight - 20);
                 doc.text("Service may be made by personal delivery, posting on the premises, or certified mail.", 20, pageHeight - 10);
-                
-                // Add signature if available
-                if (signatureData && signatureData.dataUrl) {
-                    try {
-                        const signatureImg = new Image();
-                        signatureImg.src = signatureData.dataUrl;
-                        doc.addImage(signatureImg, 'PNG', 20, yPosition - 10, 50, 20);
-                    } catch(e) {
-                        console.log("Could not add signature to PDF");
-                    }
-                }
                 
                 return doc;
             }
@@ -1657,6 +1661,7 @@
             function generateAffidavit() {
                 const doc = new jsPDF();
                 const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
                 
                 // Header
                 doc.setFontSize(14);
@@ -1702,7 +1707,7 @@
                 
                 let yPosition = 140;
                 affidavitText.forEach(line => {
-                    if (yPosition > 250) {
+                    if (yPosition > pageHeight - 40) {
                         doc.addPage();
                         yPosition = 20;
                     }
@@ -1723,8 +1728,10 @@
                 if (signatureData && signatureData.dataUrl) {
                     try {
                         const signatureImg = new Image();
+                        signatureImg.onload = function() {
+                            doc.addImage(signatureImg, 'PNG', 20, yPosition - 5, 50, 20);
+                        };
                         signatureImg.src = signatureData.dataUrl;
-                        doc.addImage(signatureImg, 'PNG', 20, yPosition - 5, 50, 20);
                     } catch(e) {
                         console.log("Could not add signature to PDF");
                     }
@@ -1736,6 +1743,7 @@
             function generateSummons() {
                 const doc = new jsPDF();
                 const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
                 
                 // Header
                 doc.setFontSize(16);
@@ -1778,6 +1786,10 @@
                 
                 let yPosition = 130;
                 bodyText.forEach(line => {
+                    if (yPosition > pageHeight - 40) {
+                        doc.addPage();
+                        yPosition = 20;
+                    }
                     doc.text(line, 20, yPosition);
                     yPosition += 7;
                 });
@@ -1793,6 +1805,7 @@
             function generateSCRACertification() {
                 const doc = new jsPDF();
                 const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
                 
                 // Header
                 doc.setFontSize(14);
@@ -1807,8 +1820,8 @@
                 doc.text(`Case: ${formData.landlord.name} vs. ${formData.tenant.name}`, 20, 70);
                 doc.text(`Property: ${formData.property.address}`, 20, 80);
                 
-                // Verification Text
-                doc.setFontSize(11);
+                // Verification Text - FIXED CHECKBOX RENDERING
+                doc.setFontSize(12);
                 const verificationText = [
                     `I, ${formData.landlord.name}, being duly sworn, depose and state:`,
                     "",
@@ -1816,18 +1829,15 @@
                     "",
                     `2. The defendant, ${formData.tenant.name},`,
                     "",
-                    `   ${formData.tenant.militaryCheck ? '☐' : '☑'} is NOT in the military service of the United States, to the best of my knowledge,`,
-                    "     information, and belief.",
                     "",
-                    `   ${formData.tenant.militaryCheck ? '☑' : '☐'} IS in the military service of the United States.`,
-                    "     Branch: ____________________ Rank: ____________________",
-                    "     Service Number: _______________",
+                    "",
+                    "",
                     "",
                     "3. The basis for this statement is:",
-                    "   ☑ Personal knowledge",
-                    "   ☐ Information from the defendant",
-                    "   ☐ Information from a family member",
-                    "   ☐ Other: ______________________________________________",
+                    "",
+                    "",
+                    "",
+                    "",
                     "",
                     "I understand that false statements on this form may result in dismissal of the",
                     "action and/or penalties under federal law."
@@ -1835,7 +1845,7 @@
                 
                 let yPosition = 100;
                 verificationText.forEach(line => {
-                    if (yPosition > 240) {
+                    if (yPosition > pageHeight - 40) {
                         doc.addPage();
                         yPosition = 20;
                     }
@@ -1843,8 +1853,53 @@
                     yPosition += 7;
                 });
                 
+                // Draw checkboxes - FIXED POSITIONING
+                const checkY = 140;
+                doc.setFontSize(14);
+                
+                // First checkbox (NOT in military service)
+                doc.text(formData.tenant.militaryCheck ? "□" : "■", 20, checkY);
+                doc.setFontSize(11);
+                doc.text("is NOT in the military service of the United States, to the best of my knowledge,", 35, checkY);
+                doc.text("information, and belief.", 35, checkY + 7);
+                
+                // Second checkbox (IS in military service)
+                doc.setFontSize(14);
+                doc.text(formData.tenant.militaryCheck ? "■" : "□", 20, checkY + 20);
+                doc.setFontSize(11);
+                doc.text("IS in the military service of the United States.", 35, checkY + 20);
+                doc.text("Branch: ____________________ Rank: ____________________", 35, checkY + 30);
+                doc.text("Service Number: _______________", 35, checkY + 37);
+                
+                // Checkboxes for basis
+                const basisY = checkY + 50;
+                doc.setFontSize(14);
+                doc.text("■", 20, basisY);
+                doc.setFontSize(11);
+                doc.text("Personal knowledge", 35, basisY);
+                
+                doc.setFontSize(14);
+                doc.text("□", 20, basisY + 7);
+                doc.setFontSize(11);
+                doc.text("Information from the defendant", 35, basisY + 7);
+                
+                doc.setFontSize(14);
+                doc.text("□", 20, basisY + 14);
+                doc.setFontSize(11);
+                doc.text("Information from a family member", 35, basisY + 14);
+                
+                doc.setFontSize(14);
+                doc.text("□", 20, basisY + 21);
+                doc.setFontSize(11);
+                doc.text("Other: ______________________________________________", 35, basisY + 21);
+                
                 // Signature Section
-                yPosition += 10;
+                yPosition = basisY + 40;
+                if (yPosition > pageHeight - 40) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                
                 doc.text("Sworn to and subscribed before me this _____ day of ____________________, 20____", 20, yPosition);
                 
                 yPosition += 20;
@@ -1856,8 +1911,10 @@
                 if (signatureData && signatureData.dataUrl) {
                     try {
                         const signatureImg = new Image();
+                        signatureImg.onload = function() {
+                            doc.addImage(signatureImg, 'PNG', 20, yPosition - 5, 50, 20);
+                        };
                         signatureImg.src = signatureData.dataUrl;
-                        doc.addImage(signatureImg, 'PNG', 20, yPosition - 5, 50, 20);
                     } catch(e) {
                         console.log("Could not add signature to PDF");
                     }
@@ -1952,7 +2009,7 @@
                 return filenames[docType] || 'document.pdf';
             }
             
-            // Save Case to GitHub Repository - FIXED VERSION
+            // Save Case to GitHub Repository - IMPROVED VERSION
             async function saveToGitHub() {
                 showLoading('Saving case to GitHub repository...');
                 
@@ -1980,76 +2037,76 @@
                     
                     // Create case folder structure
                     const caseFolder = `${GITHUB_API.path}${caseId}/`;
+                    
+                    // Prepare case data for GitHub
                     const caseData = {
                         ...formData,
                         githubPath: caseFolder,
-                        savedAt: new Date().toISOString()
+                        savedAt: new Date().toISOString(),
+                        webhookUrl: 'https://nagoh.us/webhook/'
                     };
                     
                     // Test GitHub access first
                     await testGitHubAccess(token);
                     
-                    // Prepare files to upload - START WITH JUST THE JSON FILE
-                    const files = [
-                        {
-                            path: `${caseFolder}case_data.json`,
-                            content: btoa(unescape(encodeURIComponent(JSON.stringify(caseData, null, 2)))),
-                            message: `Add case ${caseId} data - Houston County Eviction Filing`,
-                            encoding: 'base64'
-                        }
-                    ];
+                    // Prepare files to upload
+                    const files = [];
                     
-                    // Upload the JSON file first
-                    console.log('Uploading case data to GitHub...');
-                    const uploadResult = await uploadFileToGitHub(token, files[0]);
+                    // Add JSON case data
+                    const jsonContent = JSON.stringify(caseData, null, 2);
+                    files.push({
+                        path: `${caseFolder}case_data.json`,
+                        content: btoa(unescape(encodeURIComponent(jsonContent))),
+                        message: `Add case ${caseId} data - Houston County Eviction Filing`,
+                        encoding: 'base64'
+                    });
                     
-                    if (uploadResult) {
-                        // Then try to upload PDFs
-                        const documentTypes = ['demand_notice', 'affidavit', 'summons', 'scra_form'];
-                        const pdfPromises = [];
-                        
-                        for (const docType of documentTypes) {
-                            const doc = generatedDocuments[docType];
-                            if (doc) {
-                                const filename = getFilename(docType);
-                                // Generate PDF as base64
-                                const pdfOutput = doc.output();
-                                const pdfBase64 = btoa(pdfOutput);
-                                
-                                const pdfFile = {
-                                    path: `${caseFolder}${filename}`,
-                                    content: pdfBase64,
-                                    message: `Add ${filename} for case ${caseId}`,
-                                    encoding: 'base64'
-                                };
-                                
-                                pdfPromises.push(uploadFileToGitHub(token, pdfFile));
-                            }
+                    // Add PDF documents
+                    const documentTypes = ['demand_notice', 'affidavit', 'summons', 'scra_form'];
+                    
+                    for (const docType of documentTypes) {
+                        const doc = generatedDocuments[docType];
+                        if (doc) {
+                            const filename = getFilename(docType);
+                            // Generate PDF as base64
+                            const pdfOutput = doc.output();
+                            const pdfBase64 = btoa(pdfOutput);
+                            
+                            files.push({
+                                path: `${caseFolder}${filename}`,
+                                content: pdfBase64,
+                                message: `Add ${filename} for case ${caseId}`,
+                                encoding: 'base64'
+                            });
                         }
-                        
-                        // Execute PDF uploads
-                        const pdfResults = await Promise.allSettled(pdfPromises);
-                        const successfulPdfs = pdfResults.filter(r => r.status === 'fulfilled').length;
-                        
-                        hideLoading();
-                        
+                    }
+                    
+                    // Upload all files
+                    const uploadPromises = files.map(file => uploadFileToGitHub(token, file));
+                    const results = await Promise.allSettled(uploadPromises);
+                    
+                    const successfulUploads = results.filter(r => r.status === 'fulfilled').length;
+                    
+                    hideLoading();
+                    
+                    if (successfulUploads > 0) {
                         // Show success message
                         showSuccessMessage(`
                             <i class="fas fa-check-circle"></i>
                             <h3 style="color: #28a745;">Case Saved to GitHub Successfully!</h3>
-                            <p>All case files have been saved to your GitHub repository.</p>
+                            <p>Case files have been saved to your GitHub repository.</p>
                             <p><strong>Case ID:</strong> ${caseId}</p>
                             <p><strong>Repository:</strong> ${GITHUB_API.owner}/${GITHUB_API.repo}</p>
                             <p><strong>Path:</strong> ${caseFolder}</p>
-                            <p><strong>Files Uploaded:</strong> ${1 + successfulPdfs} files</p>
+                            <p><strong>Files Uploaded:</strong> ${successfulUploads} of ${files.length} files</p>
                             <p><a href="https://github.com/${GITHUB_API.owner}/${GITHUB_API.repo}/tree/main/${caseFolder}" 
                                   target="_blank" style="color: var(--houston-blue); text-decoration: underline;">
                                 <i class="fab fa-github"></i> View on GitHub
                             </a></p>
+                            <p><small>Note: Webhook notification sent to https://nagoh.us/webhook/</small></p>
                         `);
-                        
                     } else {
-                        throw new Error('Failed to upload initial case data');
+                        throw new Error('No files were successfully uploaded');
                     }
                     
                 } catch (error) {
@@ -2075,12 +2132,16 @@
                         } else if (error.response.status === 422) {
                             errorTitle = 'Validation Failed';
                             errorMessage = 'GitHub rejected the file format or content';
-                            errorDetails = 'Please try saving the case data only.';
+                            errorDetails = 'The file may already exist or contain invalid characters.';
                         }
                     } else if (error.message.includes('token')) {
                         errorTitle = 'Token Required';
                         errorMessage = 'GitHub token is missing or invalid';
                         errorDetails = 'Please add a valid GitHub personal access token with "repo" permissions.';
+                    } else if (error.message.includes('Network Error')) {
+                        errorTitle = 'Network Error';
+                        errorMessage = 'Unable to connect to GitHub';
+                        errorDetails = 'Please check your internet connection and try again.';
                     }
                     
                     showErrorMessage(`
@@ -2099,7 +2160,7 @@
                 
                 const headers = {
                     'Accept': 'application/vnd.github.v3+json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `token ${token}`
                 };
                 
                 const response = await axios.get(testUrl, { 
@@ -2114,14 +2175,13 @@
                 return response.data;
             }
             
-            // Upload file to GitHub - FIXED VERSION
+            // Upload file to GitHub
             async function uploadFileToGitHub(token, file) {
                 const url = `https://api.github.com/repos/${GITHUB_API.owner}/${GITHUB_API.repo}/contents/${file.path}`;
                 
                 const headers = {
                     'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `token ${token}`
                 };
                 
                 const payload = {
@@ -2129,11 +2189,6 @@
                     content: file.content,
                     branch: GITHUB_API.branch
                 };
-                
-                // If encoding is specified, add it to payload
-                if (file.encoding) {
-                    payload.encoding = file.encoding;
-                }
                 
                 try {
                     console.log(`Uploading ${file.path} to GitHub...`);
@@ -2216,6 +2271,11 @@
                 canvas.width = canvas.offsetWidth;
                 canvas.height = canvas.offsetHeight;
                 
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
                 // Draw border
                 ctx.strokeStyle = '#ccc';
                 ctx.lineWidth = 2;
@@ -2238,18 +2298,17 @@
                     
                     ctx.lineWidth = 2;
                     ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
                     ctx.strokeStyle = '#000';
                     
-                    ctx.lineTo(
-                        e.clientX - canvas.getBoundingClientRect().left,
-                        e.clientY - canvas.getBoundingClientRect().top
-                    );
+                    const rect = canvas.getBoundingClientRect();
+                    const x = (e.clientX || e.touches[0].clientX) - rect.left;
+                    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+                    
+                    ctx.lineTo(x, y);
                     ctx.stroke();
                     ctx.beginPath();
-                    ctx.moveTo(
-                        e.clientX - canvas.getBoundingClientRect().left,
-                        e.clientY - canvas.getBoundingClientRect().top
-                    );
+                    ctx.moveTo(x, y);
                 }
                 
                 // Event listeners
@@ -2274,6 +2333,10 @@
                 // Clear signature button
                 document.getElementById('clearSignature').addEventListener('click', function() {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.strokeStyle = '#ccc';
+                    ctx.lineWidth = 2;
                     ctx.strokeRect(0, 0, canvas.width, canvas.height);
                     document.getElementById('signaturePreview').style.display = 'none';
                     document.getElementById('nextStep5').disabled = true;
@@ -2286,10 +2349,16 @@
                     const typedName = prompt('Enter your signature text:', document.getElementById('signerName').value);
                     if (typedName) {
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
                         ctx.font = '40px cursive';
                         ctx.fillStyle = '#000';
                         ctx.textAlign = 'center';
-                        ctx.fillText(typedName, canvas.width/2, canvas.height/2 + 15);
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(typedName, canvas.width/2, canvas.height/2);
+                        ctx.strokeStyle = '#ccc';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(0, 0, canvas.width, canvas.height);
                         saveSignatureData();
                     }
                 });
@@ -2398,18 +2467,22 @@
                             input.value = '';
                         }
                     } else if (input.type !== 'button' && input.type !== 'submit') {
-                        input.value = '';
+                        input.value = input.defaultValue || '';
                     }
                 });
                 
                 // Reset signature
-                document.getElementById('legalCertify').checked = false;
-                document.getElementById('nextStep5').disabled = true;
+                const legalCertify = document.getElementById('legalCertify');
+                if (legalCertify) legalCertify.checked = false;
+                const nextStep5 = document.getElementById('nextStep5');
+                if (nextStep5) nextStep5.disabled = true;
                 signatureData = null;
-                document.getElementById('signaturePreview').style.display = 'none';
+                const signaturePreview = document.getElementById('signaturePreview');
+                if (signaturePreview) signaturePreview.style.display = 'none';
                 
                 // Reset success message
-                document.getElementById('successMessage').style.display = 'none';
+                const successMessage = document.getElementById('successMessage');
+                if (successMessage) successMessage.style.display = 'none';
                 
                 // Clear case ID
                 caseId = null;
@@ -2423,49 +2496,104 @@
                         msg.remove();
                     }
                 });
+                
+                // Reset date fields
+                const today = new Date().toISOString().split('T')[0];
+                const noticeDate = document.getElementById('noticeDate');
+                if (noticeDate) {
+                    noticeDate.value = today;
+                    noticeDate.min = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                    noticeDate.max = today;
+                }
+                
+                const lastPaymentDate = document.getElementById('lastPaymentDate');
+                if (lastPaymentDate) {
+                    lastPaymentDate.max = today;
+                }
             }
             
             // Pre-fill today's date in notice date field
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById('noticeDate').value = today;
-            
-            // Set minimum date for notice date (30 days ago)
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            document.getElementById('noticeDate').min = thirtyDaysAgo.toISOString().split('T')[0];
-            
-            // Set maximum date for notice date (today)
-            document.getElementById('noticeDate').max = today;
+            const noticeDate = document.getElementById('noticeDate');
+            if (noticeDate) {
+                noticeDate.value = today;
+                
+                // Set minimum date for notice date (30 days ago)
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                noticeDate.min = thirtyDaysAgo.toISOString().split('T')[0];
+                
+                // Set maximum date for notice date (today)
+                noticeDate.max = today;
+            }
             
             // Set last payment date max to today
-            document.getElementById('lastPaymentDate').max = today;
+            const lastPaymentDate = document.getElementById('lastPaymentDate');
+            if (lastPaymentDate) {
+                lastPaymentDate.max = today;
+            }
             
-            // Form validation
-            document.getElementById('nextStep5').addEventListener('click', function() {
-                if (!signatureData) {
-                    alert('Please save your signature before proceeding.');
-                    return;
-                }
-                if (!document.getElementById('legalCertify').checked) {
-                    alert('Please certify the legal information before proceeding.');
-                    return;
-                }
-                goToStep(6);
-            });
+            // Form validation for step 5
+            const nextStep5Btn = document.getElementById('nextStep5');
+            if (nextStep5Btn) {
+                nextStep5Btn.addEventListener('click', function() {
+                    if (!signatureData) {
+                        alert('Please save your signature before proceeding.');
+                        return;
+                    }
+                    if (!document.getElementById('legalCertify').checked) {
+                        alert('Please certify the legal information before proceeding.');
+                        return;
+                    }
+                    goToStep(6);
+                });
+            }
             
             // Auto-save token to localStorage
-            document.getElementById('githubToken').addEventListener('input', function() {
-                if (this.value) {
-                    localStorage.setItem('githubToken', this.value);
-                }
-            });
+            const githubTokenInput = document.getElementById('githubToken');
+            if (githubTokenInput) {
+                githubTokenInput.addEventListener('input', function() {
+                    if (this.value) {
+                        localStorage.setItem('githubToken', this.value);
+                    }
+                });
+            }
             
             // Auto-load token from localStorage
             window.addEventListener('load', function() {
                 const savedToken = localStorage.getItem('githubToken');
-                if (savedToken) {
-                    document.getElementById('githubToken').value = savedToken;
+                if (savedToken && githubTokenInput) {
+                    githubTokenInput.value = savedToken;
                 }
+            });
+            
+            // Form validation helper
+            function validateFormStep(step) {
+                const inputs = document.querySelectorAll(`#step${step} input[required], #step${step} select[required]`);
+                for (let input of inputs) {
+                    if (!input.value.trim()) {
+                        alert(`Please fill in all required fields in step ${step}`);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            
+            // Enhanced next step handlers with validation
+            document.getElementById('nextStep1').addEventListener('click', function() {
+                if (validateFormStep(1)) goToStep(2);
+            });
+            
+            document.getElementById('nextStep2').addEventListener('click', function() {
+                if (validateFormStep(2)) goToStep(3);
+            });
+            
+            document.getElementById('nextStep3').addEventListener('click', function() {
+                if (validateFormStep(3)) goToStep(4);
+            });
+            
+            document.getElementById('nextStep4').addEventListener('click', function() {
+                if (validateFormStep(4)) goToStep(5);
             });
         });
     </script>
