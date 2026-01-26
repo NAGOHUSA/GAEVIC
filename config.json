@@ -8,7 +8,7 @@
     "owner": "NAGOHUSA",
     "repo": "GAEVIC",
     "branch": "main",
-    "webhook_url": "https://your-domain.com/webhook/",
+    "webhook_url": "https://nagoh.us/webhook/",
     "api_url": "https://api.github.com"
   },
   "court": {
