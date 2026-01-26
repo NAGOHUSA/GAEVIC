@@ -7,10 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         :root {
             --houston-blue: #003366;
@@ -175,58 +171,6 @@
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
         }
         
-        /* Features Section */
-        .features {
-            padding: 60px 0;
-            background-color: white;
-        }
-        
-        .section-title {
-            text-align: center;
-            font-size: 32px;
-            color: var(--houston-blue);
-            margin-bottom: 50px;
-            font-family: 'Merriweather', serif;
-        }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-        }
-        
-        .feature-card {
-            background-color: var(--light-gray);
-            border-radius: var(--border-radius);
-            padding: 30px;
-            text-align: center;
-            box-shadow: var(--box-shadow);
-            transition: transform 0.3s ease;
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .feature-icon {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(to right, var(--houston-blue), var(--georgia-blue));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            color: white;
-            font-size: 28px;
-        }
-        
-        .feature-card h3 {
-            color: var(--houston-blue);
-            margin-bottom: 15px;
-            font-size: 22px;
-        }
-        
         /* Form Container */
         .form-container {
             background-color: white;
@@ -236,75 +180,6 @@
             margin: 40px auto;
             max-width: 900px;
             display: none;
-        }
-        
-        .form-progress {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 40px;
-            position: relative;
-        }
-        
-        .form-progress:before {
-            content: '';
-            position: absolute;
-            top: 20px;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background-color: #e0e0e0;
-            z-index: 1;
-        }
-        
-        .progress-step {
-            text-align: center;
-            position: relative;
-            z-index: 2;
-            flex: 1;
-        }
-        
-        .step-circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #e0e0e0;
-            color: #666;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 10px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .step-circle.active {
-            background-color: var(--houston-blue);
-            color: white;
-        }
-        
-        .step-circle.completed {
-            background-color: var(--houston-gold);
-            color: white;
-        }
-        
-        .step-label {
-            font-size: 14px;
-            color: #666;
-            font-weight: 600;
-        }
-        
-        .form-step {
-            display: none;
-        }
-        
-        .form-step.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
         
         .form-title {
@@ -386,262 +261,20 @@
             background-color: #5a6268;
         }
         
-        .btn-outline {
-            background-color: white;
-            color: var(--houston-blue);
-            border: 2px solid var(--houston-blue);
-        }
-        
-        .btn-outline:hover {
-            background-color: var(--houston-blue);
-            color: white;
-        }
-        
-        .btn-success {
-            background-color: var(--success-green);
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background-color: #218838;
-        }
-        
-        .btn-danger {
-            background-color: #dc3545;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background-color: #c82333;
-        }
-        
-        /* Info Box */
-        .info-box {
-            background-color: #e8f4fd;
-            border-left: 4px solid var(--houston-blue);
-            padding: 20px;
-            margin-bottom: 30px;
-            border-radius: var(--border-radius);
-        }
-        
-        .info-box h4 {
-            color: var(--houston-blue);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .info-box.warning {
-            background-color: #fff3cd;
-            border-left-color: var(--warning-orange);
-        }
-        
-        .info-box.success {
-            background-color: #d4edda;
-            border-left-color: var(--success-green);
-        }
-        
-        /* Document Preview Section */
-        .document-preview {
-            margin: 30px 0;
-            border: 2px solid #e0e0e0;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-        }
-        
-        .document-header {
-            background: #f8f9fa;
-            padding: 15px 20px;
-            border-bottom: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .document-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .document-frame {
-            width: 100%;
-            height: 500px;
-            border: none;
-        }
-        
-        /* Signature Pad */
-        .signature-container {
-            margin: 30px 0;
-        }
-        
-        .signature-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .signature-pad {
-            width: 100%;
-            height: 200px;
-            border: 2px dashed #ccc;
-            border-radius: var(--border-radius);
-            background: white;
-            cursor: crosshair;
-            margin-bottom: 15px;
-        }
-        
-        .signature-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .signature-preview {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: var(--border-radius);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .signature-preview img {
-            max-height: 50px;
-            border: 1px solid #ccc;
-            background: white;
-            padding: 5px;
-        }
-        
-        /* Document Download Section */
-        .download-section {
-            margin: 30px 0;
+        /* Success Message */
+        .success-message {
             text-align: center;
-        }
-        
-        .download-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-        
-        .download-card {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        
-        .download-card:hover {
-            border-color: var(--houston-blue);
-            transform: translateY(-5px);
-            box-shadow: var(--box-shadow);
-        }
-        
-        .download-icon {
-            width: 60px;
-            height: 60px;
-            background: var(--houston-blue);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            font-size: 24px;
-        }
-        
-        .download-card h3 {
-            color: var(--houston-blue);
-            margin-bottom: 10px;
-            font-size: 18px;
-        }
-        
-        .download-card p {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 15px;
-            min-height: 40px;
-        }
-        
-        /* Webhook Status */
-        .webhook-status {
-            margin: 30px 0;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: var(--border-radius);
-            border: 2px solid var(--houston-blue);
-            display: none;
-        }
-        
-        .webhook-status h3 {
-            color: var(--houston-blue);
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-        
-        /* Case Status */
-        .case-status {
-            background: white;
             padding: 30px;
+            background: #d4edda;
+            border: 2px solid #c3e6cb;
             border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            margin: 30px 0;
-            display: none;
+            margin: 20px 0;
         }
         
-        .status-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .status-timeline {
-            display: flex;
-            justify-content: space-between;
-            position: relative;
-            margin: 40px 0;
-        }
-        
-        .status-timeline:before {
-            content: '';
-            position: absolute;
-            top: 20px;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: #e0e0e0;
-            z-index: 1;
-        }
-        
-        .status-step {
-            text-align: center;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .status-icon {
-            width: 40px;
-            height: 40px;
-            background: #e0e0e0;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 10px;
-            color: white;
-            font-size: 18px;
-        }
-        
-        .status-step.active .status-icon {
-            background: var(--houston-blue);
-        }
-        
-        .status-step.completed .status-icon {
-            background: var(--success-green);
+        .success-message i {
+            font-size: 60px;
+            color: #28a745;
+            margin-bottom: 20px;
         }
         
         /* Footer */
@@ -722,38 +355,6 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Success Message */
-        .success-message {
-            text-align: center;
-            padding: 30px;
-            background: #d4edda;
-            border: 2px solid #c3e6cb;
-            border-radius: var(--border-radius);
-            margin: 20px 0;
-        }
-        
-        .success-message i {
-            font-size: 60px;
-            color: #28a745;
-            margin-bottom: 20px;
-        }
-        
-        /* Webhook Notification */
-        .webhook-notification {
-            text-align: center;
-            padding: 20px;
-            background: #e8f4fd;
-            border: 2px solid var(--houston-blue);
-            border-radius: var(--border-radius);
-            margin: 20px 0;
-        }
-        
-        .webhook-notification i {
-            font-size: 40px;
-            color: var(--houston-blue);
-            margin-bottom: 15px;
-        }
-        
         /* Responsive Design */
         @media (max-width: 768px) {
             .header-top {
@@ -792,19 +393,6 @@
             .btn {
                 width: 100%;
             }
-            
-            .form-progress {
-                flex-wrap: wrap;
-                gap: 15px;
-            }
-            
-            .progress-step {
-                flex: 0 0 calc(50% - 15px);
-            }
-            
-            .download-grid {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
@@ -822,7 +410,7 @@
                 <div class="logo-container">
                     <div class="logo">HC</div>
                     <div class="logo-text">
-                        <h1>Houston County Eviction System 1.1</h1>
+                        <h1>Houston County Eviction System x </h1>
                         <p>Georgia Magistrate Court - Warner Robins, GA</p>
                     </div>
                 </div>
@@ -837,10 +425,8 @@
                 <ul class="nav-links">
                     <li><a href="#"><i class="fas fa-home"></i> Home</a></li>
                     <li><a href="#" id="navStartFiling"><i class="fas fa-file-alt"></i> Start Filing</a></li>
-                    <li><a href="dashboard/index.html" target="_blank"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                     <li><a href="#"><i class="fas fa-question-circle"></i> How It Works</a></li>
                     <li><a href="#"><i class="fas fa-gavel"></i> Court Information</a></li>
-                    <li><a href="#"><i class="fas fa-dollar-sign"></i> Fee Schedule</a></li>
                     <li><a href="#"><i class="fas fa-envelope"></i> Contact</a></li>
                 </ul>
             </nav>
@@ -851,486 +437,151 @@
     <section class="hero">
         <div class="container">
             <h2>File Eviction Cases Online for Houston County, Georgia</h2>
-            <p>Our secure online system allows landlords to file dispossessory affidavits, generate required notices, and submit cases directly to the Houston County Magistrate Court. Save time and ensure compliance with Georgia eviction laws.</p>
+            <p>Our secure online system allows landlords to file dispossessory affidavits, generate required notices, and submit cases directly to the Houston County Magistrate Court.</p>
             <a href="#" class="cta-button" id="startFilingBtn">
                 <i class="fas fa-file-signature"></i> Start Eviction Filing
             </a>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features">
-        <div class="container">
-            <h2 class="section-title">Why File With Our System?</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-file-contract"></i>
-                    </div>
-                    <h3>Court-Approved Forms</h3>
-                    <p>Automatically generate Georgia dispossessory affidavits, 7-day notices, and summons forms that comply with Houston County requirements.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <h3>Faster Processing</h3>
-                    <p>Reduce filing time from days to minutes. Submit directly to the court clerk's office without waiting in line.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h3>SCRA Compliance</h3>
-                    <p>Automatic Servicemembers Civil Relief Act verification to ensure compliance with federal law.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-sync-alt"></i>
-                    </div>
-                    <h3>Auto-Sync to Court</h3>
-                    <p>Case data automatically synchronized with court systems via secure webhook integration.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Eviction Filing Form (Initially Hidden) -->
     <div class="container">
         <div class="form-container" id="evictionForm">
-            <!-- Form Progress -->
-            <div class="form-progress">
-                <div class="progress-step">
-                    <div class="step-circle active" id="step1Circle">1</div>
-                    <div class="step-label">Landlord Info</div>
-                </div>
-                <div class="progress-step">
-                    <div class="step-circle" id="step2Circle">2</div>
-                    <div class="step-label">Property Info</div>
-                </div>
-                <div class="progress-step">
-                    <div class="step-circle" id="step3Circle">3</div>
-                    <div class="step-label">Tenant Info</div>
-                </div>
-                <div class="progress-step">
-                    <div class="step-circle" id="step4Circle">4</div>
-                    <div class="step-label">Case Details</div>
-                </div>
-                <div class="progress-step">
-                    <div class="step-circle" id="step5Circle">5</div>
-                    <div class="step-label">E-Signature</div>
-                </div>
-                <div class="progress-step">
-                    <div class="step-circle" id="step6Circle">6</div>
-                    <div class="step-label">Submit & Download</div>
-                </div>
-            </div>
+            <h2 class="form-title">Eviction Case Filing Form</h2>
             
-            <!-- Step 1: Landlord Information -->
-            <div class="form-step active" id="step1">
-                <h2 class="form-title">Landlord Information</h2>
-                
-                <div class="info-box">
-                    <h4><i class="fas fa-info-circle"></i> Important Notice</h4>
-                    <p>You must be the property owner or authorized agent to file an eviction. If filing as an agent, you must have written authorization from the property owner.</p>
+            <form id="evictionFormData" method="POST" action="/api/submit-eviction">
+                <!-- Landlord Information -->
+                <div class="form-group">
+                    <h3 style="color: var(--houston-blue); margin-bottom: 15px;">Landlord Information</h3>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="landlordName">Full Legal Name *</label>
-                        <input type="text" id="landlordName" placeholder="Enter your full name as it appears on the deed" required>
+                        <input type="text" id="landlordName" name="landlordName" placeholder="Enter your full legal name" required>
                     </div>
                     <div class="form-group">
                         <label for="landlordPhone">Phone Number *</label>
-                        <input type="tel" id="landlordPhone" placeholder="(478) 123-4567" required>
+                        <input type="tel" id="landlordPhone" name="landlordPhone" placeholder="(478) 123-4567" required>
                     </div>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="landlordEmail">Email Address *</label>
-                        <input type="email" id="landlordEmail" placeholder="your@email.com" required>
+                        <input type="email" id="landlordEmail" name="landlordEmail" placeholder="your@email.com" required>
                     </div>
                     <div class="form-group">
-                        <label for="landlordType">Filing As</label>
-                        <select id="landlordType">
-                            <option value="owner">Property Owner</option>
-                            <option value="agent">Authorized Agent</option>
-                            <option value="property_manager">Property Manager</option>
-                            <option value="attorney">Attorney</option>
-                        </select>
+                        <label for="landlordAddress">Mailing Address *</label>
+                        <input type="text" id="landlordAddress" name="landlordAddress" placeholder="Street Address" required>
                     </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="landlordAddress">Mailing Address *</label>
-                    <input type="text" id="landlordAddress" placeholder="Street Address" required>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="landlordCity">City *</label>
-                        <input type="text" id="landlordCity" placeholder="City" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="landlordState">State *</label>
-                        <select id="landlordState">
-                            <option value="GA" selected>Georgia</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="landlordZip">ZIP Code *</label>
-                        <input type="text" id="landlordZip" placeholder="31088" required>
-                    </div>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline" id="cancelBtn">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="nextStep1">Next: Property Information</button>
-                </div>
-            </div>
-            
-            <!-- Step 2: Property Information -->
-            <div class="form-step" id="step2">
-                <h2 class="form-title">Property Information</h2>
-                
-                <div class="info-box">
-                    <h4><i class="fas fa-map-marker-alt"></i> Location Requirements</h4>
-                    <p>The property must be located within Houston County, Georgia. This system only handles evictions for properties in Houston County.</p>
+                <!-- Property Information -->
+                <div class="form-group" style="margin-top: 40px;">
+                    <h3 style="color: var(--houston-blue); margin-bottom: 15px;">Property Information</h3>
                 </div>
                 
                 <div class="form-group">
                     <label for="propertyAddress">Property Address *</label>
-                    <input type="text" id="propertyAddress" placeholder="Street Address of the rental property" required>
+                    <input type="text" id="propertyAddress" name="propertyAddress" placeholder="Street Address of the rental property" required>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="propertyCity">City *</label>
-                        <select id="propertyCity" required>
+                        <select id="propertyCity" name="propertyCity" required>
                             <option value="Warner Robins" selected>Warner Robins</option>
                             <option value="Perry">Perry</option>
                             <option value="Centerville">Centerville</option>
                             <option value="Bonaire">Bonaire</option>
                             <option value="Kathleen">Kathleen</option>
-                            <option value="Other">Other Houston County Location</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="propertyZip">ZIP Code *</label>
-                        <input type="text" id="propertyZip" placeholder="31088" required>
+                        <input type="text" id="propertyZip" name="propertyZip" placeholder="31088" required>
                     </div>
                 </div>
                 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="propertyType">Property Type</label>
-                        <select id="propertyType">
-                            <option value="single_family">Single Family Home</option>
-                            <option value="apartment">Apartment</option>
-                            <option value="condo">Condominium</option>
-                            <option value="townhome">Townhome</option>
-                            <option value="mobile_home">Mobile Home</option>
-                            <option value="commercial">Commercial Property</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="unitNumber">Unit Number (if applicable)</label>
-                        <input type="text" id="unitNumber" placeholder="Apt 3B, Unit 12, etc.">
-                    </div>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" id="prevStep2">Previous</button>
-                    <button type="button" class="btn btn-primary" id="nextStep2">Next: Tenant Information</button>
-                </div>
-            </div>
-            
-            <!-- Step 3: Tenant Information -->
-            <div class="form-step" id="step3">
-                <h2 class="form-title">Tenant Information</h2>
-                
-                <div class="info-box">
-                    <h4><i class="fas fa-user-friends"></i> Multiple Tenants</h4>
-                    <p>If there are multiple tenants on the lease, you'll need to provide information for each one. You can add additional tenants after completing this section.</p>
+                <!-- Tenant Information -->
+                <div class="form-group" style="margin-top: 40px;">
+                    <h3 style="color: var(--houston-blue); margin-bottom: 15px;">Tenant Information</h3>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="tenantName">Tenant Full Name *</label>
-                        <input type="text" id="tenantName" placeholder="Tenant's legal name" required>
+                        <input type="text" id="tenantName" name="tenantName" placeholder="Tenant's legal name" required>
                     </div>
                     <div class="form-group">
                         <label for="tenantPhone">Tenant Phone Number</label>
-                        <input type="tel" id="tenantPhone" placeholder="(478) 123-4567">
+                        <input type="tel" id="tenantPhone" name="tenantPhone" placeholder="(478) 123-4567">
                     </div>
+                </div>
+                
+                <!-- Case Details -->
+                <div class="form-group" style="margin-top: 40px;">
+                    <h3 style="color: var(--houston-blue); margin-bottom: 15px;">Case Details</h3>
                 </div>
                 
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="tenantEmail">Tenant Email (if known)</label>
-                        <input type="email" id="tenantEmail" placeholder="tenant@email.com">
-                    </div>
-                    <div class="form-group">
-                        <label for="tenantAltAddress">Alternate Mailing Address</label>
-                        <input type="text" id="tenantAltAddress" placeholder="If different from property address">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                        <input type="checkbox" id="militaryCheck" style="width: auto;">
-                        <label for="militaryCheck" style="margin: 0;">I believe this tenant may be an active duty service member</label>
-                    </div>
-                    <p class="small-text"><i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i> The court will verify military status through the SCRA database. False statements may result in dismissal of your case.</p>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" id="prevStep3">Previous</button>
-                    <button type="button" class="btn btn-primary" id="nextStep3">Next: Case Details</button>
-                </div>
-            </div>
-            
-            <!-- Step 4: Case Details -->
-            <div class="form-step" id="step4">
-                <h2 class="form-title">Case Details</h2>
-                
-                <div class="info-box">
-                    <h4><i class="fas fa-balance-scale"></i> Georgia Eviction Laws</h4>
-                    <p>In Georgia, you must have legal grounds for eviction. Common reasons include non-payment of rent, lease violations, or holdover tenancy after lease expiration.</p>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="leaseType">Lease Type *</label>
-                        <select id="leaseType" required>
-                            <option value="month_to_month">Month-to-Month</option>
-                            <option value="fixed_term">Fixed Term Lease</option>
-                            <option value="week_to_week">Week-to-Week</option>
-                            <option value="verbal">Verbal Agreement</option>
-                            <option value="no_lease">No Lease Agreement</option>
-                        </select>
-                    </div>
                     <div class="form-group">
                         <label for="reason">Reason for Eviction *</label>
-                        <select id="reason" required>
+                        <select id="reason" name="reason" required>
                             <option value="non_payment">Non-Payment of Rent</option>
                             <option value="lease_violation">Lease Violation</option>
                             <option value="holdover">Holdover (Lease Expired)</option>
                             <option value="property_damage">Property Damage</option>
-                            <option value="illegal_activity">Illegal Activity</option>
                             <option value="other">Other</option>
                         </select>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="rentAmount">Monthly Rent Amount *</label>
-                        <div style="position: relative;">
-                            <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%);">$</span>
-                            <input type="number" id="rentAmount" placeholder="0.00" style="padding-left: 30px;" min="0" step="0.01" required>
-                        </div>
                     </div>
                     <div class="form-group">
                         <label for="amountOwed">Total Amount Owed *</label>
                         <div style="position: relative;">
                             <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%);">$</span>
-                            <input type="number" id="amountOwed" placeholder="0.00" style="padding-left: 30px;" min="0" step="0.01" required>
+                            <input type="number" id="amountOwed" name="amountOwed" placeholder="0.00" style="padding-left: 30px;" min="0" step="0.01" required>
                         </div>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="lastPaymentDate">Last Payment Received</label>
-                        <input type="date" id="lastPaymentDate">
-                    </div>
-                    <div class="form-group">
-                        <label for="noticeDate">Date Notice Was Served *</label>
-                        <input type="date" id="noticeDate" required>
                     </div>
                 </div>
                 
                 <div class="form-group">
+                    <label for="noticeDate">Date Notice Was Served *</label>
+                    <input type="date" id="noticeDate" name="noticeDate" required>
+                </div>
+                
+                <div class="form-group">
                     <label for="noticeDetails">Details of Notice Served</label>
-                    <textarea id="noticeDetails" rows="3" placeholder="Describe how and when the notice was delivered to the tenant (e.g., 'Posted on front door on 10/15/2023' or 'Certified mail #1234567890')"></textarea>
+                    <textarea id="noticeDetails" name="noticeDetails" rows="3" placeholder="Describe how and when the notice was delivered to the tenant"></textarea>
                 </div>
                 
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" id="prevStep4">Previous</button>
-                    <button type="button" class="btn btn-primary" id="nextStep4">Next: E-Signature</button>
-                </div>
-            </div>
-            
-            <!-- Step 5: E-Signature -->
-            <div class="form-step" id="step5">
-                <h2 class="form-title">E-Sign Documents</h2>
-                
-                <div class="info-box">
-                    <h4><i class="fas fa-signature"></i> Electronic Signature</h4>
-                    <p>Your electronic signature has the same legal effect as a handwritten signature for Houston County eviction filings.</p>
-                </div>
-                
-                <div class="signature-container">
-                    <div class="signature-header">
-                        <h3 style="margin: 0;">Sign Documents</h3>
-                        <div class="signature-status">
-                            <span id="signatureStatus" style="color: #666; font-weight: 600;">
-                                <i class="fas fa-pen"></i> Ready to sign
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="signerName">Full Name (as it will appear on signature)</label>
-                        <input type="text" id="signerName" placeholder="Enter your full legal name" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Draw your signature below:</label>
-                        <canvas id="signaturePad" class="signature-pad"></canvas>
-                    </div>
-                    
-                    <div class="signature-actions">
-                        <button class="btn btn-secondary" id="clearSignature">
-                            <i class="fas fa-eraser"></i> Clear Signature
-                        </button>
-                        <button class="btn btn-outline" id="typeSignature">
-                            <i class="fas fa-keyboard"></i> Type Signature
-                        </button>
-                        <button class="btn btn-success" id="saveSignature">
-                            <i class="fas fa-save"></i> Save Signature
-                        </button>
-                    </div>
-                    
-                    <div id="signaturePreview" class="signature-preview" style="display: none;">
-                        <div>
-                            <strong>Signature Saved:</strong>
-                            <p style="margin: 5px 0; color: #666;">Your signature will be applied to all documents</p>
-                        </div>
-                        <img id="signatureImage" src="" alt="Signature">
-                    </div>
-                </div>
-                
-                <div class="info-box warning">
-                    <h4><i class="fas fa-shield-alt"></i> Legal Certification</h4>
+                <!-- Legal Certification -->
+                <div class="form-group" style="margin-top: 40px; padding: 20px; background: #e8f4fd; border-radius: var(--border-radius); border-left: 4px solid var(--houston-blue);">
                     <div style="display: flex; align-items: flex-start; gap: 10px; margin-top: 10px;">
-                        <input type="checkbox" id="legalCertify" style="margin-top: 3px;">
+                        <input type="checkbox" id="legalCertify" name="legalCertify" style="margin-top: 3px;" required>
                         <label for="legalCertify" style="margin: 0;">
-                            I certify under penalty of perjury that the information provided is true and correct to the best of my knowledge, and that I am authorized to sign these documents.
+                            I certify under penalty of perjury that the information provided is true and correct to the best of my knowledge, and that I am authorized to file this eviction case.
                         </label>
                     </div>
                 </div>
                 
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" id="prevStep5">Previous</button>
-                    <button type="button" class="btn btn-primary" id="nextStep5" disabled>Next: Submit & Download</button>
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <i class="fas fa-paper-plane"></i> Submit to Court System
+                    </button>
                 </div>
-            </div>
+            </form>
             
-            <!-- Step 6: Submit & Download -->
-            <div class="form-step" id="step6">
-                <h2 class="form-title">Submit & Download Documents</h2>
-                
-                <div class="success-message" id="successMessage" style="display: none;">
-                    <i class="fas fa-check-circle"></i>
-                    <h3 style="color: #28a745;">Documents Generated Successfully!</h3>
-                    <p>Your eviction case has been saved and documents are ready for download.</p>
-                    <p><strong>Case ID:</strong> <span id="caseIdDisplay"></span></p>
-                    <p><strong>Status:</strong> <span id="caseStatusDisplay">Pending Court Filing</span></p>
-                </div>
-                
-                <!-- Webhook Status -->
-                <div class="webhook-notification" id="webhookNotification" style="display: none;">
-                    <i class="fas fa-sync-alt"></i>
-                    <h3 style="color: var(--houston-blue);">Auto-Sync to Court System</h3>
-                    <p>Your case data is being automatically synchronized with the GAEVIC.</p>
-                    <p><strong>Webhook:</strong> https://nagoh.us/GAEVIC/webhook/</p>
-                    <p><strong>Status:</strong> <span id="webhookStatus">Processing...</span></p>
-                </div>
-                
-                <div class="info-box">
-                    <h4><i class="fas fa-file-invoice-dollar"></i> Filing Fee Information</h4>
-                    <p>Houston County filing fee: <strong>$99.00</strong>. Payment can be made directly to the court when you file these documents.</p>
-                    <p><em>Note: This system generates the required documents. You must take them to the Houston County Magistrate Court to file and pay the fee.</em></p>
-                </div>
-                
-                <div class="download-section">
-                    <h3 style="color: var(--houston-blue); margin-bottom: 20px;">Download Your Eviction Documents</h3>
-                    <p style="margin-bottom: 30px;">All required Houston County eviction forms have been generated with your information. Download each document individually or get all documents in a single ZIP file.</p>
-                    
-                    <div class="download-grid">
-                        <div class="download-card">
-                            <div class="download-icon">
-                                <i class="fas fa-file-contract"></i>
-                            </div>
-                            <h3>7-Day Demand Notice</h3>
-                            <p>Official notice to tenant as required by OCGA § 44-7-50</p>
-                            <button class="btn btn-outline download-doc" data-doc="demand_notice">
-                                <i class="fas fa-download"></i> Download PDF
-                            </button>
-                        </div>
-                        
-                        <div class="download-card">
-                            <div class="download-icon">
-                                <i class="fas fa-gavel"></i>
-                            </div>
-                            <h3>Dispossessory Affidavit</h3>
-                            <p>Court filing affidavit for eviction proceedings</p>
-                            <button class="btn btn-outline download-doc" data-doc="affidavit">
-                                <i class="fas fa-download"></i> Download PDF
-                            </button>
-                        </div>
-                        
-                        <div class="download-card">
-                            <div class="download-icon">
-                                <i class="fas fa-file-signature"></i>
-                            </div>
-                            <h3>Summons</h3>
-                            <p>Official court summons for the tenant</p>
-                            <button class="btn btn-outline download-doc" data-doc="summons">
-                                <i class="fas fa-download"></i> Download PDF
-                            </button>
-                        </div>
-                        
-                        <div class="download-card">
-                            <div class="download-icon">
-                                <i class="fas fa-shield-alt"></i>
-                            </div>
-                            <h3>SCRA Verification</h3>
-                            <p>Military service verification form</p>
-                            <button class="btn btn-outline download-doc" data-doc="scra_form">
-                                <i class="fas fa-download"></i> Download PDF
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 40px;">
-                        <button class="btn btn-success" id="downloadAllBtn" style="padding: 15px 40px; font-size: 18px;">
-                            <i class="fas fa-file-archive"></i> Download All Documents (ZIP)
-                        </button>
-                        
-                        <button class="btn btn-primary" id="syncToCourtBtn" style="padding: 15px 40px; font-size: 18px; margin-left: 15px;">
-                            <i class="fas fa-sync-alt"></i> Sync Case to Court System
-                        </button>
-                    </div>
-                    
-                    <div class="info-box warning" style="margin-top: 30px;">
-                        <h4><i class="fas fa-exclamation-triangle"></i> Next Steps</h4>
-                        <ol style="margin: 10px 0 0 20px;">
-                            <li>Print all downloaded documents</li>
-                            <li>Sign the printed documents (if not already e-signed)</li>
-                            <li>Take documents to Houston County Magistrate Court</li>
-                            <li>Pay the $99 filing fee at the court</li>
-                            <li>The court will issue a case number and schedule service</li>
-                        </ol>
-                    </div>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" id="prevStep6">Previous</button>
-                    <button type="button" class="btn btn-outline" id="startNewBtn">
+            <!-- Success Message (Hidden by default) -->
+            <div class="success-message" id="successMessage" style="display: none;">
+                <i class="fas fa-check-circle"></i>
+                <h3 style="color: #28a745;">Case Submitted Successfully!</h3>
+                <p>Your eviction case has been submitted to the Houston County Magistrate Court system.</p>
+                <p><strong>Case ID:</strong> <span id="caseIdDisplay"></span></p>
+                <p><strong>Status:</strong> <span id="caseStatusDisplay">Received by Court System</span></p>
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-primary" id="newFilingBtn">
                         <i class="fas fa-plus"></i> Start New Filing
                     </button>
                 </div>
@@ -1354,8 +605,6 @@
                     <h3>Quick Links</h3>
                     <ul class="footer-links">
                         <li><a href="#" id="footerStartFiling">Start New Filing</a></li>
-                        <li><a href="dashboard/index.html" target="_blank">Dashboard</a></li>
-                        <li><a href="#">Check Case Status</a></li>
                         <li><a href="#">Court Rules & Procedures</a></li>
                         <li><a href="#">Eviction Timeline</a></li>
                         <li><a href="#">Fee Schedule</a></li>
@@ -1366,53 +615,37 @@
                     <h3>Resources</h3>
                     <ul class="footer-links">
                         <li><a href="#">Georgia Landlord-Tenant Handbook</a></li>
-                        <li><a href="#">SCRA Information</a></li>
                         <li><a href="#">Legal Aid Services</a></li>
-                        <li><a href="#">Forms & Documents</a></li>
                         <li><a href="#">FAQs</a></li>
                     </ul>
                 </div>
             </div>
             
             <div class="copyright">
-                <p>© 2026 This is a system for filing eviction cases in Houston County. Unauthorized use is prohibited.</p>
+                <p>© 2026 Houston County Magistrate Court Eviction Filing System</p>
                 <p style="margin-top: 10px;">This system is designed to assist with proper filing but does not constitute legal advice. Consult an attorney for legal questions.</p>
             </div>
         </div>
     </footer>
 
     <script>
-        // Initialize jsPDF
-        const { jsPDF } = window.jspdf;
-        
-        // Webhook Configuration
-        const WEBHOOK_CONFIG = {
-            url: 'https://nagoh.us/GAEVIC/webhook/',
-            method: 'POST',
-            contentType: 'application/json'
-        };
-        
-        // Form Navigation Logic
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize variables
-            let currentStep = 1;
-            let caseId = null;
-            let signatureData = null;
-            let formData = {};
-            let generatedDocuments = {};
-            
             // DOM Elements
             const startFilingBtn = document.getElementById('startFilingBtn');
             const navStartFiling = document.getElementById('navStartFiling');
             const footerStartFiling = document.getElementById('footerStartFiling');
             const evictionForm = document.getElementById('evictionForm');
             const cancelBtn = document.getElementById('cancelBtn');
+            const formElement = document.getElementById('evictionFormData');
+            const successMessage = document.getElementById('successMessage');
             const loadingOverlay = document.getElementById('loadingOverlay');
             const loadingText = document.getElementById('loadingText');
+            const newFilingBtn = document.getElementById('newFilingBtn');
             
             // Show/Hide Form
             function showForm() {
                 evictionForm.style.display = 'block';
+                successMessage.style.display = 'none';
                 window.scrollTo({
                     top: evictionForm.offsetTop - 20,
                     behavior: 'smooth'
@@ -1434,1002 +667,115 @@
                 showForm();
             });
             
+            // Cancel button
             cancelBtn.addEventListener('click', function() {
                 if (confirm('Are you sure you want to cancel? All entered information will be lost.')) {
                     evictionForm.style.display = 'none';
-                    resetForm();
+                    formElement.reset();
                 }
             });
             
-            // Step Navigation
-            function goToStep(step) {
-                // Hide current step
-                document.getElementById(`step${currentStep}`).classList.remove('active');
-                document.getElementById(`step${currentStep}Circle`).classList.remove('active');
-                
-                // Update current step
-                currentStep = step;
-                
-                // Show new step
-                document.getElementById(`step${currentStep}`).classList.add('active');
-                document.getElementById(`step${currentStep}Circle`).classList.add('active');
-                
-                // Mark previous steps as completed
-                for (let i = 1; i < currentStep; i++) {
-                    document.getElementById(`step${i}Circle`).classList.add('completed');
-                }
-                
-                // Clear completed status for steps after current
-                for (let i = currentStep + 1; i <= 6; i++) {
-                    document.getElementById(`step${i}Circle`).classList.remove('completed');
-                }
-                
-                // Handle step-specific initialization
-                if (currentStep === 5) {
-                    initializeSignaturePad();
-                    document.getElementById('signerName').value = document.getElementById('landlordName').value;
-                } else if (currentStep === 6) {
-                    generateCaseId();
-                    generateAllDocuments();
-                    // Automatically send to webhook when reaching step 6
-                    setTimeout(sendToWebhook, 500);
-                }
-                
-                // Scroll to top of form
-                evictionForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-            
-            // Next Step Buttons
-            document.getElementById('nextStep1').addEventListener('click', () => goToStep(2));
-            document.getElementById('nextStep2').addEventListener('click', () => goToStep(3));
-            document.getElementById('nextStep3').addEventListener('click', () => goToStep(4));
-            document.getElementById('nextStep4').addEventListener('click', () => goToStep(5));
-            
-            // Previous Step Buttons
-            document.getElementById('prevStep2').addEventListener('click', () => goToStep(1));
-            document.getElementById('prevStep3').addEventListener('click', () => goToStep(2));
-            document.getElementById('prevStep4').addEventListener('click', () => goToStep(3));
-            document.getElementById('prevStep5').addEventListener('click', () => goToStep(4));
-            document.getElementById('prevStep6').addEventListener('click', () => goToStep(5));
-            
-            // Generate Case ID
-            function generateCaseId() {
-                const timestamp = Date.now();
-                const randomNum = Math.floor(Math.random() * 10000);
-                caseId = `HOU-${new Date().getFullYear()}-${timestamp.toString().slice(-6)}-${randomNum.toString().padStart(4, '0')}`;
-                document.getElementById('caseIdDisplay').textContent = caseId;
-                return caseId;
-            }
-            
-            // Collect Form Data
-            function collectFormData() {
-                formData = {
-                    caseId: caseId,
-                    status: 'Pending Court Filing',
-                    filingDate: new Date().toISOString(),
-                    timestamp: new Date().toISOString(),
-                    landlord: {
-                        name: document.getElementById('landlordName').value,
-                        phone: document.getElementById('landlordPhone').value,
-                        email: document.getElementById('landlordEmail').value,
-                        type: document.getElementById('landlordType').value,
-                        address: document.getElementById('landlordAddress').value,
-                        city: document.getElementById('landlordCity').value,
-                        state: document.getElementById('landlordState').value,
-                        zip: document.getElementById('landlordZip').value
-                    },
-                    property: {
-                        address: document.getElementById('propertyAddress').value,
-                        city: document.getElementById('propertyCity').value,
-                        zip: document.getElementById('propertyZip').value,
-                        type: document.getElementById('propertyType').value,
-                        unit: document.getElementById('unitNumber').value
-                    },
-                    tenant: {
-                        name: document.getElementById('tenantName').value,
-                        phone: document.getElementById('tenantPhone').value,
-                        email: document.getElementById('tenantEmail').value,
-                        altAddress: document.getElementById('tenantAltAddress').value,
-                        militaryCheck: document.getElementById('militaryCheck').checked
-                    },
-                    case: {
-                        leaseType: document.getElementById('leaseType').value,
-                        reason: document.getElementById('reason').value,
-                        rentAmount: parseFloat(document.getElementById('rentAmount').value) || 0,
-                        amountOwed: parseFloat(document.getElementById('amountOwed').value) || 0,
-                        lastPaymentDate: document.getElementById('lastPaymentDate').value,
-                        noticeDate: document.getElementById('noticeDate').value,
-                        noticeDetails: document.getElementById('noticeDetails').value
-                    },
-                    signature: signatureData ? {
-                        name: signatureData.name,
-                        timestamp: signatureData.timestamp
-                    } : null,
-                    documentsGenerated: true,
-                    systemVersion: '2.0',
-                    source: 'Houston County Eviction System'
-                };
-                return formData;
-            }
-            
-            // Generate All Documents
-            function generateAllDocuments() {
-                collectFormData();
-                generatedDocuments = {
-                    demand_notice: generateDemandNotice(),
-                    affidavit: generateAffidavit(),
-                    summons: generateSummons(),
-                    scra_form: generateSCRACertification()
-                };
-                
-                // Show success message
-                document.getElementById('successMessage').style.display = 'block';
-                
-                // Show webhook notification
-                document.getElementById('webhookNotification').style.display = 'block';
-                
-                // Set up download buttons
-                setupDownloadButtons();
-            }
-            
-            // Document Generation Functions (same as before)
-            function generateDemandNotice() {
-                const doc = new jsPDF();
-                const pageWidth = doc.internal.pageSize.getWidth();
-                const pageHeight = doc.internal.pageSize.getHeight();
-                
-                // Header
-                doc.setFontSize(16);
-                doc.setFont("helvetica", "bold");
-                doc.text("STATE OF GEORGIA", pageWidth / 2, 20, { align: "center" });
-                doc.text("COUNTY OF HOUSTON", pageWidth / 2, 30, { align: "center" });
-                doc.text("7-DAY DEMAND FOR POSSESSION OF PREMISES", pageWidth / 2, 45, { align: "center" });
-                
-                doc.setFontSize(10);
-                doc.setFont("helvetica", "normal");
-                doc.text("(Pursuant to O.C.G.A. § 44-7-50)", pageWidth / 2, 52, { align: "center" });
-                
-                // Tenant Information
-                doc.setFontSize(12);
-                doc.text(`TO: ${formData.tenant.name}`, 20, 70);
-                doc.text(`PROPERTY ADDRESS: ${formData.property.address}, ${formData.property.city}, GA ${formData.property.zip}`, 20, 80);
-                
-                // Body Text
-                doc.setFontSize(11);
-                const bodyText = [
-                    `You are hereby notified that you are in arrears in the payment of rent for the premises`,
-                    `located at the above address in the amount of $${formData.case.amountOwed.toFixed(2)}.`,
-                    "",
-                    `Monthly rent for the premises is $${formData.case.rentAmount.toFixed(2)}. The rent became due`,
-                    `on ${formData.case.lastPaymentDate || 'the due date'} and has not been paid.`,
-                    "",
-                    "You are further notified that unless said rent is paid in full within SEVEN (7) DAYS",
-                    "from the date of service of this notice, your lease will be terminated and dispossessory",
-                    "proceedings will be instituted against you.",
-                    "",
-                    "You are also liable for any court costs and attorney's fees incurred in this matter."
-                ];
-                
-                let yPosition = 100;
-                bodyText.forEach(line => {
-                    if (yPosition > pageHeight - 40) {
-                        doc.addPage();
-                        yPosition = 20;
-                    }
-                    doc.text(line, 20, yPosition);
-                    yPosition += 7;
-                });
-                
-                // Signature Section
-                yPosition += 10;
-                doc.text("Dated this _____ day of ____________________, 20____", 20, yPosition);
-                
-                yPosition += 20;
-                doc.line(20, yPosition, 120, yPosition);
-                doc.text(`${formData.landlord.name}`, 20, yPosition + 10);
-                doc.text("Landlord/Agent", 20, yPosition + 20);
-                
-                // Add signature if available
-                if (signatureData && signatureData.dataUrl) {
-                    try {
-                        const signatureImg = new Image();
-                        signatureImg.onload = function() {
-                            doc.addImage(signatureImg, 'PNG', 20, yPosition - 10, 50, 20);
-                        };
-                        signatureImg.src = signatureData.dataUrl;
-                    } catch(e) {
-                        console.log("Could not add signature to PDF");
-                    }
-                }
-                
-                // Footer
-                doc.setFontSize(9);
-                doc.setFont("helvetica", "italic");
-                doc.text("This notice must be served at least 7 days before filing dispossessory proceedings.", 20, pageHeight - 20);
-                doc.text("Service may be made by personal delivery, posting on the premises, or certified mail.", 20, pageHeight - 10);
-                
-                return doc;
-            }
-            
-            function generateAffidavit() {
-                const doc = new jsPDF();
-                const pageWidth = doc.internal.pageSize.getWidth();
-                const pageHeight = doc.internal.pageSize.getHeight();
-                
-                // Header
-                doc.setFontSize(14);
-                doc.setFont("helvetica", "bold");
-                doc.text("MAGISTRATE COURT OF HOUSTON COUNTY", pageWidth / 2, 20, { align: "center" });
-                doc.text("STATE OF GEORGIA", pageWidth / 2, 30, { align: "center" });
-                doc.text("DISPOSSESSORY AFFIDAVIT", pageWidth / 2, 45, { align: "center" });
-                
-                // Case Information
-                doc.setFontSize(11);
-                doc.setFont("helvetica", "normal");
-                doc.text(`Plaintiff (Landlord): ${formData.landlord.name}`, 20, 70);
-                doc.text(`Address: ${formData.landlord.address}, ${formData.landlord.city}, GA ${formData.landlord.zip}`, 20, 80);
-                doc.text(`Phone: ${formData.landlord.phone}`, 20, 90);
-                doc.text("", 20, 100);
-                doc.text(`Defendant (Tenant): ${formData.tenant.name}`, 20, 110);
-                doc.text(`Property Address: ${formData.property.address}, ${formData.property.city}, GA ${formData.property.zip}`, 20, 120);
-                
-                // Affidavit Text
-                doc.setFontSize(11);
-                const affidavitText = [
-                    "STATE OF GEORGIA",
-                    "COUNTY OF HOUSTON",
-                    "",
-                    `I, ${formData.landlord.name}, being duly sworn, depose and say:`,
-                    "",
-                    "1. I am the landlord/agent of the premises located at the above address.",
-                    "",
-                    `2. The tenant, ${formData.tenant.name}, is in possession of said premises.`,
-                    "",
-                    `3. The tenant is indebted to me in the amount of $${formData.case.amountOwed.toFixed(2)} for rent which`,
-                    `   became due on ${formData.case.lastPaymentDate || 'the due date'} and has failed and refused to pay the same.`,
-                    "",
-                    `4. On ${formData.case.noticeDate}, I made a demand for possession of the premises,`,
-                    "   and the tenant has failed to deliver possession.",
-                    "",
-                    "5. The tenant is not in the military service of the United States, to the best of my knowledge.",
-                    "",
-                    "WHEREFORE, affiant prays that a warrant issue directing the tenant to appear and answer",
-                    "this complaint and that judgment be granted for possession of the premises, past due rent,",
-                    "and costs of this action."
-                ];
-                
-                let yPosition = 140;
-                affidavitText.forEach(line => {
-                    if (yPosition > pageHeight - 40) {
-                        doc.addPage();
-                        yPosition = 20;
-                    }
-                    doc.text(line, 20, yPosition);
-                    yPosition += 7;
-                });
-                
-                // Signature Section
-                yPosition += 10;
-                doc.text("Sworn to and subscribed before me this _____ day of ____________________, 20____", 20, yPosition);
-                
-                yPosition += 20;
-                doc.line(20, yPosition, 120, yPosition);
-                doc.text("___________________________________________", 20, yPosition + 10);
-                doc.text(`${formData.landlord.name}, Affiant`, 20, yPosition + 20);
-                
-                // Add signature if available
-                if (signatureData && signatureData.dataUrl) {
-                    try {
-                        const signatureImg = new Image();
-                        signatureImg.onload = function() {
-                            doc.addImage(signatureImg, 'PNG', 20, yPosition - 5, 50, 20);
-                        };
-                        signatureImg.src = signatureData.dataUrl;
-                    } catch(e) {
-                        console.log("Could not add signature to PDF");
-                    }
-                }
-                
-                return doc;
-            }
-            
-            function generateSummons() {
-                const doc = new jsPDF();
-                const pageWidth = doc.internal.pageSize.getWidth();
-                const pageHeight = doc.internal.pageSize.getHeight();
-                
-                // Header
-                doc.setFontSize(16);
-                doc.setFont("helvetica", "bold");
-                doc.text("MAGISTRATE COURT OF HOUSTON COUNTY", pageWidth / 2, 20, { align: "center" });
-                doc.text("STATE OF GEORGIA", pageWidth / 2, 30, { align: "center" });
-                doc.text("SUMMONS", pageWidth / 2, 45, { align: "center" });
-                doc.text("(DISPOSSESSORY PROCEEDINGS)", pageWidth / 2, 55, { align: "center" });
-                
-                // Case Number
-                doc.setFontSize(12);
-                doc.text(`Case No.: ${caseId}`, pageWidth - 40, 45);
-                
-                // Parties
-                doc.setFontSize(12);
-                doc.setFont("helvetica", "bold");
-                doc.text("TO:", 20, 80);
-                doc.setFont("helvetica", "normal");
-                doc.text(`${formData.tenant.name}`, 40, 80);
-                doc.text(`${formData.property.address}`, 40, 90);
-                doc.text(`${formData.property.city}, GA ${formData.property.zip}`, 40, 100);
-                
-                // Body Text
-                doc.setFontSize(11);
-                const bodyText = [
-                    "You are hereby summoned and required to file with the Clerk of this Court and serve upon",
-                    `${formData.landlord.name}, whose address is ${formData.landlord.address},`,
-                    "an answer to the complaint which is herewith served upon you, within SEVEN (7) DAYS after",
-                    "service of this summons upon you, exclusive of the day of service.",
-                    "",
-                    "If you fail to do so, judgment by default will be taken against you for the relief demanded",
-                    "in the complaint.",
-                    "",
-                    "This is an action to recover possession of the premises described above and for rent due",
-                    `in the amount of $${formData.case.amountOwed.toFixed(2)}.`,
-                    "",
-                    "NOTICE: You have the right to a trial by jury. If you desire a jury trial, you must demand",
-                    "it in your answer. If you do not demand a jury trial, the case will be heard by the judge."
-                ];
-                
-                let yPosition = 130;
-                bodyText.forEach(line => {
-                    if (yPosition > pageHeight - 40) {
-                        doc.addPage();
-                        yPosition = 20;
-                    }
-                    doc.text(line, 20, yPosition);
-                    yPosition += 7;
-                });
-                
-                // Clerk Signature
-                yPosition += 20;
-                doc.line(20, yPosition, 120, yPosition);
-                doc.text("Clerk, Magistrate Court of Houston County", 20, yPosition + 10);
-                
-                return doc;
-            }
-            
-            function generateSCRACertification() {
-                const doc = new jsPDF();
-                const pageWidth = doc.internal.pageSize.getWidth();
-                const pageHeight = doc.internal.pageSize.getHeight();
-                
-                // Header
-                doc.setFontSize(14);
-                doc.setFont("helvetica", "bold");
-                doc.text("VERIFICATION OF MILITARY SERVICE", pageWidth / 2, 20, { align: "center" });
-                doc.text("(Servicemembers Civil Relief Act)", pageWidth / 2, 30, { align: "center" });
-                doc.text("MAGISTRATE COURT OF HOUSTON COUNTY", pageWidth / 2, 40, { align: "center" });
-                
-                // Case Info
-                doc.setFontSize(11);
-                doc.setFont("helvetica", "normal");
-                doc.text(`Case: ${formData.landlord.name} vs. ${formData.tenant.name}`, 20, 70);
-                doc.text(`Property: ${formData.property.address}`, 20, 80);
-                
-                // Verification Text
-                doc.setFontSize(12);
-                const verificationText = [
-                    `I, ${formData.landlord.name}, being duly sworn, depose and state:`,
-                    "",
-                    "1. I am the plaintiff/agent in the above-stated dispossessory action.",
-                    "",
-                    `2. The defendant, ${formData.tenant.name},`,
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "3. The basis for this statement is:",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "I understand that false statements on this form may result in dismissal of the",
-                    "action and/or penalties under federal law."
-                ];
-                
-                let yPosition = 100;
-                verificationText.forEach(line => {
-                    if (yPosition > pageHeight - 40) {
-                        doc.addPage();
-                        yPosition = 20;
-                    }
-                    doc.text(line, 20, yPosition);
-                    yPosition += 7;
-                });
-                
-                // Draw checkboxes
-                const checkY = 140;
-                doc.setFontSize(14);
-                
-                // First checkbox (NOT in military service)
-                doc.text(formData.tenant.militaryCheck ? "□" : "■", 20, checkY);
-                doc.setFontSize(11);
-                doc.text("is NOT in the military service of the United States, to the best of my knowledge,", 35, checkY);
-                doc.text("information, and belief.", 35, checkY + 7);
-                
-                // Second checkbox (IS in military service)
-                doc.setFontSize(14);
-                doc.text(formData.tenant.militaryCheck ? "■" : "□", 20, checkY + 20);
-                doc.setFontSize(11);
-                doc.text("IS in the military service of the United States.", 35, checkY + 20);
-                doc.text("Branch: ____________________ Rank: ____________________", 35, checkY + 30);
-                doc.text("Service Number: _______________", 35, checkY + 37);
-                
-                // Checkboxes for basis
-                const basisY = checkY + 50;
-                doc.setFontSize(14);
-                doc.text("■", 20, basisY);
-                doc.setFontSize(11);
-                doc.text("Personal knowledge", 35, basisY);
-                
-                doc.setFontSize(14);
-                doc.text("□", 20, basisY + 7);
-                doc.setFontSize(11);
-                doc.text("Information from the defendant", 35, basisY + 7);
-                
-                doc.setFontSize(14);
-                doc.text("□", 20, basisY + 14);
-                doc.setFontSize(11);
-                doc.text("Information from a family member", 35, basisY + 14);
-                
-                doc.setFontSize(14);
-                doc.text("□", 20, basisY + 21);
-                doc.setFontSize(11);
-                doc.text("Other: ______________________________________________", 35, basisY + 21);
-                
-                // Signature Section
-                yPosition = basisY + 40;
-                if (yPosition > pageHeight - 40) {
-                    doc.addPage();
-                    yPosition = 20;
-                }
-                
-                doc.text("Sworn to and subscribed before me this _____ day of ____________________, 20____", 20, yPosition);
-                
-                yPosition += 20;
-                doc.line(20, yPosition, 120, yPosition);
-                doc.text("___________________________________________", 20, yPosition + 10);
-                doc.text("Signature of Affiant", 20, yPosition + 20);
-                
-                // Add signature if available
-                if (signatureData && signatureData.dataUrl) {
-                    try {
-                        const signatureImg = new Image();
-                        signatureImg.onload = function() {
-                            doc.addImage(signatureImg, 'PNG', 20, yPosition - 5, 50, 20);
-                        };
-                        signatureImg.src = signatureData.dataUrl;
-                    } catch(e) {
-                        console.log("Could not add signature to PDF");
-                    }
-                }
-                
-                return doc;
-            }
-            
-            // Send Data to Webhook
-            async function sendToWebhook() {
-                showLoading('Syncing case data to court system...');
-                document.getElementById('webhookStatus').textContent = 'Sending...';
-                
-                try {
-                    // Prepare webhook data
-                    const webhookData = {
-                        event: 'eviction_case_created',
-                        caseId: caseId,
-                        timestamp: new Date().toISOString(),
-                        data: formData,
-                        documents: {
-                            count: 4,
-                            types: ['7-Day Demand Notice', 'Dispossessory Affidavit', 'Summons', 'SCRA Verification'],
-                            generated: true
-                        },
-                        source: 'Houston County Eviction System 2.0',
-                        webhookUrl: WEBHOOK_CONFIG.url
-                    };
-                    
-                    // Send to webhook
-                    const response = await fetch(WEBHOOK_CONFIG.url, {
-                        method: WEBHOOK_CONFIG.method,
-                        headers: {
-                            'Content-Type': WEBHOOK_CONFIG.contentType,
-                            'X-Event-Type': 'eviction_case_created',
-                            'X-Case-ID': caseId,
-                            'X-Source': 'Houston_County_Eviction_System'
-                        },
-                        body: JSON.stringify(webhookData)
-                    });
-                    
-                    hideLoading();
-                    
-                    if (response.ok) {
-                        document.getElementById('webhookStatus').textContent = 'Synced Successfully';
-                        document.getElementById('webhookStatus').style.color = '#28a745';
-                        
-                        // Show success message
-                        showSuccessNotification(`
-                            <i class="fas fa-check-circle" style="color: #28a745;"></i>
-                            <h4 style="color: #28a745; margin: 10px 0;">Case Data Synced to Court System</h4>
-                            <p>Your eviction case has been successfully synchronized with the GAEVIc.</p>
-                            <p><strong>Webhook Status:</strong> Successfully sent to https://nagoh.us/GAEVIC/webhook/</p>
-                            <p><strong>Case ID:</strong> ${caseId}</p>
-                            <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
-                        `);
-                    } else {
-                        throw new Error(`Webhook responded with status: ${response.status}`);
-                    }
-                    
-                } catch (error) {
-                    hideLoading();
-                    console.error('Webhook Error:', error);
-                    
-                    // Update status but don't show error to user (fail silently)
-                    document.getElementById('webhookStatus').textContent = 'Sync Completed (Offline Mode)';
-                    document.getElementById('webhookStatus').style.color = '#fd7e14';
-                    
-                    // Show offline notification
-                    showSuccessNotification(`
-                        <i class="fas fa-sync-alt" style="color: #fd7e14;"></i>
-                        <h4 style="color: #fd7e14; margin: 10px 0;">Case Data Saved (Offline Mode)</h4>
-                        <p>Your eviction case has been saved locally. Documents are ready for download.</p>
-                        <p><strong>Note:</strong> Court system sync will be completed when online.</p>
-                        <p><strong>Case ID:</strong> ${caseId}</p>
-                        <p>You can proceed to download and print your documents.</p>
-                    `);
-                }
-            }
-            
-            // Setup Download Buttons
-            function setupDownloadButtons() {
-                // Individual document downloads
-                document.querySelectorAll('.download-doc').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const docType = this.getAttribute('data-doc');
-                        downloadDocument(docType);
-                    });
-                });
-                
-                // Download all as ZIP
-                document.getElementById('downloadAllBtn').addEventListener('click', downloadAllDocuments);
-                
-                // Sync to court button (resend webhook)
-                document.getElementById('syncToCourtBtn').addEventListener('click', function() {
-                    sendToWebhook();
-                });
-                
-                // Start new filing
-                document.getElementById('startNewBtn').addEventListener('click', function() {
-                    evictionForm.style.display = 'none';
-                    resetForm();
-                    setTimeout(() => {
-                        evictionForm.style.display = 'block';
-                        goToStep(1);
-                    }, 100);
-                });
-            }
-            
-            // Download individual document
-            function downloadDocument(docType) {
-                const doc = generatedDocuments[docType];
-                if (doc) {
-                    const filename = getFilename(docType);
-                    doc.save(filename);
-                }
-            }
-            
-            // Download all documents as ZIP
-            function downloadAllDocuments() {
-                showLoading('Creating document package...');
-                
-                try {
-                    const zip = new JSZip();
-                    const caseFolder = zip.folder(caseId);
-                    
-                    // Add each document to the ZIP
-                    Object.keys(generatedDocuments).forEach(docType => {
-                        const doc = generatedDocuments[docType];
-                        const filename = getFilename(docType);
-                        const pdfOutput = doc.output('blob');
-                        caseFolder.file(filename, pdfOutput);
-                    });
-                    
-                    // Add form data as JSON
-                    const formDataJson = JSON.stringify(formData, null, 2);
-                    caseFolder.file('case_data.json', formDataJson);
-                    
-                    // Add webhook info
-                    const webhookInfo = {
-                        webhookUrl: WEBHOOK_CONFIG.url,
-                        caseId: caseId,
-                        sentAt: new Date().toISOString(),
-                        status: 'pending'
-                    };
-                    caseFolder.file('webhook_info.json', JSON.stringify(webhookInfo, null, 2));
-                    
-                    // Generate and download ZIP
-                    zip.generateAsync({type: 'blob'})
-                        .then(function(content) {
-                            saveAs(content, `${caseId}_eviction_documents.zip`);
-                            hideLoading();
-                            
-                            // Show download success
-                            showSuccessNotification(`
-                                <i class="fas fa-download" style="color: #28a745;"></i>
-                                <h4 style="color: #28a745; margin: 10px 0;">Documents Downloaded Successfully</h4>
-                                <p>All eviction documents have been downloaded as a ZIP file.</p>
-                                <p><strong>File:</strong> ${caseId}_eviction_documents.zip</p>
-                                <p><strong>Contains:</strong> 4 PDF documents + case data</p>
-                            `);
-                        })
-                        .catch(function(error) {
-                            console.error('Error creating ZIP:', error);
-                            hideLoading();
-                            alert('Error creating document package. Please try downloading documents individually.');
-                        });
-                    
-                } catch (error) {
-                    console.error('Error:', error);
-                    hideLoading();
-                    alert('Error creating document package. Please try downloading documents individually.');
-                }
-            }
-            
-            // Get filename for document type
-            function getFilename(docType) {
-                const filenames = {
-                    demand_notice: '7-Day_Demand_Notice.pdf',
-                    affidavit: 'Dispossessory_Affidavit.pdf',
-                    summons: 'Summons.pdf',
-                    scra_form: 'SCRA_Verification.pdf'
-                };
-                return filenames[docType] || 'document.pdf';
-            }
-            
-            // Show success notification
-            function showSuccessNotification(html) {
-                const notification = document.createElement('div');
-                notification.className = 'info-box success';
-                notification.style.marginTop = '20px';
-                notification.innerHTML = html;
-                
-                const downloadSection = document.querySelector('.download-section');
-                downloadSection.insertBefore(notification, downloadSection.firstChild);
-                
-                // Auto-remove after 10 seconds
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.remove();
-                    }
-                }, 10000);
-            }
-            
-            // Signature Pad Functions
-            function initializeSignaturePad() {
-                const canvas = document.getElementById('signaturePad');
-                const ctx = canvas.getContext('2d');
-                let drawing = false;
-                
-                // Set canvas size
-                canvas.width = canvas.offsetWidth;
-                canvas.height = canvas.offsetHeight;
-                
-                // Clear canvas
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                // Draw border
-                ctx.strokeStyle = '#ccc';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(0, 0, canvas.width, canvas.height);
-                
-                // Drawing functions
-                function startDrawing(e) {
-                    drawing = true;
-                    draw(e);
-                }
-                
-                function stopDrawing() {
-                    drawing = false;
-                    ctx.beginPath();
-                    updateSignatureStatus();
-                }
-                
-                function draw(e) {
-                    if (!drawing) return;
-                    
-                    ctx.lineWidth = 2;
-                    ctx.lineCap = 'round';
-                    ctx.lineJoin = 'round';
-                    ctx.strokeStyle = '#000';
-                    
-                    const rect = canvas.getBoundingClientRect();
-                    const x = (e.clientX || e.touches[0].clientX) - rect.left;
-                    const y = (e.clientY || e.touches[0].clientY) - rect.top;
-                    
-                    ctx.lineTo(x, y);
-                    ctx.stroke();
-                    ctx.beginPath();
-                    ctx.moveTo(x, y);
-                }
-                
-                // Event listeners
-                canvas.addEventListener('mousedown', startDrawing);
-                canvas.addEventListener('mouseup', stopDrawing);
-                canvas.addEventListener('mousemove', draw);
-                
-                canvas.addEventListener('touchstart', function(e) {
-                    e.preventDefault();
-                    const touch = e.touches[0];
-                    startDrawing(touch);
-                });
-                
-                canvas.addEventListener('touchend', stopDrawing);
-                
-                canvas.addEventListener('touchmove', function(e) {
-                    e.preventDefault();
-                    const touch = e.touches[0];
-                    draw(touch);
-                });
-                
-                // Clear signature button
-                document.getElementById('clearSignature').addEventListener('click', function() {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.fillStyle = 'white';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.strokeStyle = '#ccc';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(0, 0, canvas.width, canvas.height);
-                    document.getElementById('signaturePreview').style.display = 'none';
-                    document.getElementById('nextStep5').disabled = true;
-                    signatureData = null;
-                    updateSignatureStatus();
-                });
-                
-                // Type signature button
-                document.getElementById('typeSignature').addEventListener('click', function() {
-                    const typedName = prompt('Enter your signature text:', document.getElementById('signerName').value);
-                    if (typedName) {
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        ctx.fillStyle = 'white';
-                        ctx.fillRect(0, 0, canvas.width, canvas.height);
-                        ctx.font = '40px cursive';
-                        ctx.fillStyle = '#000';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(typedName, canvas.width/2, canvas.height/2);
-                        ctx.strokeStyle = '#ccc';
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(0, 0, canvas.width, canvas.height);
-                        saveSignatureData();
-                    }
-                });
-                
-                // Save signature button
-                document.getElementById('saveSignature').addEventListener('click', saveSignatureData);
-                
-                // Legal certification checkbox
-                document.getElementById('legalCertify').addEventListener('change', function() {
-                    const signBtn = document.getElementById('nextStep5');
-                    signBtn.disabled = !(this.checked && signatureData);
-                });
-            }
-            
-            function saveSignatureData() {
-                const canvas = document.getElementById('signaturePad');
-                const signerName = document.getElementById('signerName').value;
-                
-                if (!signerName.trim()) {
-                    alert('Please enter your name before saving signature.');
-                    return;
-                }
-                
-                // Check if signature is not empty
-                const ctx = canvas.getContext('2d');
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                let isEmpty = true;
-                
-                for (let i = 3; i < imageData.data.length; i += 4) {
-                    if (imageData.data[i] > 0) {
-                        isEmpty = false;
-                        break;
-                    }
-                }
-                
-                if (isEmpty) {
-                    alert('Please draw or type your signature before saving.');
-                    return;
-                }
-                
-                // Save signature data
-                signatureData = {
-                    name: signerName,
-                    dataUrl: canvas.toDataURL(),
-                    timestamp: new Date().toISOString()
-                };
-                
-                // Show preview
-                const preview = document.getElementById('signaturePreview');
-                const previewImg = document.getElementById('signatureImage');
-                previewImg.src = signatureData.dataUrl;
-                preview.style.display = 'flex';
-                
-                // Enable next button if legal certification is checked
-                const signBtn = document.getElementById('nextStep5');
-                const legalCertify = document.getElementById('legalCertify');
-                signBtn.disabled = !legalCertify.checked;
-                
-                updateSignatureStatus('Signed and saved');
-            }
-            
-            function updateSignatureStatus(status = 'Ready to sign') {
-                const statusEl = document.getElementById('signatureStatus');
-                if (status === 'Signed and saved') {
-                    statusEl.innerHTML = '<i class="fas fa-check-circle" style="color: #28a745;"></i> ' + status;
-                } else {
-                    statusEl.innerHTML = '<i class="fas fa-pen"></i> ' + status;
-                }
-            }
-            
-            // Utility Functions
-            function showLoading(message = 'Processing...') {
-                loadingText.textContent = message;
-                loadingOverlay.style.display = 'flex';
-            }
-            
-            function hideLoading() {
-                loadingOverlay.style.display = 'none';
-            }
-            
-            function resetForm() {
-                // Reset to step 1
-                currentStep = 1;
-                
-                // Hide all steps except first
-                const steps = document.querySelectorAll('.form-step');
-                steps.forEach(step => step.classList.remove('active'));
-                document.getElementById('step1').classList.add('active');
-                
-                // Reset progress indicators
-                const circles = document.querySelectorAll('.step-circle');
-                circles.forEach(circle => {
-                    circle.classList.remove('active', 'completed');
-                });
-                document.getElementById('step1Circle').classList.add('active');
-                
-                // Clear form fields
-                const form = document.getElementById('evictionForm');
-                const inputs = form.querySelectorAll('input, select, textarea');
-                inputs.forEach(input => {
-                    if (input.type === 'checkbox') {
-                        input.checked = false;
-                    } else if (input.type !== 'button' && input.type !== 'submit') {
-                        input.value = input.defaultValue || '';
-                    }
-                });
-                
-                // Reset signature
-                const legalCertify = document.getElementById('legalCertify');
-                if (legalCertify) legalCertify.checked = false;
-                const nextStep5 = document.getElementById('nextStep5');
-                if (nextStep5) nextStep5.disabled = true;
-                signatureData = null;
-                const signaturePreview = document.getElementById('signaturePreview');
-                if (signaturePreview) signaturePreview.style.display = 'none';
-                
-                // Reset success message
-                const successMessage = document.getElementById('successMessage');
-                if (successMessage) successMessage.style.display = 'none';
-                
-                // Reset webhook notification
-                const webhookNotification = document.getElementById('webhookNotification');
-                if (webhookNotification) webhookNotification.style.display = 'none';
-                
-                // Clear case ID
-                caseId = null;
-                formData = {};
-                generatedDocuments = {};
-                
-                // Remove any added notifications
-                const notifications = document.querySelectorAll('.info-box.success, .info-box.warning');
-                notifications.forEach(notification => {
-                    if (!notification.id) {
-                        notification.remove();
-                    }
-                });
-                
-                // Reset date fields
-                const today = new Date().toISOString().split('T')[0];
-                const noticeDate = document.getElementById('noticeDate');
-                if (noticeDate) {
-                    noticeDate.value = today;
-                    noticeDate.min = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-                    noticeDate.max = today;
-                }
-                
-                const lastPaymentDate = document.getElementById('lastPaymentDate');
-                if (lastPaymentDate) {
-                    lastPaymentDate.max = today;
-                }
-            }
-            
-            // Pre-fill today's date in notice date field
+            // Set today's date as default for notice date
             const today = new Date().toISOString().split('T')[0];
             const noticeDate = document.getElementById('noticeDate');
             if (noticeDate) {
                 noticeDate.value = today;
+                noticeDate.max = today;
                 
                 // Set minimum date for notice date (30 days ago)
                 const thirtyDaysAgo = new Date();
                 thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
                 noticeDate.min = thirtyDaysAgo.toISOString().split('T')[0];
+            }
+            
+            // Form submission
+            formElement.addEventListener('submit', async function(e) {
+                e.preventDefault();
                 
-                // Set maximum date for notice date (today)
-                noticeDate.max = today;
-            }
-            
-            // Set last payment date max to today
-            const lastPaymentDate = document.getElementById('lastPaymentDate');
-            if (lastPaymentDate) {
-                lastPaymentDate.max = today;
-            }
-            
-            // Form validation for step 5
-            const nextStep5Btn = document.getElementById('nextStep5');
-            if (nextStep5Btn) {
-                nextStep5Btn.addEventListener('click', function() {
-                    if (!signatureData) {
-                        alert('Please save your signature before proceeding.');
-                        return;
+                // Show loading
+                loadingText.textContent = 'Submitting to court system...';
+                loadingOverlay.style.display = 'flex';
+                
+                try {
+                    // Collect form data
+                    const formData = new FormData(this);
+                    const data = Object.fromEntries(formData);
+                    
+                    // Add timestamp and generate case ID
+                    data.timestamp = new Date().toISOString();
+                    data.caseId = generateCaseId();
+                    
+                    // Send to Java backend
+                    const response = await fetch('/api/submit-eviction', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        
+                        // Hide loading
+                        loadingOverlay.style.display = 'none';
+                        
+                        // Hide form and show success message
+                        formElement.style.display = 'none';
+                        document.getElementById('caseIdDisplay').textContent = result.caseId || data.caseId;
+                        successMessage.style.display = 'block';
+                        
+                        // Log to console for debugging
+                        console.log('Case submitted successfully:', result);
+                        
+                    } else {
+                        throw new Error(`Server responded with status: ${response.status}`);
                     }
-                    if (!document.getElementById('legalCertify').checked) {
-                        alert('Please certify the legal information before proceeding.');
-                        return;
-                    }
-                    goToStep(6);
-                });
+                    
+                } catch (error) {
+                    console.error('Error submitting form:', error);
+                    loadingOverlay.style.display = 'none';
+                    alert('Error submitting case. Please try again or contact the court directly.');
+                }
+            });
+            
+            // Start new filing
+            newFilingBtn.addEventListener('click', function() {
+                formElement.reset();
+                formElement.style.display = 'block';
+                successMessage.style.display = 'none';
+                
+                // Reset notice date to today
+                if (noticeDate) {
+                    noticeDate.value = today;
+                }
+            });
+            
+            // Generate Case ID
+            function generateCaseId() {
+                const timestamp = Date.now();
+                const randomNum = Math.floor(Math.random() * 10000);
+                return `HOU-${new Date().getFullYear()}-${timestamp.toString().slice(-6)}-${randomNum.toString().padStart(4, '0')}`;
             }
             
-            // Form validation helper
-            function validateFormStep(step) {
-                const inputs = document.querySelectorAll(`#step${step} input[required], #step${step} select[required]`);
-                for (let input of inputs) {
-                    if (!input.value.trim()) {
-                        alert(`Please fill in all required fields in step ${step}`);
+            // Form validation
+            function validateForm() {
+                const requiredFields = formElement.querySelectorAll('[required]');
+                for (let field of requiredFields) {
+                    if (!field.value.trim()) {
+                        alert(`Please fill in: ${field.previousElementSibling.textContent}`);
+                        field.focus();
                         return false;
                     }
                 }
+                
+                if (!document.getElementById('legalCertify').checked) {
+                    alert('Please certify the legal information before submitting.');
+                    return false;
+                }
+                
                 return true;
             }
-            
-            // Enhanced next step handlers with validation
-            document.getElementById('nextStep1').addEventListener('click', function() {
-                if (validateFormStep(1)) goToStep(2);
-            });
-            
-            document.getElementById('nextStep2').addEventListener('click', function() {
-                if (validateFormStep(2)) goToStep(3);
-            });
-            
-            document.getElementById('nextStep3').addEventListener('click', function() {
-                if (validateFormStep(3)) goToStep(4);
-            });
-            
-            document.getElementById('nextStep4').addEventListener('click', function() {
-                if (validateFormStep(4)) goToStep(5);
-            });
-            
-            // Auto-send to webhook when form is completed
-            // This happens automatically in goToStep(6)
         });
     </script>
 </body>
