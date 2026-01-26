@@ -1,0 +1,47 @@
+{
+  "caseId": "HOU-2026-001497-3287",
+  "status": "Pending Court Filing",
+  "filingDate": "2026-01-26T16:15:21.542Z",
+  "landlord": {
+    "name": "",
+    "phone": "",
+    "email": "",
+    "type": "owner",
+    "address": "",
+    "city": "",
+    "state": "GA",
+    "zip": ""
+  },
+  "property": {
+    "address": "",
+    "city": "Warner Robins",
+    "zip": "",
+    "type": "single_family",
+    "unit": ""
+  },
+  "tenant": {
+    "name": "",
+    "phone": "",
+    "email": "",
+    "altAddress": "",
+    "militaryCheck": false
+  },
+  "case": {
+    "leaseType": "month_to_month",
+    "reason": "non_payment",
+    "rentAmount": 0,
+    "amountOwed": 0,
+    "lastPaymentDate": "",
+    "noticeDate": "2026-01-26",
+    "noticeDetails": ""
+  },
+  "signature": {
+    "name": "dfdg",
+    "timestamp": "2026-01-26T16:13:20.233Z"
+  },
+  "timestamp": "2026-01-26T16:15:21.542Z",
+  "documentsGenerated": true,
+  "version": "1.4",
+  "githubPath": "cases/HOU-2026-001497-3287/",
+  "savedAt": "2026-01-26T16:15:21.542Z"
+}
