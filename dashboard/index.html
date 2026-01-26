@@ -725,7 +725,7 @@
                 <div class="logo-container">
                     <div class="logo">HC</div>
                     <div class="logo-text">
-                        <h1>Eviction Cases Dashboard 1.3</h1>
+                        <h1>Eviction Cases Dashboard 1.2</h1>
                         <p>Houston County Magistrate Court - Warner Robins, GA</p>
                     </div>
                 </div>
@@ -807,7 +807,7 @@
             <div class="repo-info">
                 <h4><i class="fas fa-database"></i> Data Source Information</h4>
                 <p><strong>Repository:</strong> NAGOHUSA/GAEVIC</p>
-                <p><strong>Path:</strong> cases/ (scanning all case folders)</p>
+                <p><strong>Path:</strong> cases/case_data.json</p>
                 <p><strong>Status:</strong> <span id="repoStatus">Loading...</span></p>
             </div>
             
@@ -942,16 +942,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Dashboard script loaded');
             
-            // FIXED: GitHub Configuration - Now scanning all case folders
+            // GitHub Configuration
             const GITHUB_CONFIG = {
                 owner: 'NAGOHUSA',
                 repo: 'GAEVIC',
                 branch: 'main',
-                path: 'cases'  // Now scanning all folders in the cases directory
+                path: 'cases'
             };
-            
-            // No token needed for public repository
-            const GITHUB_TOKEN = null;
             
             // Simple password authentication
             const ADMIN_CREDENTIALS = {
@@ -994,10 +991,6 @@
             // Cases data
             let casesData = [];
             
-            // Debug logging
-            console.log('GitHub Repository: https://github.com/NAGOHUSA/GAEVIC/tree/main/cases');
-            console.log('Scanning all case folders in the cases directory');
-            
             // Handle login form submission
             loginForm.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -1005,30 +998,20 @@
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
                 
-                // Simple authentication
                 if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-                    // Successful login
                     localStorage.setItem('evictionDashboardLoggedIn', 'true');
                     localStorage.setItem('evictionDashboardLoginTime', new Date().getTime().toString());
                     
-                    // Hide error message if shown
                     loginError.style.display = 'none';
-                    
-                    // Show dashboard
                     showDashboard();
-                    
-                    // Start session timer
                     startSessionTimer();
                     
-                    // Clear form
                     document.getElementById('username').value = 'admin';
                     document.getElementById('password').value = 'admin';
                 } else {
-                    // Failed login
                     loginError.style.display = 'block';
                     document.getElementById('password').value = '';
                     
-                    // Shake animation for error
                     loginError.style.animation = 'none';
                     setTimeout(() => {
                         loginError.style.animation = 'shake 0.5s';
@@ -1040,27 +1023,19 @@
             logoutBtn.addEventListener('click', logout);
             
             function logout() {
-                // Clear session
                 localStorage.removeItem('evictionDashboardLoggedIn');
                 localStorage.removeItem('evictionDashboardLoginTime');
                 
-                // Hide dashboard
                 dashboardHeader.style.display = 'none';
                 dashboardContent.style.display = 'none';
-                
-                // Show login
                 loginContainer.style.display = 'flex';
                 
-                // Clear any data
                 casesData = [];
                 clearCharts();
-                
-                // Clear table
                 casesTableBody.innerHTML = '';
                 casesTableBody.style.display = 'none';
                 noCasesMessage.style.display = 'block';
                 
-                // Reset stats
                 totalCases.textContent = '0';
                 pendingCases.textContent = '0';
                 activeCases.textContent = '0';
@@ -1074,41 +1049,34 @@
                 loginContainer.style.display = 'none';
                 dashboardHeader.style.display = 'block';
                 dashboardContent.style.display = 'block';
-                
-                // Load cases automatically
                 loadAllCases();
             }
             
             // Start session timer
             function startSessionTimer() {
-                // Clear any existing timer
                 if (window.sessionTimer) {
                     clearInterval(window.sessionTimer);
                 }
                 
-                // Set up new timer
                 window.sessionTimer = setInterval(() => {
                     const loginTime = localStorage.getItem('evictionDashboardLoginTime');
                     if (loginTime) {
                         const currentTime = new Date().getTime();
-                        const sessionDuration = (currentTime - parseInt(loginTime)) / (1000 * 60); // in minutes
+                        const sessionDuration = (currentTime - parseInt(loginTime)) / (1000 * 60);
                         
                         if (sessionDuration >= SESSION_TIMEOUT - 5 && sessionDuration < SESSION_TIMEOUT) {
-                            // Show warning 5 minutes before timeout
                             showSessionWarning();
                         } else if (sessionDuration >= SESSION_TIMEOUT) {
-                            // Session expired
                             clearInterval(window.sessionTimer);
                             alert('Your session has expired due to inactivity. Please log in again.');
                             logout();
                         }
                     }
-                }, 60000); // Check every minute
+                }, 60000);
             }
             
             // Show session warning
             function showSessionWarning() {
-                // Create warning message if not already shown
                 if (!document.getElementById('sessionWarning')) {
                     const warning = document.createElement('div');
                     warning.id = 'sessionWarning';
@@ -1143,7 +1111,6 @@
                     `;
                     document.body.appendChild(warning);
                     
-                    // Auto-remove after 10 seconds
                     setTimeout(() => {
                         if (document.getElementById('sessionWarning')) {
                             document.getElementById('sessionWarning').remove();
@@ -1152,7 +1119,7 @@
                 }
             }
             
-            // Extend session function (available globally)
+            // Extend session function
             window.extendSession = function() {
                 localStorage.setItem('evictionDashboardLoginTime', new Date().getTime().toString());
                 const warning = document.getElementById('sessionWarning');
@@ -1173,58 +1140,45 @@
                 }
             }
             
-            // FIXED: Load ALL cases by scanning all case folders
+            // Load cases from GitHub
             async function loadAllCases() {
-                console.log('Scanning all case folders in cases directory...');
-                showLoading('Scanning case folders from repository...');
-                repoStatus.textContent = 'Scanning case folders...';
+                console.log('Loading cases from GitHub...');
+                showLoading('Loading case data from repository...');
+                repoStatus.textContent = 'Connecting to repository...';
                 
                 try {
-                    console.log('GitHub URL: https://github.com/NAGOHUSA/GAEVIC/tree/main/cases');
-                    console.log('Looking for case folders in the cases directory');
+                    const caseData = await getCaseDataFile(GITHUB_CONFIG, null);
                     
-                    // First, get all contents of the cases directory
-                    const casesData = await scanAllCaseFolders(GITHUB_CONFIG, GITHUB_TOKEN);
-                    
-                    if (casesData && Array.isArray(casesData)) {
-                        casesData.sort((a, b) => {
-                            const dateA = a.filingDate ? new Date(a.filingDate) : new Date(0);
-                            const dateB = b.filingDate ? new Date(b.filingDate) : new Date(0);
-                            return dateB - dateA;
-                        });
+                    if (caseData && Array.isArray(caseData)) {
+                        casesData = caseData;
+                        console.log(`Loaded ${casesData.length} cases`);
                         
-                        console.log(`Loaded ${casesData.length} cases from all case folders`);
-                        repoStatus.textContent = `Loaded ${casesData.length} cases from ${casesData.length} folders`;
+                        repoStatus.textContent = `Loaded ${casesData.length} cases`;
                         repoStatus.style.color = '#28a745';
                         
-                        // Update dashboard with loaded data
-                        updateDashboard(casesData);
+                        updateDashboard();
                         hideLoading();
                     } else {
-                        throw new Error('No case data found in any folders');
+                        throw new Error('Invalid data format');
                     }
                     
                 } catch (error) {
                     console.error('Error loading cases:', error);
                     hideLoading();
                     
-                    // Update repo status
                     repoStatus.textContent = 'Connection Failed';
                     repoStatus.style.color = '#dc3545';
                     
                     let errorMessage = error.message;
                     
                     if (error.response) {
-                        console.error('GitHub API Response:', error.response.status, error.response.data);
-                        
                         if (error.response.status === 404) {
-                            errorMessage = `Cases folder not found: cases/ in ${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}`;
+                            errorMessage = `File not found: cases/case_data.json`;
                         } else if (error.response.status === 403) {
                             errorMessage = 'Rate limit exceeded. Please wait a few minutes and try again.';
                         }
                     }
                     
-                    // Show no cases message with more specific error
                     casesTableBody.style.display = 'none';
                     noCasesMessage.style.display = 'block';
                     noCasesMessage.innerHTML = `
@@ -1237,84 +1191,17 @@
                         </button>
                     `;
                     
-                    // Add retry button listener
                     document.getElementById('retryConnection').addEventListener('click', loadAllCases);
                 }
             }
             
-            // NEW: Scan all case folders in the cases directory
-            async function scanAllCaseFolders(config, token) {
-                const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.path}`;
+            // Get case data from GitHub
+            async function getCaseDataFile(config, token) {
+                const filePath = 'case_data.json';
+                const fullPath = config.path ? `${config.path}/${filePath}` : filePath;
+                const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${fullPath}`;
                 
-                console.log(`Fetching directory contents from: ${url}`);
-                
-                const headers = {
-                    'Accept': 'application/vnd.github.v3+json',
-                    'User-Agent': 'EvictionDashboard/1.0'
-                };
-                
-                if (token) {
-                    headers['Authorization'] = `token ${token}`;
-                }
-                
-                const response = await axios.get(url, { 
-                    headers: headers,
-                    timeout: 10000
-                });
-                
-                const allCases = [];
-                
-                // Filter for directories that look like case folders (starting with HOU-)
-                const caseFolders = response.data.filter(item => 
-                    item.type === 'dir' && item.name.startsWith('HOU-')
-                );
-                
-                console.log(`Found ${caseFolders.length} case folders to scan`);
-                
-                // Load case data from each folder
-                for (const folder of caseFolders) {
-                    try {
-                        console.log(`Scanning folder: ${folder.name}`);
-                        const caseData = await loadCaseDataFromFolder(config, token, folder.name);
-                        if (caseData) {
-                            allCases.push(caseData);
-                        }
-                    } catch (error) {
-                        console.warn(`Could not load data from folder ${folder.name}:`, error.message);
-                    }
-                }
-                
-                // Also check for case_data.json if it exists
-                try {
-                    const caseDataFile = response.data.find(item => 
-                        item.type === 'file' && item.name === 'case_data.json'
-                    );
-                    
-                    if (caseDataFile) {
-                        console.log('Found case_data.json, loading data...');
-                        const caseDataUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.path}/case_data.json`;
-                        const caseDataResponse = await axios.get(caseDataUrl, { headers: headers });
-                        const content = atob(caseDataResponse.data.content);
-                        const caseDataArray = JSON.parse(content);
-                        
-                        // Add case data from the JSON file if not already in the array
-                        caseDataArray.forEach(caseData => {
-                            const exists = allCases.some(c => c.caseId === caseData.caseId);
-                            if (!exists) {
-                                allCases.push(caseData);
-                            }
-                        });
-                    }
-                } catch (error) {
-                    console.log('case_data.json not found or could not be loaded:', error.message);
-                }
-                
-                return allCases;
-            }
-            
-            // NEW: Load case data from a specific folder
-            async function loadCaseDataFromFolder(config, token, folderName) {
-                const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.path}/${folderName}`;
+                console.log(`Fetching from: ${url}`);
                 
                 const headers = {
                     'Accept': 'application/vnd.github.v3+json',
@@ -1330,49 +1217,29 @@
                     timeout: 10000
                 });
                 
-                // Look for a case data file in the folder
-                const caseDataFile = response.data.find(item => 
-                    item.name === 'case_data.json' || 
-                    item.name === 'case.json' || 
-                    item.name === `${folderName}.json`
-                );
+                const content = atob(response.data.content);
+                const caseData = JSON.parse(content);
                 
-                if (caseDataFile) {
-                    const caseDataUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.path}/${folderName}/${caseDataFile.name}`;
-                    const caseDataResponse = await axios.get(caseDataUrl, { headers: headers });
-                    const content = atob(caseDataResponse.data.content);
-                    const caseData = JSON.parse(content);
-                    
-                    // Ensure the case has a caseId (use folder name if not present)
-                    if (!caseData.caseId && folderName.startsWith('HOU-')) {
-                        caseData.caseId = folderName;
+                caseData.forEach(caseItem => {
+                    if (caseItem.filingDate && !caseItem.timestamp) {
+                        caseItem.timestamp = caseItem.filingDate;
                     }
-                    
-                    return caseData;
-                }
+                });
                 
-                return null;
+                return caseData;
             }
             
             // Update dashboard with loaded data
-            function updateDashboard(cases) {
-                console.log('Updating dashboard with', cases.length, 'cases');
-                // Update statistics
-                updateStats(cases);
-                
-                // Update table
-                updateCasesTable(cases);
-                
-                // Update charts
-                updateCharts(cases);
+            function updateDashboard() {
+                updateStats(casesData);
+                updateCasesTable(casesData);
+                updateCharts(casesData);
             }
             
             // Update statistics
             function updateStats(cases) {
                 const total = cases.length;
                 const pending = cases.filter(c => c.status === 'Pending Court Filing').length;
-                
-                // Active cases: All cases that are in progress
                 const active = cases.filter(c => 
                     c.status === 'Court Filed - Awaiting Service' || 
                     c.status === 'Served - Awaiting Hearing' ||
@@ -1381,8 +1248,6 @@
                     c.status === 'Active - Payment Plan' ||
                     c.status === 'Awaiting SCRA Verification'
                 ).length;
-                
-                // Completed cases: Cases that have reached a final resolution
                 const completed = cases.filter(c => 
                     c.status === 'Writ of Possession Issued' || 
                     c.status === 'Eviction Completed' ||
@@ -1394,10 +1259,9 @@
                 activeCases.textContent = active;
                 completedCases.textContent = completed;
                 
-                // Update trend
                 const casesTrend = document.getElementById('casesTrend');
                 if (total > 0) {
-                    casesTrend.textContent = `${total} case${total !== 1 ? 's' : ''} loaded from ${total} folders`;
+                    casesTrend.textContent = `${total} case${total !== 1 ? 's' : ''} loaded`;
                     casesTrend.className = 'stat-trend';
                     casesTrend.style.color = '#28a745';
                 } else {
@@ -1420,7 +1284,6 @@
                 casesTableBody.style.display = 'table-row-group';
                 noCasesMessage.style.display = 'none';
                 
-                // Filter cases
                 let filteredCases = cases;
                 
                 if (filterText) {
@@ -1439,18 +1302,15 @@
                     filteredCases = filteredCases.filter(c => c.status === 'Pending Court Filing');
                 }
                 
-                // Sort by filing date (newest first)
                 filteredCases.sort((a, b) => {
                     const dateA = a.filingDate ? new Date(a.filingDate) : new Date(0);
                     const dateB = b.filingDate ? new Date(b.filingDate) : new Date(0);
                     return dateB - dateA;
                 });
                 
-                // Populate table
                 filteredCases.forEach(caseData => {
                     const row = document.createElement('tr');
                     
-                    // Format date
                     let formattedDate = 'No date';
                     if (caseData.filingDate) {
                         const date = new Date(caseData.filingDate);
@@ -1461,7 +1321,6 @@
                         });
                     }
                     
-                    // Get status badge class
                     let statusClass = 'status-pending';
                     if (caseData.status === 'Pending Court Filing') statusClass = 'status-pending';
                     if (caseData.status === 'Court Filed - Awaiting Service') statusClass = 'status-filed';
@@ -1470,19 +1329,16 @@
                     if (caseData.status === 'Writ of Possession Issued' || caseData.status === 'Eviction Completed') statusClass = 'status-completed';
                     if (caseData.status === 'Dismissed - Tenant Paid') statusClass = 'status-dismissed';
                     
-                    // Get amount owed
                     let amountOwed = '0.00';
                     if (caseData.case && caseData.case.amountOwed) {
                         amountOwed = parseFloat(caseData.case.amountOwed).toFixed(2);
-                    } else if (caseData.amountOwed) {
-                        amountOwed = parseFloat(caseData.amountOwed).toFixed(2);
                     }
                     
                     row.innerHTML = `
                         <td><strong>${caseData.caseId || 'Unknown'}</strong></td>
                         <td>${caseData.landlord ? caseData.landlord.name : 'Unknown'}</td>
                         <td>${caseData.tenant ? caseData.tenant.name : 'Unknown'}</td>
-                        <td>${caseData.property ? `${caseData.property.address || ''}, ${caseData.property.city || ''}` : 'Unknown'}</td>
+                        <td>${caseData.property ? `${caseData.property.address}, ${caseData.property.city}` : 'Unknown'}</td>
                         <td>$${amountOwed}</td>
                         <td><span class="status-badge ${statusClass}">${caseData.status || 'Unknown'}</span></td>
                         <td>${formattedDate}</td>
@@ -1501,7 +1357,6 @@
                     casesTableBody.appendChild(row);
                 });
                 
-                // Add event listeners to action buttons
                 document.querySelectorAll('.view-case').forEach(button => {
                     button.addEventListener('click', function() {
                         const caseId = this.getAttribute('data-case-id');
@@ -1519,22 +1374,15 @@
             
             // Update charts
             function updateCharts(cases) {
-                // Status Distribution Chart
                 const statusCounts = {};
-                
                 cases.forEach(caseData => {
                     const status = caseData.status || 'Unknown';
-                    if (!statusCounts[status]) {
-                        statusCounts[status] = 0;
-                    }
-                    statusCounts[status]++;
+                    statusCounts[status] = (statusCounts[status] || 0) + 1;
                 });
                 
-                // Filter out zero counts and sort
                 const labels = Object.keys(statusCounts).sort();
                 const data = labels.map(status => statusCounts[status]);
                 
-                // Color mapping for different statuses
                 const statusColors = {
                     'Pending Court Filing': '#ffc107',
                     'Court Filed - Awaiting Service': '#17a2b8',
@@ -1551,7 +1399,6 @@
                 
                 const colors = labels.map(status => statusColors[status] || '#6c757d');
                 
-                // Destroy existing chart if it exists
                 if (statusChart) {
                     statusChart.destroy();
                 }
@@ -1583,26 +1430,19 @@
                     });
                 }
                 
-                // Monthly Cases Chart
                 const monthlyCounts = {};
                 cases.forEach(caseData => {
                     if (caseData.filingDate) {
                         const date = new Date(caseData.filingDate);
                         const monthYear = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                        
-                        if (!monthlyCounts[monthYear]) {
-                            monthlyCounts[monthYear] = 0;
-                        }
-                        monthlyCounts[monthYear]++;
+                        monthlyCounts[monthYear] = (monthlyCounts[monthYear] || 0) + 1;
                     }
                 });
                 
-                // Sort months chronologically
                 const sortedMonths = Object.keys(monthlyCounts).sort((a, b) => {
                     return new Date(a) - new Date(b);
                 });
                 
-                // Destroy existing chart if it exists
                 if (monthlyChart) {
                     monthlyChart.destroy();
                 }
@@ -1641,7 +1481,6 @@
                 showLoading('Loading case details...');
                 
                 try {
-                    // Find case in loaded data
                     const caseData = casesData.find(c => c.caseId === caseId);
                     
                     if (!caseData) {
@@ -1650,7 +1489,6 @@
                         return;
                     }
                     
-                    // Format dates
                     let formattedFilingDate = 'No date available';
                     let formattedNoticeDate = 'No date available';
                     let formattedLastPaymentDate = 'No date available';
@@ -1674,13 +1512,6 @@
                             month: 'long',
                             day: 'numeric'
                         });
-                    } else if (caseData.noticeDate) {
-                        const date = new Date(caseData.noticeDate);
-                        formattedNoticeDate = date.toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        });
                     }
                     
                     if (caseData.case && caseData.case.lastPaymentDate) {
@@ -1690,16 +1521,8 @@
                             month: 'long',
                             day: 'numeric'
                         });
-                    } else if (caseData.lastPaymentDate) {
-                        const date = new Date(caseData.lastPaymentDate);
-                        formattedLastPaymentDate = date.toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        });
                     }
                     
-                    // Format lease type
                     let leaseTypeFormatted = 'Unknown';
                     if (caseData.case && caseData.case.leaseType) {
                         const leaseTypes = {
@@ -1708,16 +1531,8 @@
                             'week_to_week': 'Week to Week'
                         };
                         leaseTypeFormatted = leaseTypes[caseData.case.leaseType] || caseData.case.leaseType;
-                    } else if (caseData.leaseType) {
-                        const leaseTypes = {
-                            'month_to_month': 'Month to Month',
-                            'fixed_term': 'Fixed Term',
-                            'week_to_week': 'Week to Week'
-                        };
-                        leaseTypeFormatted = leaseTypes[caseData.leaseType] || caseData.leaseType;
                     }
                     
-                    // Format reason
                     let reasonFormatted = 'Not specified';
                     if (caseData.case && caseData.case.reason) {
                         const reasons = {
@@ -1728,18 +1543,8 @@
                             'illegal_activity': 'Illegal Activity'
                         };
                         reasonFormatted = reasons[caseData.case.reason] || caseData.case.reason;
-                    } else if (caseData.reason) {
-                        const reasons = {
-                            'non_payment': 'Non-Payment of Rent',
-                            'lease_violation': 'Lease Violation',
-                            'property_damage': 'Property Damage',
-                            'holdover': 'Holdover',
-                            'illegal_activity': 'Illegal Activity'
-                        };
-                        reasonFormatted = reasons[caseData.reason] || caseData.reason;
                     }
                     
-                    // Create case details HTML
                     caseDetailsContent.innerHTML = `
                         <div class="case-details-grid">
                             <div>
@@ -1794,24 +1599,18 @@
                                 ` : ''}
                             </div>
                             <div>
+                                ${caseData.case ? `
                                 <div class="detail-group">
                                     <h4>Case Details</h4>
                                     <div class="detail-content">
-                                        <p><strong>Monthly Rent:</strong> $${(caseData.case && caseData.case.rentAmount) ? parseFloat(caseData.case.rentAmount).toFixed(2) : (caseData.rentAmount ? parseFloat(caseData.rentAmount).toFixed(2) : '0.00')}</p>
-                                        <p><strong>Amount Owed:</strong> $${(caseData.case && caseData.case.amountOwed) ? parseFloat(caseData.case.amountOwed).toFixed(2) : (caseData.amountOwed ? parseFloat(caseData.amountOwed).toFixed(2) : '0.00')}</p>
-                                        ${formattedLastPaymentDate !== 'No date available' ? `<p><strong>Last Payment Date:</strong> ${formattedLastPaymentDate}</p>` : ''}
+                                        <p><strong>Monthly Rent:</strong> $${caseData.case.rentAmount ? parseFloat(caseData.case.rentAmount).toFixed(2) : '0.00'}</p>
+                                        <p><strong>Amount Owed:</strong> $${caseData.case.amountOwed ? parseFloat(caseData.case.amountOwed).toFixed(2) : '0.00'}</p>
+                                        ${caseData.case.lastPaymentDate ? `<p><strong>Last Payment Date:</strong> ${formattedLastPaymentDate}</p>` : ''}
                                         <p><strong>Notice Date:</strong> ${formattedNoticeDate}</p>
-                                        ${caseData.case && caseData.case.noticeDetails ? `<p><strong>Notice Details:</strong> ${caseData.case.noticeDetails}</p>` : ''}
+                                        ${caseData.case.noticeDetails ? `<p><strong>Notice Details:</strong> ${caseData.case.noticeDetails}</p>` : ''}
                                     </div>
                                 </div>
-                                <div class="detail-group">
-                                    <h4>Storage Location</h4>
-                                    <div class="detail-content">
-                                        <p><strong>GitHub Repository:</strong> ${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}</p>
-                                        <p><strong>Folder Path:</strong> cases/${caseData.caseId || 'Unknown'}</p>
-                                        <p><strong>Files:</strong> case_data.json, forms.pdf, summary.html</p>
-                                    </div>
-                                </div>
+                                ` : ''}
                             </div>
                         </div>
                         <div style="margin-top: 20px; text-align: center;">
@@ -1821,7 +1620,6 @@
                         </div>
                     `;
                     
-                    // Add event listener to close button
                     document.getElementById('closeDetailsBtn').addEventListener('click', function() {
                         caseDetailsModal.style.display = 'none';
                     });
@@ -1838,28 +1636,7 @@
             
             // Download case documents
             async function downloadCaseDocuments(caseId) {
-                const caseData = casesData.find(c => c.caseId === caseId);
-                if (!caseData) {
-                    alert('Case not found.');
-                    return;
-                }
-                
-                showLoading(`Downloading documents for case ${caseId}...`);
-                
-                try {
-                    // Create a direct link to the GitHub folder
-                    const githubUrl = `https://github.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/tree/main/cases/${caseId}`;
-                    
-                    // Open in new tab
-                    window.open(githubUrl, '_blank');
-                    
-                    hideLoading();
-                    alert(`Opening GitHub folder for case ${caseId} in a new tab. You can download files directly from there.`);
-                } catch (error) {
-                    console.error('Error downloading documents:', error);
-                    hideLoading();
-                    alert(`Error: ${error.message}`);
-                }
+                alert('Document download feature would require specific file paths in the repository. This feature needs case files to be properly organized.');
             }
             
             // Export data function
@@ -1871,8 +1648,7 @@
                         throw new Error('No data to export. Please load cases first.');
                     }
                     
-                    // Create CSV content
-                    let csvContent = "Case ID,Landlord,Tenant,Property Address,City,Amount Owed,Status,Date Filed,Folder\n";
+                    let csvContent = "Case ID,Landlord,Tenant,Property Address,City,Amount Owed,Status,Date Filed\n";
                     
                     casesData.forEach(caseData => {
                         let formattedDate = 'No date';
@@ -1885,13 +1661,11 @@
                         const tenantName = caseData.tenant ? caseData.tenant.name : 'Unknown';
                         const propertyAddress = caseData.property ? caseData.property.address : 'Unknown';
                         const propertyCity = caseData.property ? caseData.property.city : 'Unknown';
-                        const amountOwed = (caseData.case && caseData.case.amountOwed) ? parseFloat(caseData.case.amountOwed).toFixed(2) : (caseData.amountOwed ? parseFloat(caseData.amountOwed).toFixed(2) : '0.00');
-                        const folderPath = `cases/${caseData.caseId || 'Unknown'}`;
+                        const amountOwed = caseData.case && caseData.case.amountOwed ? parseFloat(caseData.case.amountOwed).toFixed(2) : '0.00';
                         
-                        csvContent += `"${caseData.caseId || 'Unknown'}","${landlordName}","${tenantName}","${propertyAddress}","${propertyCity}",$${amountOwed},"${caseData.status || 'Unknown'}","${formattedDate}","${folderPath}"\n`;
+                        csvContent += `"${caseData.caseId || 'Unknown'}","${landlordName}","${tenantName}","${propertyAddress}","${propertyCity}",$${amountOwed},"${caseData.status || 'Unknown'}","${formattedDate}"\n`;
                     });
                     
-                    // Create blob and download
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -1916,7 +1690,6 @@
                 caseDetailsModal.style.display = 'none';
             });
             
-            // Click outside modal to close
             caseDetailsModal.addEventListener('click', function(e) {
                 if (e.target === caseDetailsModal) {
                     caseDetailsModal.style.display = 'none';
@@ -1962,17 +1735,15 @@
                 if (isLoggedIn === 'true' && loginTime) {
                     const currentTime = new Date().getTime();
                     const loginTimeValue = parseInt(loginTime);
-                    const sessionDuration = (currentTime - loginTimeValue) / (1000 * 60); // in minutes
+                    const sessionDuration = (currentTime - loginTimeValue) / (1000 * 60);
                     
                     if (sessionDuration < SESSION_TIMEOUT) {
                         console.log('User already logged in, session valid');
-                        // User is logged in and session is valid
                         showDashboard();
                         startSessionTimer();
                         return true;
                     } else {
                         console.log('Session expired');
-                        // Session expired
                         logout();
                     }
                 }
@@ -1983,7 +1754,6 @@
             console.log('Checking authentication...');
             if (!checkAuth()) {
                 console.log('No valid session found, showing login');
-                // Show login page if not authenticated
                 loginContainer.style.display = 'flex';
                 dashboardHeader.style.display = 'none';
                 dashboardContent.style.display = 'none';
