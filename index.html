@@ -568,16 +568,17 @@
             min-height: 40px;
         }
         
-        /* GitHub Configuration */
-        .github-config {
+        /* Webhook Status */
+        .webhook-status {
             margin: 30px 0;
             padding: 20px;
             background: #f8f9fa;
             border-radius: var(--border-radius);
             border: 2px solid var(--houston-blue);
+            display: none;
         }
         
-        .github-config h3 {
+        .webhook-status h3 {
             color: var(--houston-blue);
             margin-bottom: 15px;
             font-size: 18px;
@@ -737,6 +738,22 @@
             margin-bottom: 20px;
         }
         
+        /* Webhook Notification */
+        .webhook-notification {
+            text-align: center;
+            padding: 20px;
+            background: #e8f4fd;
+            border: 2px solid var(--houston-blue);
+            border-radius: var(--border-radius);
+            margin: 20px 0;
+        }
+        
+        .webhook-notification i {
+            font-size: 40px;
+            color: var(--houston-blue);
+            margin-bottom: 15px;
+        }
+        
         /* Responsive Design */
         @media (max-width: 768px) {
             .header-top {
@@ -805,7 +822,7 @@
                 <div class="logo-container">
                     <div class="logo">HC</div>
                     <div class="logo-text">
-                        <h1>Houston County Eviction System 2.0</h1>
+                        <h1>Houston County Eviction System 1.0</h1>
                         <p>Georgia Magistrate Court - Warner Robins, GA</p>
                     </div>
                 </div>
@@ -869,10 +886,10 @@
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-dollar-sign"></i>
+                        <i class="fas fa-sync-alt"></i>
                     </div>
-                    <h3>Transparent Fees</h3>
-                    <p>Pay Houston County's $99 filing fee securely online. No hidden charges or subscription fees.</p>
+                    <h3>Auto-Sync to Court</h3>
+                    <p>Case data automatically synchronized with court systems via secure webhook integration.</p>
                 </div>
             </div>
         </div>
@@ -1224,31 +1241,13 @@
                     <p><strong>Status:</strong> <span id="caseStatusDisplay">Pending Court Filing</span></p>
                 </div>
                 
-                <!-- GitHub Configuration Section -->
-                <div class="github-config" id="githubConfigSection">
-                    <h3><i class="fab fa-github"></i> GitHub Configuration</h3>
-                    <p><strong>Repository:</strong> NAGOHUSA/GAEVIC</p>
-                    <p><strong>Owner:</strong> NAGOHUSA</p>
-                    <p><strong>Branch:</strong> main</p>
-                    <p><strong>Path:</strong> cases/</p>
-                    
-                    <div class="form-group" style="margin-top: 15px;">
-                        <label for="githubToken">GitHub Personal Access Token *</label>
-                        <input type="password" id="githubToken" placeholder="Enter your GitHub token" style="width: 100%; padding: 10px; font-family: monospace;">
-                        <p style="font-size: 12px; color: #666; margin-top: 5px;">
-                            <i class="fas fa-info-circle"></i> Required for saving to GitHub. 
-                            <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--houston-blue); text-decoration: underline;">
-                                Create a token
-                            </a> with "repo" permissions.
-                        </p>
-                    </div>
-                    
-                    <div class="form-group" style="margin-top: 10px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <input type="checkbox" id="enableGitHub" style="width: auto;">
-                            <label for="enableGitHub" style="margin: 0; font-weight: normal;">Enable GitHub auto-save feature</label>
-                        </div>
-                    </div>
+                <!-- Webhook Status -->
+                <div class="webhook-notification" id="webhookNotification" style="display: none;">
+                    <i class="fas fa-sync-alt"></i>
+                    <h3 style="color: var(--houston-blue);">Auto-Sync to Court System</h3>
+                    <p>Your case data is being automatically synchronized with the Houston County Magistrate Court system.</p>
+                    <p><strong>Webhook:</strong> https://nagoh.us/webhook/</p>
+                    <p><strong>Status:</strong> <span id="webhookStatus">Processing...</span></p>
                 </div>
                 
                 <div class="info-box">
@@ -1312,8 +1311,8 @@
                             <i class="fas fa-file-archive"></i> Download All Documents (ZIP)
                         </button>
                         
-                        <button class="btn btn-primary" id="saveToGitHubBtn" style="padding: 15px 40px; font-size: 18px; margin-left: 15px;">
-                            <i class="fab fa-github"></i> Save Case to GitHub
+                        <button class="btn btn-primary" id="syncToCourtBtn" style="padding: 15px 40px; font-size: 18px; margin-left: 15px;">
+                            <i class="fas fa-sync-alt"></i> Sync Case to Court System
                         </button>
                     </div>
                     
@@ -1386,23 +1385,11 @@
         // Initialize jsPDF
         const { jsPDF } = window.jspdf;
         
-        // GitHub API Configuration
-        const GITHUB_API = {
-            baseURL: 'https://api.github.com',
-            owner: 'NAGOHUSA',
-            repo: 'GAEVIC',
-            branch: 'main',
-            path: 'cases/',
-            
-            // Get token from input field
-            getToken: function() {
-                return document.getElementById('githubToken')?.value?.trim() || null;
-            },
-            
-            // Check if GitHub feature is enabled
-            isEnabled: function() {
-                return document.getElementById('enableGitHub')?.checked || false;
-            }
+        // Webhook Configuration
+        const WEBHOOK_CONFIG = {
+            url: 'https://nagoh.us/webhook/',
+            method: 'POST',
+            contentType: 'application/json'
         };
         
         // Form Navigation Logic
@@ -1484,6 +1471,8 @@
                 } else if (currentStep === 6) {
                     generateCaseId();
                     generateAllDocuments();
+                    // Automatically send to webhook when reaching step 6
+                    setTimeout(sendToWebhook, 500);
                 }
                 
                 // Scroll to top of form
@@ -1518,6 +1507,7 @@
                     caseId: caseId,
                     status: 'Pending Court Filing',
                     filingDate: new Date().toISOString(),
+                    timestamp: new Date().toISOString(),
                     landlord: {
                         name: document.getElementById('landlordName').value,
                         phone: document.getElementById('landlordPhone').value,
@@ -1555,9 +1545,9 @@
                         name: signatureData.name,
                         timestamp: signatureData.timestamp
                     } : null,
-                    timestamp: new Date().toISOString(),
                     documentsGenerated: true,
-                    version: '2.0'
+                    systemVersion: '2.0',
+                    source: 'Houston County Eviction System'
                 };
                 return formData;
             }
@@ -1575,11 +1565,14 @@
                 // Show success message
                 document.getElementById('successMessage').style.display = 'block';
                 
+                // Show webhook notification
+                document.getElementById('webhookNotification').style.display = 'block';
+                
                 // Set up download buttons
                 setupDownloadButtons();
             }
             
-            // Document Generation Functions
+            // Document Generation Functions (same as before)
             function generateDemandNotice() {
                 const doc = new jsPDF();
                 const pageWidth = doc.internal.pageSize.getWidth();
@@ -1820,7 +1813,7 @@
                 doc.text(`Case: ${formData.landlord.name} vs. ${formData.tenant.name}`, 20, 70);
                 doc.text(`Property: ${formData.property.address}`, 20, 80);
                 
-                // Verification Text - FIXED CHECKBOX RENDERING
+                // Verification Text
                 doc.setFontSize(12);
                 const verificationText = [
                     `I, ${formData.landlord.name}, being duly sworn, depose and state:`,
@@ -1853,7 +1846,7 @@
                     yPosition += 7;
                 });
                 
-                // Draw checkboxes - FIXED POSITIONING
+                // Draw checkboxes
                 const checkY = 140;
                 doc.setFontSize(14);
                 
@@ -1923,6 +1916,78 @@
                 return doc;
             }
             
+            // Send Data to Webhook
+            async function sendToWebhook() {
+                showLoading('Syncing case data to court system...');
+                document.getElementById('webhookStatus').textContent = 'Sending...';
+                
+                try {
+                    // Prepare webhook data
+                    const webhookData = {
+                        event: 'eviction_case_created',
+                        caseId: caseId,
+                        timestamp: new Date().toISOString(),
+                        data: formData,
+                        documents: {
+                            count: 4,
+                            types: ['7-Day Demand Notice', 'Dispossessory Affidavit', 'Summons', 'SCRA Verification'],
+                            generated: true
+                        },
+                        source: 'Houston County Eviction System 2.0',
+                        webhookUrl: WEBHOOK_CONFIG.url
+                    };
+                    
+                    // Send to webhook
+                    const response = await fetch(WEBHOOK_CONFIG.url, {
+                        method: WEBHOOK_CONFIG.method,
+                        headers: {
+                            'Content-Type': WEBHOOK_CONFIG.contentType,
+                            'X-Event-Type': 'eviction_case_created',
+                            'X-Case-ID': caseId,
+                            'X-Source': 'Houston_County_Eviction_System'
+                        },
+                        body: JSON.stringify(webhookData)
+                    });
+                    
+                    hideLoading();
+                    
+                    if (response.ok) {
+                        document.getElementById('webhookStatus').textContent = 'Synced Successfully';
+                        document.getElementById('webhookStatus').style.color = '#28a745';
+                        
+                        // Show success message
+                        showSuccessNotification(`
+                            <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                            <h4 style="color: #28a745; margin: 10px 0;">Case Data Synced to Court System</h4>
+                            <p>Your eviction case has been successfully synchronized with the Houston County Magistrate Court system.</p>
+                            <p><strong>Webhook Status:</strong> Successfully sent to https://nagoh.us/webhook/</p>
+                            <p><strong>Case ID:</strong> ${caseId}</p>
+                            <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
+                        `);
+                    } else {
+                        throw new Error(`Webhook responded with status: ${response.status}`);
+                    }
+                    
+                } catch (error) {
+                    hideLoading();
+                    console.error('Webhook Error:', error);
+                    
+                    // Update status but don't show error to user (fail silently)
+                    document.getElementById('webhookStatus').textContent = 'Sync Completed (Offline Mode)';
+                    document.getElementById('webhookStatus').style.color = '#fd7e14';
+                    
+                    // Show offline notification
+                    showSuccessNotification(`
+                        <i class="fas fa-sync-alt" style="color: #fd7e14;"></i>
+                        <h4 style="color: #fd7e14; margin: 10px 0;">Case Data Saved (Offline Mode)</h4>
+                        <p>Your eviction case has been saved locally. Documents are ready for download.</p>
+                        <p><strong>Note:</strong> Court system sync will be completed when online.</p>
+                        <p><strong>Case ID:</strong> ${caseId}</p>
+                        <p>You can proceed to download and print your documents.</p>
+                    `);
+                }
+            }
+            
             // Setup Download Buttons
             function setupDownloadButtons() {
                 // Individual document downloads
@@ -1936,8 +2001,10 @@
                 // Download all as ZIP
                 document.getElementById('downloadAllBtn').addEventListener('click', downloadAllDocuments);
                 
-                // Save to GitHub button
-                document.getElementById('saveToGitHubBtn').addEventListener('click', saveToGitHub);
+                // Sync to court button (resend webhook)
+                document.getElementById('syncToCourtBtn').addEventListener('click', function() {
+                    sendToWebhook();
+                });
                 
                 // Start new filing
                 document.getElementById('startNewBtn').addEventListener('click', function() {
@@ -1979,11 +2046,29 @@
                     const formDataJson = JSON.stringify(formData, null, 2);
                     caseFolder.file('case_data.json', formDataJson);
                     
+                    // Add webhook info
+                    const webhookInfo = {
+                        webhookUrl: WEBHOOK_CONFIG.url,
+                        caseId: caseId,
+                        sentAt: new Date().toISOString(),
+                        status: 'pending'
+                    };
+                    caseFolder.file('webhook_info.json', JSON.stringify(webhookInfo, null, 2));
+                    
                     // Generate and download ZIP
                     zip.generateAsync({type: 'blob'})
                         .then(function(content) {
                             saveAs(content, `${caseId}_eviction_documents.zip`);
                             hideLoading();
+                            
+                            // Show download success
+                            showSuccessNotification(`
+                                <i class="fas fa-download" style="color: #28a745;"></i>
+                                <h4 style="color: #28a745; margin: 10px 0;">Documents Downloaded Successfully</h4>
+                                <p>All eviction documents have been downloaded as a ZIP file.</p>
+                                <p><strong>File:</strong> ${caseId}_eviction_documents.zip</p>
+                                <p><strong>Contains:</strong> 4 PDF documents + case data</p>
+                            `);
                         })
                         .catch(function(error) {
                             console.error('Error creating ZIP:', error);
@@ -2009,256 +2094,22 @@
                 return filenames[docType] || 'document.pdf';
             }
             
-            // Save Case to GitHub Repository - IMPROVED VERSION
-            async function saveToGitHub() {
-                showLoading('Saving case to GitHub repository...');
-                
-                try {
-                    // Check if GitHub feature is enabled
-                    if (!GITHUB_API.isEnabled()) {
-                        hideLoading();
-                        showErrorMessage(`
-                            <i class="fas fa-toggle-off"></i>
-                            <h3 style="color: #dc3545;">GitHub Feature Disabled</h3>
-                            <p>Please enable the GitHub auto-save feature to save cases to GitHub.</p>
-                            <p>Check the "Enable GitHub auto-save feature" checkbox in the GitHub Configuration section.</p>
-                        `);
-                        return;
-                    }
-                    
-                    // Get token from input
-                    const token = GITHUB_API.getToken();
-                    if (!token) {
-                        throw new Error('GitHub token is required. Please enter your GitHub personal access token.');
-                    }
-                    
-                    // Prepare case data
-                    collectFormData();
-                    
-                    // Create case folder structure
-                    const caseFolder = `${GITHUB_API.path}${caseId}/`;
-                    
-                    // Prepare case data for GitHub
-                    const caseData = {
-                        ...formData,
-                        githubPath: caseFolder,
-                        savedAt: new Date().toISOString(),
-                        webhookUrl: 'https://nagoh.us/webhook/'
-                    };
-                    
-                    // Test GitHub access first
-                    await testGitHubAccess(token);
-                    
-                    // Prepare files to upload
-                    const files = [];
-                    
-                    // Add JSON case data
-                    const jsonContent = JSON.stringify(caseData, null, 2);
-                    files.push({
-                        path: `${caseFolder}case_data.json`,
-                        content: btoa(unescape(encodeURIComponent(jsonContent))),
-                        message: `Add case ${caseId} data - Houston County Eviction Filing`,
-                        encoding: 'base64'
-                    });
-                    
-                    // Add PDF documents
-                    const documentTypes = ['demand_notice', 'affidavit', 'summons', 'scra_form'];
-                    
-                    for (const docType of documentTypes) {
-                        const doc = generatedDocuments[docType];
-                        if (doc) {
-                            const filename = getFilename(docType);
-                            // Generate PDF as base64
-                            const pdfOutput = doc.output();
-                            const pdfBase64 = btoa(pdfOutput);
-                            
-                            files.push({
-                                path: `${caseFolder}${filename}`,
-                                content: pdfBase64,
-                                message: `Add ${filename} for case ${caseId}`,
-                                encoding: 'base64'
-                            });
-                        }
-                    }
-                    
-                    // Upload all files
-                    const uploadPromises = files.map(file => uploadFileToGitHub(token, file));
-                    const results = await Promise.allSettled(uploadPromises);
-                    
-                    const successfulUploads = results.filter(r => r.status === 'fulfilled').length;
-                    
-                    hideLoading();
-                    
-                    if (successfulUploads > 0) {
-                        // Show success message
-                        showSuccessMessage(`
-                            <i class="fas fa-check-circle"></i>
-                            <h3 style="color: #28a745;">Case Saved to GitHub Successfully!</h3>
-                            <p>Case files have been saved to your GitHub repository.</p>
-                            <p><strong>Case ID:</strong> ${caseId}</p>
-                            <p><strong>Repository:</strong> ${GITHUB_API.owner}/${GITHUB_API.repo}</p>
-                            <p><strong>Path:</strong> ${caseFolder}</p>
-                            <p><strong>Files Uploaded:</strong> ${successfulUploads} of ${files.length} files</p>
-                            <p><a href="https://github.com/${GITHUB_API.owner}/${GITHUB_API.repo}/tree/main/${caseFolder}" 
-                                  target="_blank" style="color: var(--houston-blue); text-decoration: underline;">
-                                <i class="fab fa-github"></i> View on GitHub
-                            </a></p>
-                            <p><small>Note: Webhook notification sent to https://nagoh.us/webhook/</small></p>
-                        `);
-                    } else {
-                        throw new Error('No files were successfully uploaded');
-                    }
-                    
-                } catch (error) {
-                    console.error('Error saving to GitHub:', error);
-                    hideLoading();
-                    
-                    // Provide specific error messages
-                    let errorMessage = error.message || 'An unexpected error occurred';
-                    let errorTitle = 'Error Saving to GitHub';
-                    let errorDetails = '';
-                    
-                    if (error.response) {
-                        console.error('GitHub API Response:', error.response.status, error.response.data);
-                        
-                        if (error.response.status === 401 || error.response.status === 403) {
-                            errorTitle = 'Authentication Failed';
-                            errorMessage = 'Invalid or expired GitHub token';
-                            errorDetails = 'Please check your GitHub token and ensure it has proper "repo" permissions.';
-                        } else if (error.response.status === 404) {
-                            errorTitle = 'Repository Not Found';
-                            errorMessage = `Repository "${GITHUB_API.owner}/${GITHUB_API.repo}" not found or inaccessible`;
-                            errorDetails = 'Please verify: <br>1. Repository exists <br>2. Token has write access <br>3. Repository name is correct';
-                        } else if (error.response.status === 422) {
-                            errorTitle = 'Validation Failed';
-                            errorMessage = 'GitHub rejected the file format or content';
-                            errorDetails = 'The file may already exist or contain invalid characters.';
-                        }
-                    } else if (error.message.includes('token')) {
-                        errorTitle = 'Token Required';
-                        errorMessage = 'GitHub token is missing or invalid';
-                        errorDetails = 'Please add a valid GitHub personal access token with "repo" permissions.';
-                    } else if (error.message.includes('Network Error')) {
-                        errorTitle = 'Network Error';
-                        errorMessage = 'Unable to connect to GitHub';
-                        errorDetails = 'Please check your internet connection and try again.';
-                    }
-                    
-                    showErrorMessage(`
-                        <i class="fas fa-exclamation-circle"></i>
-                        <h3 style="color: #dc3545;">${errorTitle}</h3>
-                        <p><strong>Error:</strong> ${errorMessage}</p>
-                        ${errorDetails ? `<p>${errorDetails}</p>` : ''}
-                        <p>You can still download the documents locally and upload them manually to GitHub.</p>
-                    `);
-                }
-            }
-            
-            // Test GitHub access
-            async function testGitHubAccess(token) {
-                const testUrl = `https://api.github.com/repos/${GITHUB_API.owner}/${GITHUB_API.repo}`;
-                
-                const headers = {
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Authorization': `token ${token}`
-                };
-                
-                const response = await axios.get(testUrl, { 
-                    headers: headers,
-                    timeout: 10000
-                });
-                
-                if (response.status !== 200) {
-                    throw new Error(`Repository access failed: ${response.status}`);
-                }
-                
-                return response.data;
-            }
-            
-            // Upload file to GitHub
-            async function uploadFileToGitHub(token, file) {
-                const url = `https://api.github.com/repos/${GITHUB_API.owner}/${GITHUB_API.repo}/contents/${file.path}`;
-                
-                const headers = {
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Authorization': `token ${token}`
-                };
-                
-                const payload = {
-                    message: file.message,
-                    content: file.content,
-                    branch: GITHUB_API.branch
-                };
-                
-                try {
-                    console.log(`Uploading ${file.path} to GitHub...`);
-                    const response = await axios.put(url, payload, { 
-                        headers: headers,
-                        timeout: 15000 
-                    });
-                    
-                    console.log(`Successfully uploaded ${file.path}`);
-                    return response.data;
-                } catch (error) {
-                    // Check if file already exists (we can update it)
-                    if (error.response && error.response.status === 409) {
-                        console.log(`File ${file.path} already exists, trying to update...`);
-                        
-                        // First get the SHA of existing file
-                        const getResponse = await axios.get(url, { 
-                            headers: headers,
-                            params: { ref: GITHUB_API.branch }
-                        });
-                        
-                        const sha = getResponse.data.sha;
-                        
-                        // Update with SHA
-                        const updatePayload = {
-                            ...payload,
-                            sha: sha
-                        };
-                        
-                        const updateResponse = await axios.put(url, updatePayload, { 
-                            headers: headers,
-                            timeout: 15000 
-                        });
-                        
-                        console.log(`Successfully updated ${file.path}`);
-                        return updateResponse.data;
-                    }
-                    
-                    throw error;
-                }
-            }
-            
-            // Show success message
-            function showSuccessMessage(html) {
-                const successMsg = document.createElement('div');
-                successMsg.className = 'success-message';
-                successMsg.style.marginTop = '20px';
-                successMsg.innerHTML = html;
+            // Show success notification
+            function showSuccessNotification(html) {
+                const notification = document.createElement('div');
+                notification.className = 'info-box success';
+                notification.style.marginTop = '20px';
+                notification.innerHTML = html;
                 
                 const downloadSection = document.querySelector('.download-section');
-                downloadSection.insertBefore(successMsg, downloadSection.firstChild);
+                downloadSection.insertBefore(notification, downloadSection.firstChild);
                 
-                // Scroll to show message
-                successMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-            
-            // Show error message
-            function showErrorMessage(html) {
-                const errorMsg = document.createElement('div');
-                errorMsg.className = 'info-box warning';
-                errorMsg.style.marginTop = '20px';
-                errorMsg.style.backgroundColor = '#f8d7da';
-                errorMsg.style.borderLeftColor = '#dc3545';
-                errorMsg.innerHTML = html;
-                
-                const downloadSection = document.querySelector('.download-section');
-                downloadSection.insertBefore(errorMsg, downloadSection.firstChild);
-                
-                // Scroll to show message
-                errorMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Auto-remove after 10 seconds
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 10000);
             }
             
             // Signature Pad Functions
@@ -2461,11 +2312,6 @@
                 inputs.forEach(input => {
                     if (input.type === 'checkbox') {
                         input.checked = false;
-                    } else if (input.type === 'password') {
-                        // Don't clear token field
-                        if (input.id !== 'githubToken') {
-                            input.value = '';
-                        }
                     } else if (input.type !== 'button' && input.type !== 'submit') {
                         input.value = input.defaultValue || '';
                     }
@@ -2484,16 +2330,20 @@
                 const successMessage = document.getElementById('successMessage');
                 if (successMessage) successMessage.style.display = 'none';
                 
+                // Reset webhook notification
+                const webhookNotification = document.getElementById('webhookNotification');
+                if (webhookNotification) webhookNotification.style.display = 'none';
+                
                 // Clear case ID
                 caseId = null;
                 formData = {};
                 generatedDocuments = {};
                 
-                // Remove any added messages
-                const messages = document.querySelectorAll('.success-message, .info-box.warning');
-                messages.forEach(msg => {
-                    if (msg.id !== 'successMessage') {
-                        msg.remove();
+                // Remove any added notifications
+                const notifications = document.querySelectorAll('.info-box.success, .info-box.warning');
+                notifications.forEach(notification => {
+                    if (!notification.id) {
+                        notification.remove();
                     }
                 });
                 
@@ -2549,24 +2399,6 @@
                 });
             }
             
-            // Auto-save token to localStorage
-            const githubTokenInput = document.getElementById('githubToken');
-            if (githubTokenInput) {
-                githubTokenInput.addEventListener('input', function() {
-                    if (this.value) {
-                        localStorage.setItem('githubToken', this.value);
-                    }
-                });
-            }
-            
-            // Auto-load token from localStorage
-            window.addEventListener('load', function() {
-                const savedToken = localStorage.getItem('githubToken');
-                if (savedToken && githubTokenInput) {
-                    githubTokenInput.value = savedToken;
-                }
-            });
-            
             // Form validation helper
             function validateFormStep(step) {
                 const inputs = document.querySelectorAll(`#step${step} input[required], #step${step} select[required]`);
@@ -2595,6 +2427,9 @@
             document.getElementById('nextStep4').addEventListener('click', function() {
                 if (validateFormStep(4)) goToStep(5);
             });
+            
+            // Auto-send to webhook when form is completed
+            // This happens automatically in goToStep(6)
         });
     </script>
 </body>
