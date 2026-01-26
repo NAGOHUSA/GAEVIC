@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Webhook Access</title>
+</head>
+<body>
+    <h1>Testing Webhook Access</h1>
+    <button onclick="testWebhook()">Test Webhook</button>
+    <div id="result"></div>
+    
+    <script>
+    async function testWebhook() {
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = '<p>Testing...</p>';
+        
+        try {
+            // Test with index.php explicitly
+            const response1 = await fetch('https://nagoh.us/GAEVIC/webhook/index.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({test: true})
+            });
+            const result1 = await response1.text();
+            resultDiv.innerHTML += `<h3>With index.php:</h3><pre>${result1}</pre>`;
+            
+            // Test without index.php
+            const response2 = await fetch('https://nagoh.us/GAEVIC/webhook/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({test: true})
+            });
+            const result2 = await response2.text();
+            resultDiv.innerHTML += `<h3>Without index.php:</h3><pre>${result2}</pre>`;
+            
+        } catch (error) {
+            resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+        }
+    }
+    </script>
+</body>
+</html>
