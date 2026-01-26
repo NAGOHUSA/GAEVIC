@@ -725,7 +725,7 @@
                 <div class="logo-container">
                     <div class="logo">HC</div>
                     <div class="logo-text">
-                        <h1>Eviction Cases Dashboard 1.2</h1>
+                        <h1>Eviction Cases Dashboard 1.3</h1>
                         <p>Houston County Magistrate Court - Warner Robins, GA</p>
                     </div>
                 </div>
@@ -807,7 +807,7 @@
             <div class="repo-info">
                 <h4><i class="fas fa-database"></i> Data Source Information</h4>
                 <p><strong>Repository:</strong> NAGOHUSA/GAEVIC</p>
-                <p><strong>Path:</strong> cases/case_data.json</p>
+                <p><strong>Path:</strong> cases/ (scanning all case folders)</p>
                 <p><strong>Status:</strong> <span id="repoStatus">Loading...</span></p>
             </div>
             
@@ -942,12 +942,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Dashboard script loaded');
             
-            // FIXED: GitHub Configuration - Now pointing to cases folder
+            // FIXED: GitHub Configuration - Now scanning all case folders
             const GITHUB_CONFIG = {
                 owner: 'NAGOHUSA',
                 repo: 'GAEVIC',
                 branch: 'main',
-                path: 'cases'  // Now pointing to the cases folder
+                path: 'cases'  // Now scanning all folders in the cases directory
             };
             
             // No token needed for public repository
@@ -996,7 +996,7 @@
             
             // Debug logging
             console.log('GitHub Repository: https://github.com/NAGOHUSA/GAEVIC/tree/main/cases');
-            console.log('Target file: case_data.json');
+            console.log('Scanning all case folders in the cases directory');
             
             // Handle login form submission
             loginForm.addEventListener('submit', function(e) {
@@ -1173,31 +1173,35 @@
                 }
             }
             
-            // FIXED: Load ALL cases from the cases/case_data.json file
+            // FIXED: Load ALL cases by scanning all case folders
             async function loadAllCases() {
-                console.log('Loading cases from cases/case_data.json...');
-                showLoading('Loading case data from repository...');
-                repoStatus.textContent = 'Connecting to repository...';
+                console.log('Scanning all case folders in cases directory...');
+                showLoading('Scanning case folders from repository...');
+                repoStatus.textContent = 'Scanning case folders...';
                 
                 try {
                     console.log('GitHub URL: https://github.com/NAGOHUSA/GAEVIC/tree/main/cases');
-                    console.log('Looking for: case_data.json in cases folder');
+                    console.log('Looking for case folders in the cases directory');
                     
-                    // Get the case_data.json file from the cases folder
-                    const caseData = await getCaseDataFile(GITHUB_CONFIG, GITHUB_TOKEN);
+                    // First, get all contents of the cases directory
+                    const casesData = await scanAllCaseFolders(GITHUB_CONFIG, GITHUB_TOKEN);
                     
-                    if (caseData && Array.isArray(caseData)) {
-                        casesData = caseData;
-                        console.log(`Loaded ${casesData.length} cases from case_data.json`);
+                    if (casesData && Array.isArray(casesData)) {
+                        casesData.sort((a, b) => {
+                            const dateA = a.filingDate ? new Date(a.filingDate) : new Date(0);
+                            const dateB = b.filingDate ? new Date(b.filingDate) : new Date(0);
+                            return dateB - dateA;
+                        });
                         
-                        repoStatus.textContent = `Loaded ${casesData.length} cases from case_data.json`;
+                        console.log(`Loaded ${casesData.length} cases from all case folders`);
+                        repoStatus.textContent = `Loaded ${casesData.length} cases from ${casesData.length} folders`;
                         repoStatus.style.color = '#28a745';
                         
                         // Update dashboard with loaded data
-                        updateDashboard();
+                        updateDashboard(casesData);
                         hideLoading();
                     } else {
-                        throw new Error('Invalid data format in case_data.json');
+                        throw new Error('No case data found in any folders');
                     }
                     
                 } catch (error) {
@@ -1214,7 +1218,7 @@
                         console.error('GitHub API Response:', error.response.status, error.response.data);
                         
                         if (error.response.status === 404) {
-                            errorMessage = `File not found: cases/case_data.json in ${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}`;
+                            errorMessage = `Cases folder not found: cases/ in ${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}`;
                         } else if (error.response.status === 403) {
                             errorMessage = 'Rate limit exceeded. Please wait a few minutes and try again.';
                         }
@@ -1238,13 +1242,11 @@
                 }
             }
             
-            // FIXED: Get case data from the case_data.json file
-            async function getCaseDataFile(config, token) {
-                const filePath = 'case_data.json';
-                const fullPath = config.path ? `${config.path}/${filePath}` : filePath;
-                const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${fullPath}`;
+            // NEW: Scan all case folders in the cases directory
+            async function scanAllCaseFolders(config, token) {
+                const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.path}`;
                 
-                console.log(`Fetching case data from: ${url}`);
+                console.log(`Fetching directory contents from: ${url}`);
                 
                 const headers = {
                     'Accept': 'application/vnd.github.v3+json',
@@ -1260,30 +1262,109 @@
                     timeout: 10000
                 });
                 
-                const content = atob(response.data.content);
-                const caseData = JSON.parse(content);
+                const allCases = [];
                 
-                // Add timestamp from filingDate for sorting if not present
-                caseData.forEach(caseItem => {
-                    if (caseItem.filingDate && !caseItem.timestamp) {
-                        caseItem.timestamp = caseItem.filingDate;
+                // Filter for directories that look like case folders (starting with HOU-)
+                const caseFolders = response.data.filter(item => 
+                    item.type === 'dir' && item.name.startsWith('HOU-')
+                );
+                
+                console.log(`Found ${caseFolders.length} case folders to scan`);
+                
+                // Load case data from each folder
+                for (const folder of caseFolders) {
+                    try {
+                        console.log(`Scanning folder: ${folder.name}`);
+                        const caseData = await loadCaseDataFromFolder(config, token, folder.name);
+                        if (caseData) {
+                            allCases.push(caseData);
+                        }
+                    } catch (error) {
+                        console.warn(`Could not load data from folder ${folder.name}:`, error.message);
                     }
+                }
+                
+                // Also check for case_data.json if it exists
+                try {
+                    const caseDataFile = response.data.find(item => 
+                        item.type === 'file' && item.name === 'case_data.json'
+                    );
+                    
+                    if (caseDataFile) {
+                        console.log('Found case_data.json, loading data...');
+                        const caseDataUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.path}/case_data.json`;
+                        const caseDataResponse = await axios.get(caseDataUrl, { headers: headers });
+                        const content = atob(caseDataResponse.data.content);
+                        const caseDataArray = JSON.parse(content);
+                        
+                        // Add case data from the JSON file if not already in the array
+                        caseDataArray.forEach(caseData => {
+                            const exists = allCases.some(c => c.caseId === caseData.caseId);
+                            if (!exists) {
+                                allCases.push(caseData);
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.log('case_data.json not found or could not be loaded:', error.message);
+                }
+                
+                return allCases;
+            }
+            
+            // NEW: Load case data from a specific folder
+            async function loadCaseDataFromFolder(config, token, folderName) {
+                const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.path}/${folderName}`;
+                
+                const headers = {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'User-Agent': 'EvictionDashboard/1.0'
+                };
+                
+                if (token) {
+                    headers['Authorization'] = `token ${token}`;
+                }
+                
+                const response = await axios.get(url, { 
+                    headers: headers,
+                    timeout: 10000
                 });
                 
-                return caseData;
+                // Look for a case data file in the folder
+                const caseDataFile = response.data.find(item => 
+                    item.name === 'case_data.json' || 
+                    item.name === 'case.json' || 
+                    item.name === `${folderName}.json`
+                );
+                
+                if (caseDataFile) {
+                    const caseDataUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.path}/${folderName}/${caseDataFile.name}`;
+                    const caseDataResponse = await axios.get(caseDataUrl, { headers: headers });
+                    const content = atob(caseDataResponse.data.content);
+                    const caseData = JSON.parse(content);
+                    
+                    // Ensure the case has a caseId (use folder name if not present)
+                    if (!caseData.caseId && folderName.startsWith('HOU-')) {
+                        caseData.caseId = folderName;
+                    }
+                    
+                    return caseData;
+                }
+                
+                return null;
             }
             
             // Update dashboard with loaded data
-            function updateDashboard() {
-                console.log('Updating dashboard with', casesData.length, 'cases');
+            function updateDashboard(cases) {
+                console.log('Updating dashboard with', cases.length, 'cases');
                 // Update statistics
-                updateStats(casesData);
+                updateStats(cases);
                 
                 // Update table
-                updateCasesTable(casesData);
+                updateCasesTable(cases);
                 
                 // Update charts
-                updateCharts(casesData);
+                updateCharts(cases);
             }
             
             // Update statistics
@@ -1316,7 +1397,7 @@
                 // Update trend
                 const casesTrend = document.getElementById('casesTrend');
                 if (total > 0) {
-                    casesTrend.textContent = `${total} case${total !== 1 ? 's' : ''} loaded`;
+                    casesTrend.textContent = `${total} case${total !== 1 ? 's' : ''} loaded from ${total} folders`;
                     casesTrend.className = 'stat-trend';
                     casesTrend.style.color = '#28a745';
                 } else {
@@ -1393,13 +1474,15 @@
                     let amountOwed = '0.00';
                     if (caseData.case && caseData.case.amountOwed) {
                         amountOwed = parseFloat(caseData.case.amountOwed).toFixed(2);
+                    } else if (caseData.amountOwed) {
+                        amountOwed = parseFloat(caseData.amountOwed).toFixed(2);
                     }
                     
                     row.innerHTML = `
                         <td><strong>${caseData.caseId || 'Unknown'}</strong></td>
                         <td>${caseData.landlord ? caseData.landlord.name : 'Unknown'}</td>
                         <td>${caseData.tenant ? caseData.tenant.name : 'Unknown'}</td>
-                        <td>${caseData.property ? `${caseData.property.address}, ${caseData.property.city}` : 'Unknown'}</td>
+                        <td>${caseData.property ? `${caseData.property.address || ''}, ${caseData.property.city || ''}` : 'Unknown'}</td>
                         <td>$${amountOwed}</td>
                         <td><span class="status-badge ${statusClass}">${caseData.status || 'Unknown'}</span></td>
                         <td>${formattedDate}</td>
@@ -1591,10 +1674,24 @@
                             month: 'long',
                             day: 'numeric'
                         });
+                    } else if (caseData.noticeDate) {
+                        const date = new Date(caseData.noticeDate);
+                        formattedNoticeDate = date.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
                     }
                     
                     if (caseData.case && caseData.case.lastPaymentDate) {
                         const date = new Date(caseData.case.lastPaymentDate);
+                        formattedLastPaymentDate = date.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                    } else if (caseData.lastPaymentDate) {
+                        const date = new Date(caseData.lastPaymentDate);
                         formattedLastPaymentDate = date.toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
@@ -1611,6 +1708,13 @@
                             'week_to_week': 'Week to Week'
                         };
                         leaseTypeFormatted = leaseTypes[caseData.case.leaseType] || caseData.case.leaseType;
+                    } else if (caseData.leaseType) {
+                        const leaseTypes = {
+                            'month_to_month': 'Month to Month',
+                            'fixed_term': 'Fixed Term',
+                            'week_to_week': 'Week to Week'
+                        };
+                        leaseTypeFormatted = leaseTypes[caseData.leaseType] || caseData.leaseType;
                     }
                     
                     // Format reason
@@ -1624,6 +1728,15 @@
                             'illegal_activity': 'Illegal Activity'
                         };
                         reasonFormatted = reasons[caseData.case.reason] || caseData.case.reason;
+                    } else if (caseData.reason) {
+                        const reasons = {
+                            'non_payment': 'Non-Payment of Rent',
+                            'lease_violation': 'Lease Violation',
+                            'property_damage': 'Property Damage',
+                            'holdover': 'Holdover',
+                            'illegal_activity': 'Illegal Activity'
+                        };
+                        reasonFormatted = reasons[caseData.reason] || caseData.reason;
                     }
                     
                     // Create case details HTML
@@ -1681,18 +1794,24 @@
                                 ` : ''}
                             </div>
                             <div>
-                                ${caseData.case ? `
                                 <div class="detail-group">
                                     <h4>Case Details</h4>
                                     <div class="detail-content">
-                                        <p><strong>Monthly Rent:</strong> $${caseData.case.rentAmount ? parseFloat(caseData.case.rentAmount).toFixed(2) : '0.00'}</p>
-                                        <p><strong>Amount Owed:</strong> $${caseData.case.amountOwed ? parseFloat(caseData.case.amountOwed).toFixed(2) : '0.00'}</p>
-                                        ${caseData.case.lastPaymentDate ? `<p><strong>Last Payment Date:</strong> ${formattedLastPaymentDate}</p>` : ''}
+                                        <p><strong>Monthly Rent:</strong> $${(caseData.case && caseData.case.rentAmount) ? parseFloat(caseData.case.rentAmount).toFixed(2) : (caseData.rentAmount ? parseFloat(caseData.rentAmount).toFixed(2) : '0.00')}</p>
+                                        <p><strong>Amount Owed:</strong> $${(caseData.case && caseData.case.amountOwed) ? parseFloat(caseData.case.amountOwed).toFixed(2) : (caseData.amountOwed ? parseFloat(caseData.amountOwed).toFixed(2) : '0.00')}</p>
+                                        ${formattedLastPaymentDate !== 'No date available' ? `<p><strong>Last Payment Date:</strong> ${formattedLastPaymentDate}</p>` : ''}
                                         <p><strong>Notice Date:</strong> ${formattedNoticeDate}</p>
-                                        ${caseData.case.noticeDetails ? `<p><strong>Notice Details:</strong> ${caseData.case.noticeDetails}</p>` : ''}
+                                        ${caseData.case && caseData.case.noticeDetails ? `<p><strong>Notice Details:</strong> ${caseData.case.noticeDetails}</p>` : ''}
                                     </div>
                                 </div>
-                                ` : ''}
+                                <div class="detail-group">
+                                    <h4>Storage Location</h4>
+                                    <div class="detail-content">
+                                        <p><strong>GitHub Repository:</strong> ${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}</p>
+                                        <p><strong>Folder Path:</strong> cases/${caseData.caseId || 'Unknown'}</p>
+                                        <p><strong>Files:</strong> case_data.json, forms.pdf, summary.html</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div style="margin-top: 20px; text-align: center;">
@@ -1719,7 +1838,28 @@
             
             // Download case documents
             async function downloadCaseDocuments(caseId) {
-                alert('Document download feature would require specific file paths in the repository. This feature needs case files to be properly organized.');
+                const caseData = casesData.find(c => c.caseId === caseId);
+                if (!caseData) {
+                    alert('Case not found.');
+                    return;
+                }
+                
+                showLoading(`Downloading documents for case ${caseId}...`);
+                
+                try {
+                    // Create a direct link to the GitHub folder
+                    const githubUrl = `https://github.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/tree/main/cases/${caseId}`;
+                    
+                    // Open in new tab
+                    window.open(githubUrl, '_blank');
+                    
+                    hideLoading();
+                    alert(`Opening GitHub folder for case ${caseId} in a new tab. You can download files directly from there.`);
+                } catch (error) {
+                    console.error('Error downloading documents:', error);
+                    hideLoading();
+                    alert(`Error: ${error.message}`);
+                }
             }
             
             // Export data function
@@ -1732,7 +1872,7 @@
                     }
                     
                     // Create CSV content
-                    let csvContent = "Case ID,Landlord,Tenant,Property Address,City,Amount Owed,Status,Date Filed\n";
+                    let csvContent = "Case ID,Landlord,Tenant,Property Address,City,Amount Owed,Status,Date Filed,Folder\n";
                     
                     casesData.forEach(caseData => {
                         let formattedDate = 'No date';
@@ -1745,9 +1885,10 @@
                         const tenantName = caseData.tenant ? caseData.tenant.name : 'Unknown';
                         const propertyAddress = caseData.property ? caseData.property.address : 'Unknown';
                         const propertyCity = caseData.property ? caseData.property.city : 'Unknown';
-                        const amountOwed = caseData.case && caseData.case.amountOwed ? parseFloat(caseData.case.amountOwed).toFixed(2) : '0.00';
+                        const amountOwed = (caseData.case && caseData.case.amountOwed) ? parseFloat(caseData.case.amountOwed).toFixed(2) : (caseData.amountOwed ? parseFloat(caseData.amountOwed).toFixed(2) : '0.00');
+                        const folderPath = `cases/${caseData.caseId || 'Unknown'}`;
                         
-                        csvContent += `"${caseData.caseId || 'Unknown'}","${landlordName}","${tenantName}","${propertyAddress}","${propertyCity}",$${amountOwed},"${caseData.status || 'Unknown'}","${formattedDate}"\n`;
+                        csvContent += `"${caseData.caseId || 'Unknown'}","${landlordName}","${tenantName}","${propertyAddress}","${propertyCity}",$${amountOwed},"${caseData.status || 'Unknown'}","${formattedDate}","${folderPath}"\n`;
                     });
                     
                     // Create blob and download
