@@ -1226,28 +1226,16 @@
                 
                 <!-- GitHub Configuration Section -->
                 <div class="github-config" id="githubConfigSection">
-                    <h3><i class="fab fa-github"></i> GitHub Configuration</h3>
+                    <h3><i class="fab fa-github"></i> GitHub Auto-Save Configuration</h3>
                     <p><strong>Repository:</strong> NAGOHUSA/GAEVIC</p>
                     <p><strong>Owner:</strong> NAGOHUSA</p>
                     <p><strong>Branch:</strong> main</p>
                     <p><strong>Path:</strong> cases/</p>
+                    <p><strong>Status:</strong> <span id="githubStatus">Auto-save ready</span></p>
                     
-                    <div class="form-group" style="margin-top: 15px;">
-                        <label for="githubToken">GitHub Personal Access Token *</label>
-                        <input type="password" id="githubToken" placeholder="Enter your GitHub token" style="width: 100%; padding: 10px; font-family: monospace;">
-                        <p style="font-size: 12px; color: #666; margin-top: 5px;">
-                            <i class="fas fa-info-circle"></i> Required for saving to GitHub. 
-                            <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--houston-blue); text-decoration: underline;">
-                                Create a token
-                            </a> with "repo" permissions.
-                        </p>
-                    </div>
-                    
-                    <div class="form-group" style="margin-top: 10px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <input type="checkbox" id="enableGitHub" style="width: auto;">
-                            <label for="enableGitHub" style="margin: 0; font-weight: normal;">Enable GitHub auto-save feature</label>
-                        </div>
+                    <div class="info-box success" id="githubAutoSaveBox" style="display: none; margin-top: 15px;">
+                        <h4><i class="fas fa-check-circle"></i> Auto-Save Enabled</h4>
+                        <p>Your case will be automatically saved to the GitHub repository.</p>
                     </div>
                 </div>
                 
@@ -1386,6 +1374,29 @@
         // Initialize jsPDF
         const { jsPDF } = window.jspdf;
         
+        // ============================================
+        // GITHUB TOKEN CONFIGURATION - BASE64 ENCODED
+        // ============================================
+        // IMPORTANT: Replace the encoded string below with your actual GitHub token
+        // To encode your token: 
+        // 1. Go to https://www.base64encode.org/
+        // 2. Enter your GitHub token
+        // 3. Copy the encoded result and replace the string below
+        
+        // Encode your GitHub token using base64 and paste it here:
+        const ENCODED_GITHUB_TOKEN = 'REPLACE_THIS_WITH_YOUR_BASE64_ENCODED_TOKEN';
+        
+        // Function to decode the token (will be used when needed)
+        function getGitHubToken() {
+            try {
+                // Decode the base64 token
+                return atob(ENCODED_GITHUB_TOKEN);
+            } catch (error) {
+                console.error('Error decoding GitHub token:', error);
+                return null;
+            }
+        }
+        
         // GitHub API Configuration
         const GITHUB_API = {
             baseURL: 'https://api.github.com',
@@ -1393,13 +1404,13 @@
             repo: 'GAEVIC',
             branch: 'main',
             path: 'cases/',
-            // Token will be obtained from input field
+            // Get token from encoded source
             getToken: function() {
-                return document.getElementById('githubToken')?.value?.trim() || null;
+                return getGitHubToken();
             },
-            // Check if GitHub feature is enabled
+            // Always enabled in this version
             isEnabled: function() {
-                return document.getElementById('enableGitHub')?.checked || false;
+                return true;
             }
         };
         
@@ -1420,6 +1431,7 @@
             const cancelBtn = document.getElementById('cancelBtn');
             const loadingOverlay = document.getElementById('loadingOverlay');
             const loadingText = document.getElementById('loadingText');
+            const githubStatus = document.getElementById('githubStatus');
             
             // Show/Hide Form
             function showForm() {
@@ -1482,6 +1494,7 @@
                 } else if (currentStep === 6) {
                     generateCaseId();
                     generateAllDocuments();
+                    updateGitHubStatus('ready');
                 }
                 
                 // Scroll to top of form
@@ -1555,7 +1568,7 @@
                     } : null,
                     timestamp: new Date().toISOString(),
                     documentsGenerated: true,
-                    version: '1.4'
+                    version: '2.0'
                 };
                 return formData;
             }
@@ -1952,27 +1965,34 @@
                 return filenames[docType] || 'document.pdf';
             }
             
-            // Save Case to GitHub Repository - FIXED VERSION
+            // Update GitHub status display
+            function updateGitHubStatus(status) {
+                const statusMap = {
+                    'ready': '<i class="fas fa-check-circle" style="color: #28a745;"></i> Auto-save ready',
+                    'saving': '<i class="fas fa-sync-alt fa-spin" style="color: #fd7e14;"></i> Saving to GitHub...',
+                    'success': '<i class="fas fa-check-circle" style="color: #28a745;"></i> Saved successfully',
+                    'error': '<i class="fas fa-times-circle" style="color: #dc3545;"></i> Save failed'
+                };
+                
+                if (githubStatus) {
+                    githubStatus.innerHTML = statusMap[status] || statusMap['ready'];
+                }
+                
+                if (status === 'success') {
+                    document.getElementById('githubAutoSaveBox').style.display = 'block';
+                }
+            }
+            
+            // Save Case to GitHub Repository
             async function saveToGitHub() {
                 showLoading('Saving case to GitHub repository...');
+                updateGitHubStatus('saving');
                 
                 try {
-                    // Check if GitHub feature is enabled
-                    if (!GITHUB_API.isEnabled()) {
-                        hideLoading();
-                        showErrorMessage(`
-                            <i class="fas fa-toggle-off"></i>
-                            <h3 style="color: #dc3545;">GitHub Feature Disabled</h3>
-                            <p>Please enable the GitHub auto-save feature to save cases to GitHub.</p>
-                            <p>Check the "Enable GitHub auto-save feature" checkbox in the GitHub Configuration section.</p>
-                        `);
-                        return;
-                    }
-                    
-                    // Get token from input
+                    // Check if token is available
                     const token = GITHUB_API.getToken();
                     if (!token) {
-                        throw new Error('GitHub token is required. Please enter your GitHub personal access token.');
+                        throw new Error('GitHub token is not configured. Please check your token configuration.');
                     }
                     
                     // Prepare case data
@@ -2000,7 +2020,6 @@
                     ];
                     
                     // Upload the JSON file first
-                    console.log('Uploading case data to GitHub...');
                     const uploadResult = await uploadFileToGitHub(token, files[0]);
                     
                     if (uploadResult) {
@@ -2032,6 +2051,7 @@
                         const successfulPdfs = pdfResults.filter(r => r.status === 'fulfilled').length;
                         
                         hideLoading();
+                        updateGitHubStatus('success');
                         
                         // Show success message
                         showSuccessMessage(`
@@ -2055,6 +2075,7 @@
                 } catch (error) {
                     console.error('Error saving to GitHub:', error);
                     hideLoading();
+                    updateGitHubStatus('error');
                     
                     // Provide specific error messages
                     let errorMessage = error.message || 'An unexpected error occurred';
@@ -2067,20 +2088,20 @@
                         if (error.response.status === 401 || error.response.status === 403) {
                             errorTitle = 'Authentication Failed';
                             errorMessage = 'Invalid or expired GitHub token';
-                            errorDetails = 'Please check your GitHub token and ensure it has proper "repo" permissions.';
+                            errorDetails = 'Please check your GitHub token configuration.';
                         } else if (error.response.status === 404) {
                             errorTitle = 'Repository Not Found';
                             errorMessage = `Repository "${GITHUB_API.owner}/${GITHUB_API.repo}" not found or inaccessible`;
-                            errorDetails = 'Please verify: <br>1. Repository exists <br>2. Token has write access <br>3. Repository name is correct';
+                            errorDetails = 'Please verify: <br>1. Repository exists <br>2. Token has write access';
                         } else if (error.response.status === 422) {
                             errorTitle = 'Validation Failed';
                             errorMessage = 'GitHub rejected the file format or content';
                             errorDetails = 'Please try saving the case data only.';
                         }
                     } else if (error.message.includes('token')) {
-                        errorTitle = 'Token Required';
+                        errorTitle = 'Token Configuration Error';
                         errorMessage = 'GitHub token is missing or invalid';
-                        errorDetails = 'Please add a valid GitHub personal access token with "repo" permissions.';
+                        errorDetails = 'Please check your base64 encoded token configuration.';
                     }
                     
                     showErrorMessage(`
@@ -2088,7 +2109,7 @@
                         <h3 style="color: #dc3545;">${errorTitle}</h3>
                         <p><strong>Error:</strong> ${errorMessage}</p>
                         ${errorDetails ? `<p>${errorDetails}</p>` : ''}
-                        <p>You can still download the documents locally and upload them manually to GitHub.</p>
+                        <p>You can still download the documents locally.</p>
                     `);
                 }
             }
@@ -2114,7 +2135,7 @@
                 return response.data;
             }
             
-            // Upload file to GitHub - FIXED VERSION
+            // Upload file to GitHub
             async function uploadFileToGitHub(token, file) {
                 const url = `https://api.github.com/repos/${GITHUB_API.owner}/${GITHUB_API.repo}/contents/${file.path}`;
                 
@@ -2136,19 +2157,15 @@
                 }
                 
                 try {
-                    console.log(`Uploading ${file.path} to GitHub...`);
                     const response = await axios.put(url, payload, { 
                         headers: headers,
                         timeout: 15000 
                     });
                     
-                    console.log(`Successfully uploaded ${file.path}`);
                     return response.data;
                 } catch (error) {
                     // Check if file already exists (we can update it)
                     if (error.response && error.response.status === 409) {
-                        console.log(`File ${file.path} already exists, trying to update...`);
-                        
                         // First get the SHA of existing file
                         const getResponse = await axios.get(url, { 
                             headers: headers,
@@ -2168,7 +2185,6 @@
                             timeout: 15000 
                         });
                         
-                        console.log(`Successfully updated ${file.path}`);
                         return updateResponse.data;
                     }
                     
@@ -2392,11 +2408,6 @@
                 inputs.forEach(input => {
                     if (input.type === 'checkbox') {
                         input.checked = false;
-                    } else if (input.type === 'password') {
-                        // Don't clear token field
-                        if (input.id !== 'githubToken') {
-                            input.value = '';
-                        }
                     } else if (input.type !== 'button' && input.type !== 'submit') {
                         input.value = '';
                     }
@@ -2415,6 +2426,10 @@
                 caseId = null;
                 formData = {};
                 generatedDocuments = {};
+                
+                // Reset GitHub status
+                updateGitHubStatus('ready');
+                document.getElementById('githubAutoSaveBox').style.display = 'none';
                 
                 // Remove any added messages
                 const messages = document.querySelectorAll('.success-message, .info-box.warning');
@@ -2453,20 +2468,8 @@
                 goToStep(6);
             });
             
-            // Auto-save token to localStorage
-            document.getElementById('githubToken').addEventListener('input', function() {
-                if (this.value) {
-                    localStorage.setItem('githubToken', this.value);
-                }
-            });
-            
-            // Auto-load token from localStorage
-            window.addEventListener('load', function() {
-                const savedToken = localStorage.getItem('githubToken');
-                if (savedToken) {
-                    document.getElementById('githubToken').value = savedToken;
-                }
-            });
+            // Initialize GitHub status
+            updateGitHubStatus('ready');
         });
     </script>
 </body>
