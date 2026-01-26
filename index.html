@@ -406,6 +406,15 @@
             background-color: #218838;
         }
         
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
         /* Info Box */
         .info-box {
             background-color: #e8f4fd;
@@ -796,7 +805,7 @@
                 <div class="logo-container">
                     <div class="logo">HC</div>
                     <div class="logo-text">
-                        <h1>Houston County Eviction System 1.4 </h1>
+                        <h1>Houston County Eviction System 2.0 </h1>
                         <p>Georgia Magistrate Court - Warner Robins, GA</p>
                     </div>
                 </div>
@@ -1217,38 +1226,28 @@
                 
                 <!-- GitHub Configuration Section -->
                 <div class="github-config" id="githubConfigSection">
-                    <h3><i class="fab fa-github"></i> GitHub Repository Configuration</h3>
-                    <p>Configure your GitHub repository settings to save case data to GitHub.</p>
+                    <h3><i class="fab fa-github"></i> GitHub Configuration</h3>
+                    <p><strong>Repository:</strong> NAGOHUSA/GAEVIC</p>
+                    <p><strong>Owner:</strong> NAGOHUSA</p>
+                    <p><strong>Branch:</strong> main</p>
+                    <p><strong>Path:</strong> cases/</p>
                     
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="githubOwner">GitHub Username or Organization</label>
-                            <input type="text" id="githubOwner" placeholder="your-username" value="nagoh">
-                        </div>
-                        <div class="form-group">
-                            <label for="githubRepo">Repository Name</label>
-                            <input type="text" id="githubRepo" placeholder="repository-name" value="GAEVIC">
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="githubBranch">Branch</label>
-                            <input type="text" id="githubBranch" placeholder="main" value="main">
-                        </div>
-                        <div class="form-group">
-                            <label for="githubPath">Case Folder Path</label>
-                            <input type="text" id="githubPath" placeholder="cases/" value="cases/">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="githubToken">GitHub Personal Access Token (Optional)</label>
-                        <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="githubToken">GitHub Personal Access Token *</label>
+                        <input type="password" id="githubToken" placeholder="Enter your GitHub token" style="width: 100%; padding: 10px; font-family: monospace;">
                         <p style="font-size: 12px; color: #666; margin-top: 5px;">
-                            <i class="fas fa-info-circle"></i> Only required for private repositories. 
-                            <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--houston-blue);">Create token</a>
+                            <i class="fas fa-info-circle"></i> Required for saving to GitHub. 
+                            <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--houston-blue); text-decoration: underline;">
+                                Create a token
+                            </a> with "repo" permissions.
                         </p>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="enableGitHub" style="width: auto;">
+                            <label for="enableGitHub" style="margin: 0; font-weight: normal;">Enable GitHub auto-save feature</label>
+                        </div>
                     </div>
                 </div>
                 
@@ -1390,11 +1389,18 @@
         // GitHub API Configuration
         const GITHUB_API = {
             baseURL: 'https://api.github.com',
-            owner: 'nagoh',
+            owner: 'NAGOHUSA',
             repo: 'GAEVIC',
             branch: 'main',
             path: 'cases/',
-            token: null // Will be set from input or environment
+            // Token will be obtained from input field
+            getToken: function() {
+                return document.getElementById('githubToken')?.value?.trim() || null;
+            },
+            // Check if GitHub feature is enabled
+            isEnabled: function() {
+                return document.getElementById('enableGitHub')?.checked || false;
+            }
         };
         
         // Form Navigation Logic
@@ -1508,6 +1514,8 @@
             function collectFormData() {
                 formData = {
                     caseId: caseId,
+                    status: 'Pending Court Filing',
+                    filingDate: new Date().toISOString(),
                     landlord: {
                         name: document.getElementById('landlordName').value,
                         phone: document.getElementById('landlordPhone').value,
@@ -1535,16 +1543,19 @@
                     case: {
                         leaseType: document.getElementById('leaseType').value,
                         reason: document.getElementById('reason').value,
-                        rentAmount: document.getElementById('rentAmount').value,
-                        amountOwed: document.getElementById('amountOwed').value,
+                        rentAmount: parseFloat(document.getElementById('rentAmount').value) || 0,
+                        amountOwed: parseFloat(document.getElementById('amountOwed').value) || 0,
                         lastPaymentDate: document.getElementById('lastPaymentDate').value,
                         noticeDate: document.getElementById('noticeDate').value,
                         noticeDetails: document.getElementById('noticeDetails').value
                     },
-                    signature: signatureData,
+                    signature: signatureData ? {
+                        name: signatureData.name,
+                        timestamp: signatureData.timestamp
+                    } : null,
                     timestamp: new Date().toISOString(),
-                    status: 'Pending Court Filing',
-                    documentsGenerated: true
+                    documentsGenerated: true,
+                    version: '1.4'
                 };
                 return formData;
             }
@@ -1592,9 +1603,9 @@
                 doc.setFontSize(11);
                 const bodyText = [
                     `You are hereby notified that you are in arrears in the payment of rent for the premises`,
-                    `located at the above address in the amount of $${parseFloat(formData.case.amountOwed).toFixed(2)}.`,
+                    `located at the above address in the amount of $${formData.case.amountOwed.toFixed(2)}.`,
                     "",
-                    `Monthly rent for the premises is $${parseFloat(formData.case.rentAmount).toFixed(2)}. The rent became due`,
+                    `Monthly rent for the premises is $${formData.case.rentAmount.toFixed(2)}. The rent became due`,
                     `on ${formData.case.lastPaymentDate || 'the due date'} and has not been paid.`,
                     "",
                     "You are further notified that unless said rent is paid in full within SEVEN (7) DAYS",
@@ -1676,7 +1687,7 @@
                     "",
                     `2. The tenant, ${formData.tenant.name}, is in possession of said premises.`,
                     "",
-                    `3. The tenant is indebted to me in the amount of $${parseFloat(formData.case.amountOwed).toFixed(2)} for rent which`,
+                    `3. The tenant is indebted to me in the amount of $${formData.case.amountOwed.toFixed(2)} for rent which`,
                     `   became due on ${formData.case.lastPaymentDate || 'the due date'} and has failed and refused to pay the same.`,
                     "",
                     `4. On ${formData.case.noticeDate}, I made a demand for possession of the premises,`,
@@ -1759,7 +1770,7 @@
                     "in the complaint.",
                     "",
                     "This is an action to recover possession of the premises described above and for rent due",
-                    `in the amount of $${parseFloat(formData.case.amountOwed).toFixed(2)}.`,
+                    `in the amount of $${formData.case.amountOwed.toFixed(2)}.`,
                     "",
                     "NOTICE: You have the right to a trial by jury. If you desire a jury trial, you must demand",
                     "it in your answer. If you do not demand a jury trial, the case will be heard by the judge."
@@ -1941,171 +1952,226 @@
                 return filenames[docType] || 'document.pdf';
             }
             
-            // Save Case to GitHub Repository
+            // Save Case to GitHub Repository - FIXED VERSION
             async function saveToGitHub() {
                 showLoading('Saving case to GitHub repository...');
                 
                 try {
-                    // Get GitHub configuration from form
-                    const githubConfig = {
-                        owner: document.getElementById('githubOwner').value.trim() || GITHUB_API.owner,
-                        repo: document.getElementById('githubRepo').value.trim() || GITHUB_API.repo,
-                        branch: document.getElementById('githubBranch').value.trim() || GITHUB_API.branch,
-                        path: document.getElementById('githubPath').value.trim() || GITHUB_API.path,
-                        token: document.getElementById('githubToken').value.trim() || null
-                    };
+                    // Check if GitHub feature is enabled
+                    if (!GITHUB_API.isEnabled()) {
+                        hideLoading();
+                        showErrorMessage(`
+                            <i class="fas fa-toggle-off"></i>
+                            <h3 style="color: #dc3545;">GitHub Feature Disabled</h3>
+                            <p>Please enable the GitHub auto-save feature to save cases to GitHub.</p>
+                            <p>Check the "Enable GitHub auto-save feature" checkbox in the GitHub Configuration section.</p>
+                        `);
+                        return;
+                    }
                     
-                    // Validate configuration
-                    if (!githubConfig.owner || !githubConfig.repo) {
-                        throw new Error('GitHub owner and repository name are required');
+                    // Get token from input
+                    const token = GITHUB_API.getToken();
+                    if (!token) {
+                        throw new Error('GitHub token is required. Please enter your GitHub personal access token.');
                     }
                     
                     // Prepare case data
                     collectFormData();
                     
                     // Create case folder structure
-                    const caseFolder = `${githubConfig.path}${caseId}/`;
+                    const caseFolder = `${GITHUB_API.path}${caseId}/`;
                     const caseData = {
                         ...formData,
                         githubPath: caseFolder,
                         savedAt: new Date().toISOString()
                     };
                     
-                    // Prepare files to upload
+                    // Test GitHub access first
+                    await testGitHubAccess(token);
+                    
+                    // Prepare files to upload - START WITH JUST THE JSON FILE
                     const files = [
                         {
                             path: `${caseFolder}case_data.json`,
-                            content: JSON.stringify(caseData, null, 2),
-                            message: `Add case ${caseId} data`
+                            content: btoa(unescape(encodeURIComponent(JSON.stringify(caseData, null, 2)))),
+                            message: `Add case ${caseId} data - Houston County Eviction Filing`,
+                            encoding: 'base64'
                         }
                     ];
                     
-                    // Generate and add PDF documents
-                    const documentTypes = ['demand_notice', 'affidavit', 'summons', 'scra_form'];
-                    for (const docType of documentTypes) {
-                        const doc = generatedDocuments[docType];
-                        if (doc) {
-                            const filename = getFilename(docType);
-                            const pdfBase64 = doc.output('datauristring').split(',')[1];
-                            files.push({
-                                path: `${caseFolder}${filename}`,
-                                content: pdfBase64,
-                                message: `Add ${filename} for case ${caseId}`,
-                                isBinary: true
-                            });
+                    // Upload the JSON file first
+                    console.log('Uploading case data to GitHub...');
+                    const uploadResult = await uploadFileToGitHub(token, files[0]);
+                    
+                    if (uploadResult) {
+                        // Then try to upload PDFs
+                        const documentTypes = ['demand_notice', 'affidavit', 'summons', 'scra_form'];
+                        const pdfPromises = [];
+                        
+                        for (const docType of documentTypes) {
+                            const doc = generatedDocuments[docType];
+                            if (doc) {
+                                const filename = getFilename(docType);
+                                // Generate PDF as base64
+                                const pdfOutput = doc.output();
+                                const pdfBase64 = btoa(pdfOutput);
+                                
+                                const pdfFile = {
+                                    path: `${caseFolder}${filename}`,
+                                    content: pdfBase64,
+                                    message: `Add ${filename} for case ${caseId}`,
+                                    encoding: 'base64'
+                                };
+                                
+                                pdfPromises.push(uploadFileToGitHub(token, pdfFile));
+                            }
                         }
-                    }
-                    
-                    // Upload files to GitHub
-                    const uploadPromises = files.map(file => 
-                        uploadFileToGitHub(githubConfig, file)
-                    );
-                    
-                    // Execute all uploads
-                    const results = await Promise.allSettled(uploadPromises);
-                    
-                    // Check results
-                    const successfulUploads = results.filter(r => r.status === 'fulfilled').length;
-                    const failedUploads = results.filter(r => r.status === 'rejected').length;
-                    
-                    hideLoading();
-                    
-                    if (failedUploads === 0) {
-                        // All files uploaded successfully
+                        
+                        // Execute PDF uploads
+                        const pdfResults = await Promise.allSettled(pdfPromises);
+                        const successfulPdfs = pdfResults.filter(r => r.status === 'fulfilled').length;
+                        
+                        hideLoading();
+                        
+                        // Show success message
                         showSuccessMessage(`
                             <i class="fas fa-check-circle"></i>
                             <h3 style="color: #28a745;">Case Saved to GitHub Successfully!</h3>
                             <p>All case files have been saved to your GitHub repository.</p>
                             <p><strong>Case ID:</strong> ${caseId}</p>
-                            <p><strong>GitHub Path:</strong> ${caseFolder}</p>
-                            <p><strong>Files Uploaded:</strong> ${successfulUploads}</p>
-                            <p><a href="https://github.com/${githubConfig.owner}/${githubConfig.repo}/tree/main/${caseFolder}" 
+                            <p><strong>Repository:</strong> ${GITHUB_API.owner}/${GITHUB_API.repo}</p>
+                            <p><strong>Path:</strong> ${caseFolder}</p>
+                            <p><strong>Files Uploaded:</strong> ${1 + successfulPdfs} files</p>
+                            <p><a href="https://github.com/${GITHUB_API.owner}/${GITHUB_API.repo}/tree/main/${caseFolder}" 
                                   target="_blank" style="color: var(--houston-blue); text-decoration: underline;">
-                                View on GitHub
+                                <i class="fab fa-github"></i> View on GitHub
                             </a></p>
                         `);
-                    } else if (successfulUploads > 0) {
-                        // Some files uploaded
-                        showWarningMessage(`
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <h3 style="color: var(--warning-orange);">Partial Upload Complete</h3>
-                            <p>${successfulUploads} of ${files.length} files uploaded successfully.</p>
-                            <p><strong>Case ID:</strong> ${caseId}</p>
-                            <p><strong>Failed Uploads:</strong> ${failedUploads}</p>
-                            <p>Some documents may need to be uploaded manually.</p>
-                        `);
+                        
                     } else {
-                        // All uploads failed
-                        throw new Error('All file uploads failed');
+                        throw new Error('Failed to upload initial case data');
                     }
                     
                 } catch (error) {
                     console.error('Error saving to GitHub:', error);
                     hideLoading();
                     
-                    // Check if it's an authentication error
-                    if (error.response && error.response.status === 401) {
-                        showErrorMessage(`
-                            <i class="fas fa-lock"></i>
-                            <h3 style="color: #dc3545;">Authentication Failed</h3>
-                            <p>GitHub authentication failed. Please check:</p>
-                            <ul style="text-align: left; margin: 15px 0;">
-                                <li>Your GitHub username and repository name</li>
-                                <li>If repository is private, a valid token is required</li>
-                                <li>Token must have "repo" scope permissions</li>
-                            </ul>
-                            <p><a href="https://github.com/settings/tokens" target="_blank" 
-                                  style="color: var(--houston-blue);">
-                                Generate a new token
-                            </a></p>
-                        `);
-                    } else if (error.response && error.response.status === 404) {
-                        showErrorMessage(`
-                            <i class="fas fa-search"></i>
-                            <h3 style="color: #dc3545;">Repository Not Found</h3>
-                            <p>The GitHub repository was not found. Please check:</p>
-                            <ul style="text-align: left; margin: 15px 0;">
-                                <li>GitHub username/organization is correct</li>
-                                <li>Repository name is correct</li>
-                                <li>Repository exists and you have access</li>
-                            </ul>
-                        `);
-                    } else {
-                        showErrorMessage(`
-                            <i class="fas fa-exclamation-circle"></i>
-                            <h3 style="color: #dc3545;">Error Saving to GitHub</h3>
-                            <p>${error.message || 'An unexpected error occurred'}</p>
-                            <p>Please try again or save documents locally.</p>
-                        `);
+                    // Provide specific error messages
+                    let errorMessage = error.message || 'An unexpected error occurred';
+                    let errorTitle = 'Error Saving to GitHub';
+                    let errorDetails = '';
+                    
+                    if (error.response) {
+                        console.error('GitHub API Response:', error.response.status, error.response.data);
+                        
+                        if (error.response.status === 401 || error.response.status === 403) {
+                            errorTitle = 'Authentication Failed';
+                            errorMessage = 'Invalid or expired GitHub token';
+                            errorDetails = 'Please check your GitHub token and ensure it has proper "repo" permissions.';
+                        } else if (error.response.status === 404) {
+                            errorTitle = 'Repository Not Found';
+                            errorMessage = `Repository "${GITHUB_API.owner}/${GITHUB_API.repo}" not found or inaccessible`;
+                            errorDetails = 'Please verify: <br>1. Repository exists <br>2. Token has write access <br>3. Repository name is correct';
+                        } else if (error.response.status === 422) {
+                            errorTitle = 'Validation Failed';
+                            errorMessage = 'GitHub rejected the file format or content';
+                            errorDetails = 'Please try saving the case data only.';
+                        }
+                    } else if (error.message.includes('token')) {
+                        errorTitle = 'Token Required';
+                        errorMessage = 'GitHub token is missing or invalid';
+                        errorDetails = 'Please add a valid GitHub personal access token with "repo" permissions.';
                     }
+                    
+                    showErrorMessage(`
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3 style="color: #dc3545;">${errorTitle}</h3>
+                        <p><strong>Error:</strong> ${errorMessage}</p>
+                        ${errorDetails ? `<p>${errorDetails}</p>` : ''}
+                        <p>You can still download the documents locally and upload them manually to GitHub.</p>
+                    `);
                 }
             }
             
-            // Upload file to GitHub
-            async function uploadFileToGitHub(config, file) {
-                const url = `${GITHUB_API.baseURL}/repos/${config.owner}/${config.repo}/contents/${file.path}`;
+            // Test GitHub access
+            async function testGitHubAccess(token) {
+                const testUrl = `https://api.github.com/repos/${GITHUB_API.owner}/${GITHUB_API.repo}`;
                 
                 const headers = {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/vnd.github.v3+json'
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Authorization': `Bearer ${token}`
                 };
                 
-                // Add authorization header if token is provided
-                if (config.token) {
-                    headers['Authorization'] = `token ${config.token}`;
+                const response = await axios.get(testUrl, { 
+                    headers: headers,
+                    timeout: 10000
+                });
+                
+                if (response.status !== 200) {
+                    throw new Error(`Repository access failed: ${response.status}`);
                 }
+                
+                return response.data;
+            }
+            
+            // Upload file to GitHub - FIXED VERSION
+            async function uploadFileToGitHub(token, file) {
+                const url = `https://api.github.com/repos/${GITHUB_API.owner}/${GITHUB_API.repo}/contents/${file.path}`;
+                
+                const headers = {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                };
                 
                 const payload = {
                     message: file.message,
                     content: file.content,
-                    branch: config.branch
+                    branch: GITHUB_API.branch
                 };
                 
+                // If encoding is specified, add it to payload
+                if (file.encoding) {
+                    payload.encoding = file.encoding;
+                }
+                
                 try {
-                    const response = await axios.put(url, payload, { headers });
+                    console.log(`Uploading ${file.path} to GitHub...`);
+                    const response = await axios.put(url, payload, { 
+                        headers: headers,
+                        timeout: 15000 
+                    });
+                    
+                    console.log(`Successfully uploaded ${file.path}`);
                     return response.data;
                 } catch (error) {
-                    console.error(`Error uploading ${file.path}:`, error);
+                    // Check if file already exists (we can update it)
+                    if (error.response && error.response.status === 409) {
+                        console.log(`File ${file.path} already exists, trying to update...`);
+                        
+                        // First get the SHA of existing file
+                        const getResponse = await axios.get(url, { 
+                            headers: headers,
+                            params: { ref: GITHUB_API.branch }
+                        });
+                        
+                        const sha = getResponse.data.sha;
+                        
+                        // Update with SHA
+                        const updatePayload = {
+                            ...payload,
+                            sha: sha
+                        };
+                        
+                        const updateResponse = await axios.put(url, updatePayload, { 
+                            headers: headers,
+                            timeout: 15000 
+                        });
+                        
+                        console.log(`Successfully updated ${file.path}`);
+                        return updateResponse.data;
+                    }
+                    
                     throw error;
                 }
             }
@@ -2122,20 +2188,6 @@
                 
                 // Scroll to show message
                 successMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-            
-            // Show warning message
-            function showWarningMessage(html) {
-                const warningMsg = document.createElement('div');
-                warningMsg.className = 'info-box warning';
-                warningMsg.style.marginTop = '20px';
-                warningMsg.innerHTML = html;
-                
-                const downloadSection = document.querySelector('.download-section');
-                downloadSection.insertBefore(warningMsg, downloadSection.firstChild);
-                
-                // Scroll to show message
-                warningMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
             
             // Show error message
@@ -2340,6 +2392,11 @@
                 inputs.forEach(input => {
                     if (input.type === 'checkbox') {
                         input.checked = false;
+                    } else if (input.type === 'password') {
+                        // Don't clear token field
+                        if (input.id !== 'githubToken') {
+                            input.value = '';
+                        }
                     } else if (input.type !== 'button' && input.type !== 'submit') {
                         input.value = '';
                     }
@@ -2394,6 +2451,21 @@
                     return;
                 }
                 goToStep(6);
+            });
+            
+            // Auto-save token to localStorage
+            document.getElementById('githubToken').addEventListener('input', function() {
+                if (this.value) {
+                    localStorage.setItem('githubToken', this.value);
+                }
+            });
+            
+            // Auto-load token from localStorage
+            window.addEventListener('load', function() {
+                const savedToken = localStorage.getItem('githubToken');
+                if (savedToken) {
+                    document.getElementById('githubToken').value = savedToken;
+                }
             });
         });
     </script>
