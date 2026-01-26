@@ -1246,7 +1246,7 @@
                     <i class="fas fa-sync-alt"></i>
                     <h3 style="color: var(--houston-blue);">Auto-Sync to Court System</h3>
                     <p>Your case data is being automatically synchronized with the Houston County Magistrate Court system.</p>
-                    <p><strong>Webhook:</strong> https://nagoh.us/webhook/</p>
+                    <p><strong>Webhook:</strong> https://nagoh.us/GAEVIC/webhook/</p>
                     <p><strong>Status:</strong> <span id="webhookStatus">Processing...</span></p>
                 </div>
                 
@@ -1387,7 +1387,7 @@
         
         // Webhook Configuration
         const WEBHOOK_CONFIG = {
-            url: 'https://nagoh.us/webhook/',
+            url: 'https://nagoh.us/GAEVIC/webhook/',
             method: 'POST',
             contentType: 'application/json'
         };
@@ -1959,8 +1959,8 @@
                         showSuccessNotification(`
                             <i class="fas fa-check-circle" style="color: #28a745;"></i>
                             <h4 style="color: #28a745; margin: 10px 0;">Case Data Synced to Court System</h4>
-                            <p>Your eviction case has been successfully synchronized with the Houston County Magistrate Court system.</p>
-                            <p><strong>Webhook Status:</strong> Successfully sent to https://nagoh.us/webhook/</p>
+                            <p>Your eviction case has been successfully synchronized with the GAEVIc.</p>
+                            <p><strong>Webhook Status:</strong> Successfully sent to https://nagoh.us/GAEVIC/webhook/</p>
                             <p><strong>Case ID:</strong> ${caseId}</p>
                             <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
                         `);
