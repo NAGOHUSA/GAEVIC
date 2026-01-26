@@ -1,1 +1,72 @@
+name: Sync Eviction Cases
 
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+  repository_dispatch:
+    types: [eviction_case_created]
+
+jobs:
+  sync-cases:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Process New Case
+      if: github.event_name == 'repository_dispatch'
+      run: |
+        echo "Processing eviction case..."
+        echo "Case ID: ${{ github.event.client_payload.case.caseId }}"
+        echo "Event: ${{ github.event.client_payload.event }}"
+        
+        # Create summary file
+        mkdir -p workflow-logs
+        echo "Case processed: ${{ github.event.client_payload.case.caseId }}" >> workflow-logs/summary.txt
+        echo "Timestamp: $(date)" >> workflow-logs/summary.txt
+    
+    - name: Update README with stats
+      run: |
+        # Count cases
+        CASE_COUNT=$(find cases -name "case_data.json" -type f 2>/dev/null | wc -l || echo "0")
+        
+        # Update README
+        cat > README.md << EOF
+        # Houston County Eviction System
+        
+        ## Repository: GAEVIC
+        
+        ### Statistics
+        - Total Cases: $CASE_COUNT
+        - Last Updated: $(date)
+        
+        ### Case Structure
+        Each case is stored in \`cases/{case-id}/\` with the following files:
+        - \`case_data.json\` - Case information in JSON format
+        - \`7-Day_Demand_Notice.pdf\` - Demand notice PDF
+        - \`Dispossessory_Affidavit.pdf\` - Affidavit PDF
+        - \`Summons.pdf\` - Summons PDF
+        - \`SCRA_Verification.pdf\` - Military verification PDF
+        
+        ### Webhook Integration
+        This repository supports webhook integration for automatic case creation.
+        
+        ### Dashboard
+        Access the dashboard at: https://your-domain.com/dashboard/
+        EOF
+        
+        # Commit changes
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add README.md
+        git commit -m "Update README with stats" || echo "No changes to commit"
+    
+    - name: Push changes
+      run: |
+        git push origin main
