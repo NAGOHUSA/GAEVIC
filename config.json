@@ -1,1 +1,26 @@
-
+{
+  "system": {
+    "name": "Houston County Eviction System 2.0",
+    "version": "2.0.0",
+    "repository": "NAGOHUSA/GAEVIC"
+  },
+  "github": {
+    "owner": "NAGOHUSA",
+    "repo": "GAEVIC",
+    "branch": "main",
+    "webhook_url": "https://your-domain.com/webhook/",
+    "api_url": "https://api.github.com"
+  },
+  "court": {
+    "name": "Houston County Magistrate Court",
+    "address": "202 Carl Vinson Parkway, Warner Robins, GA 31088",
+    "phone": "(478) 542-2100",
+    "filing_fee": 99.00
+  },
+  "features": {
+    "webhook_enabled": true,
+    "dashboard_enabled": true,
+    "auto_sync": true,
+    "backup_enabled": true
+  }
+}
