@@ -1,0 +1,47 @@
+{
+  "caseId": "HOU-2026-544169-0885",
+  "status": "Pending Court Filing",
+  "filingDate": "2026-01-26T15:49:19.992Z",
+  "landlord": {
+    "name": "SDFSDFSF",
+    "phone": "4783351222",
+    "email": "gregoryhogan@gmail.com",
+    "type": "owner",
+    "address": "108 Ridge Circle N",
+    "city": "Perry",
+    "state": "GA",
+    "zip": "31069"
+  },
+  "property": {
+    "address": "108 Ridge Circle N",
+    "city": "Perry",
+    "zip": "31069",
+    "type": "single_family",
+    "unit": ""
+  },
+  "tenant": {
+    "name": "Gregory",
+    "phone": "4783351222",
+    "email": "gregoryhogan@gmail.com",
+    "altAddress": "gregoryhogan@gmail.com",
+    "militaryCheck": false
+  },
+  "case": {
+    "leaseType": "month_to_month",
+    "reason": "non_payment",
+    "rentAmount": 234324,
+    "amountOwed": 234234234,
+    "lastPaymentDate": "2026-01-26",
+    "noticeDate": "2026-01-05",
+    "noticeDetails": "SDFSF"
+  },
+  "signature": {
+    "name": "SDFSDFSF",
+    "timestamp": "2026-01-26T15:49:01.648Z"
+  },
+  "timestamp": "2026-01-26T15:49:19.992Z",
+  "documentsGenerated": true,
+  "version": "1.4",
+  "githubPath": "cases/HOU-2026-544169-0885/",
+  "savedAt": "2026-01-26T15:49:19.992Z"
+}
