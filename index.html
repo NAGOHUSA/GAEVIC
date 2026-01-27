@@ -591,18 +591,26 @@
         .github-status {
             margin-top: 10px;
             font-size: 0.95em;
+            padding: 8px 12px;
+            border-radius: 4px;
         }
         
         .github-status.success {
-            color: var(--success-green);
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
         
         .github-status.warning {
-            color: var(--warning-orange);
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
         }
         
         .github-status.error {
-            color: var(--houston-red);
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
         
         .backup-note {
@@ -922,19 +930,25 @@
         <div class="form-container" id="evictionForm">
             <!-- GitHub Configuration (Visible by default) -->
             <div class="github-config">
-                <h4><i class="fab fa-github"></i> Automatic GitHub Backup</h4>
+                <h4><i class="fab fa-github"></i> Automatic GitHub Backup Setup</h4>
                 <p style="font-size:0.9em; margin-bottom:15px;">
-                    Enter your GitHub token once (classic token with <strong>repo</strong> scope).<br>
-                    Every filed case will be saved automatically to your repository.
+                    <strong>Required for saving cases:</strong> Enter your GitHub Personal Access Token.<br>
+                    <small><a href="https://github.com/settings/tokens" target="_blank">Get token here</a> (needs <strong>repo</strong> scope)</small>
                 </p>
                 <div class="form-group">
-                    <label for="githubToken">Personal Access Token</label>
-                    <input type="password" id="githubToken" placeholder="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">
+                    <label for="githubToken">GitHub Personal Access Token</label>
+                    <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
                 </div>
                 <label style="display:block; margin:10px 0;">
-                    <input type="checkbox" id="githubEnabled" checked> Enable automatic backup
+                    <input type="checkbox" id="githubEnabled" checked> Enable automatic GitHub backup
                 </label>
-                <div id="githubStatus" class="github-status"></div>
+                <div id="githubStatus" class="github-status">
+                    <i class="fas fa-info-circle"></i> Enter token above to enable backup
+                </div>
+                <div style="margin-top: 10px; font-size: 0.85em; color: #666;">
+                    <p><strong>Repository:</strong> <a href="https://github.com/NAGOHUSA/GAEVIC" target="_blank">NAGOHUSA/GAEVIC</a></p>
+                    <p><strong>Path:</strong> <code>cases/case_data.json</code></p>
+                </div>
             </div>
 
             <!-- Form Progress -->
@@ -1430,6 +1444,18 @@
         let githubToken = localStorage.getItem('githubToken') || '';
         let githubEnabled = localStorage.getItem('githubEnabled') !== 'false';
 
+        // === VALIDATE GITHUB TOKEN ===
+        function validateGitHubToken(token) {
+            if (!token) return { valid: false, error: 'Token is empty' };
+            if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
+                return { valid: false, error: 'Token should start with ghp_ or github_pat_' };
+            }
+            if (token.length < 30) {
+                return { valid: false, error: 'Token appears too short' };
+            }
+            return { valid: true };
+        }
+
         // === UI INIT ===
         document.addEventListener('DOMContentLoaded', () => {
             // Initialize GitHub UI
@@ -1444,6 +1470,17 @@
                     localStorage.setItem('githubToken', githubToken);
                     updateStatus();
                 });
+                
+                // Auto-test token when user stops typing
+                let typingTimer;
+                tokenInput.addEventListener('keyup', () => {
+                    clearTimeout(typingTimer);
+                    typingTimer = setTimeout(() => {
+                        if (githubToken) {
+                            testGitHubToken(githubToken);
+                        }
+                    }, 1000);
+                });
             }
 
             if (enabledInput) {
@@ -1457,18 +1494,89 @@
 
             function updateStatus() {
                 if (!statusDiv) return;
+                
+                const validation = validateGitHubToken(githubToken);
+                
                 if (!githubEnabled) {
-                    statusDiv.textContent = '⚠️ Automatic backup is turned off';
+                    statusDiv.innerHTML = '<i class="fas fa-ban"></i> Automatic backup is turned off';
                     statusDiv.className = 'github-status warning';
                 } else if (!githubToken) {
-                    statusDiv.textContent = '🔑 Enter token to enable backup';
+                    statusDiv.innerHTML = '<i class="fas fa-key"></i> Enter GitHub token to enable backup';
                     statusDiv.className = 'github-status warning';
+                } else if (!validation.valid) {
+                    statusDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${validation.error}`;
+                    statusDiv.className = 'github-status error';
                 } else {
-                    statusDiv.textContent = '✅ Automatic backup enabled';
+                    statusDiv.innerHTML = '<i class="fas fa-check"></i> Token format looks good';
                     statusDiv.className = 'github-status success';
                 }
             }
+            
+            // Test GitHub token function
+            async function testGitHubToken(token) {
+                if (!token) return;
+                
+                statusDiv.innerHTML = '<i class="fas fa-sync fa-spin"></i> Testing token...';
+                statusDiv.className = 'github-status';
+                
+                try {
+                    // Test token by trying to access repo info
+                    const headers = {
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Authorization': `Bearer ${token}`,
+                        'User-Agent': 'EvictionSystem/2.0'
+                    };
+                    
+                    // Test 1: Check if token is valid
+                    const userResponse = await axios.get('https://api.github.com/user', { headers });
+                    
+                    // Test 2: Check if repo exists and accessible
+                    const repoResponse = await axios.get(
+                        `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}`,
+                        { headers }
+                    );
+                    
+                    statusDiv.innerHTML = `<i class="fas fa-check-circle"></i> Token valid! Connected as: ${userResponse.data.login}`;
+                    statusDiv.className = 'github-status success';
+                    
+                    console.log('GitHub token test successful:', {
+                        user: userResponse.data.login,
+                        repo: repoResponse.data.full_name,
+                        permissions: repoResponse.data.permissions
+                    });
+                    
+                } catch (error) {
+                    let errorMessage = 'Token validation failed';
+                    
+                    if (error.response) {
+                        if (error.response.status === 401) {
+                            errorMessage = 'Invalid token: 401 Unauthorized';
+                        } else if (error.response.status === 403) {
+                            errorMessage = 'Token lacks required permissions';
+                        } else if (error.response.status === 404) {
+                            errorMessage = `Repository not found: ${GITHUB.owner}/${GITHUB.repo}`;
+                        } else {
+                            errorMessage = `GitHub API error: ${error.response.status}`;
+                        }
+                    } else if (error.request) {
+                        errorMessage = 'No response from GitHub (network error)';
+                    } else {
+                        errorMessage = `Error: ${error.message}`;
+                    }
+                    
+                    statusDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${errorMessage}`;
+                    statusDiv.className = 'github-status error';
+                    
+                    console.error('GitHub token test failed:', error);
+                }
+            }
+            
             updateStatus();
+            
+            // If we have a token, test it on load
+            if (githubToken && githubEnabled) {
+                setTimeout(() => testGitHubToken(githubToken), 1000);
+            }
 
             // DOM Elements
             const startFilingBtn = document.getElementById('startFilingBtn');
@@ -2028,34 +2136,34 @@
 
             // === AUTO UPLOAD TO GITHUB ===
             async function uploadCaseToGitHub() {
-                // Check if GitHub backup is enabled
-                if (!githubEnabled || !githubToken) {
-                    console.log('GitHub backup disabled or no token');
-                    
-                    // Show warning message
-                    successMessage.innerHTML = `
-                        <i class="fas fa-check-circle" style="color: #28a745;"></i>
-                        <h3 style="color: #28a745;">Documents Generated Successfully!</h3>
-                        <p>Your eviction documents have been generated.</p>
-                        <p><strong>Case ID:</strong> ${caseId}</p>
-                        <p><strong>Note:</strong> GitHub backup is disabled. Enable it at the top of the form to save to repository.</p>
-                    `;
-                    
-                    // Show dashboard button
-                    document.getElementById('openDashboardBtn').style.display = 'inline-block';
+                // Validate token before attempting upload
+                const validation = validateGitHubToken(githubToken);
+                
+                if (!githubEnabled) {
+                    console.log('GitHub backup disabled');
+                    showNoBackupMessage();
+                    return;
+                }
+                
+                if (!validation.valid) {
+                    console.log('Invalid GitHub token');
+                    showTokenError(validation.error);
                     return;
                 }
 
                 showLoading('Saving case to GitHub repository...');
                 
                 try {
-                    // First, save to the centralized case_data.json file
+                    // First, verify token still works
+                    await verifyGitHubAccess();
+                    
+                    // Then save to the centralized case_data.json file
                     await saveToMasterCaseFile();
                     
-                    // Then create individual case folder
+                    // Create individual case folder
                     const folder = `${GITHUB.basePath}${caseId}/`;
                     
-                    // 1. Save case.json to individual folder
+                    // Save case.json to individual folder
                     const jsonContent = JSON.stringify({
                         ...formData,
                         caseId,
@@ -2069,86 +2177,80 @@
                         `Add case ${caseId}`
                     );
 
-                    // 2. Save PDFs to individual folder
-                    const pdfs = [
-                        {key: 'demand_notice', filename: 'Demand_Notice.pdf'},
-                        {key: 'affidavit',     filename: 'Dispossessory_Affidavit.pdf'},
-                        {key: 'summons',       filename: 'Summons.pdf'},
-                        {key: 'scra_form',     filename: 'SCRA_Verification.pdf'}
-                    ];
-
-                    for (const pdf of pdfs) {
-                        if (generatedDocuments[pdf.key]) {
-                            try {
-                                // Convert PDF to base64
-                                const pdfOutput = generatedDocuments[pdf.key].output('datauristring');
-                                if (pdfOutput) {
-                                    const base64 = pdfOutput.split(',')[1];
-                                    await uploadToGitHub(folder + pdf.filename, base64, 
-                                        `Add ${pdf.filename} for ${caseId}`, true);
-                                }
-                            } catch (pdfError) {
-                                console.warn(`Failed to upload ${pdf.filename}:`, pdfError);
-                            }
-                        }
+                    // Save PDFs (optional - can skip if fails)
+                    try {
+                        await uploadPDFs(folder);
+                    } catch (pdfError) {
+                        console.warn('Some PDFs failed to upload:', pdfError);
+                        // Continue anyway - JSON is the most important
                     }
 
                     hideLoading();
+                    showUploadSuccess();
                     
-                    // Update success message
-                    successMessage.innerHTML = `
-                        <i class="fas fa-check-circle" style="color: #28a745;"></i>
-                        <h3 style="color: #28a745;">Case Successfully Saved to GitHub!</h3>
-                        <p>Your eviction case has been saved to GitHub and documents are ready for download.</p>
-                        <p><strong>Case ID:</strong> ${caseId}</p>
-                        <p><strong>Status:</strong> Pending Court Filing</p>
-                        <p><strong>Saved to:</strong> <code>cases/${caseId}/</code></p>
-                        <p style="margin-top: 10px; font-size: 0.9em;"><i class="fas fa-sync-alt"></i> Your dashboard will automatically show this case</p>
-                    `;
-                    
-                    // Show success box
-                    const resultDiv = document.getElementById('githubResultMessage');
-                    resultDiv.innerHTML = `
-                        <div class="info-box success">
-                            <h4><i class="fas fa-check-circle"></i> GitHub Upload Successful</h4>
-                            <p><strong>Case ID:</strong> ${caseId}</p>
-                            <p><strong>Repository:</strong> <a href="https://github.com/${GITHUB.owner}/${GITHUB.repo}/tree/main/${GITHUB.basePath}${caseId}" target="_blank">${GITHUB.basePath}${caseId}/</a></p>
-                            <p><strong>Master file updated:</strong> <a href="https://github.com/${GITHUB.owner}/${GITHUB.repo}/blob/main/${GITHUB.basePath}case_data.json" target="_blank">case_data.json</a></p>
-                        </div>
-                    `;
-                    resultDiv.style.display = 'block';
-                    
-                    // Show dashboard button
-                    document.getElementById('openDashboardBtn').style.display = 'inline-block';
-                    
-                    console.log('Case uploaded to GitHub:', caseId);
-
                 } catch (err) {
                     hideLoading();
                     console.error('GitHub upload failed:', err);
+                    showUploadError(err);
+                }
+            }
+
+            // === VERIFY GITHUB ACCESS ===
+            async function verifyGitHubAccess() {
+                const headers = {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Authorization': `Bearer ${githubToken}`,
+                    'User-Agent': 'EvictionSystem/2.0'
+                };
+                
+                try {
+                    // Verify repo exists and we have write access
+                    const repoResponse = await axios.get(
+                        `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}`,
+                        { headers, timeout: 10000 }
+                    );
                     
-                    // Update success message with error
-                    successMessage.innerHTML = `
-                        <i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>
-                        <h3 style="color: #dc3545;">GitHub Upload Failed</h3>
-                        <p>Your documents were generated but could not be saved to GitHub.</p>
-                        <p><strong>Case ID:</strong> ${caseId}</p>
-                        <p><strong>Error:</strong> ${err.message || 'Unknown error'}</p>
-                        <p style="margin-top: 10px; font-size: 0.9em;">You can still download documents locally.</p>
-                    `;
+                    if (!repoResponse.data.permissions || !repoResponse.data.permissions.push) {
+                        throw new Error('Token does not have write permissions to repository');
+                    }
                     
-                    // Show error box
-                    const resultDiv = document.getElementById('githubResultMessage');
-                    resultDiv.innerHTML = `
-                        <div class="info-box warning">
-                            <h4><i class="fas fa-exclamation-triangle"></i> GitHub Upload Failed</h4>
-                            <p>Error: ${err.message || 'Unknown error'}</p>
-                            <p style="margin-top: 10px; font-size: 0.9em;">
-                                Your documents are still generated locally. You can manually upload them later.
-                            </p>
-                        </div>
-                    `;
-                    resultDiv.style.display = 'block';
+                    return true;
+                } catch (error) {
+                    if (error.response?.status === 401) {
+                        throw new Error('Invalid GitHub token (401 Unauthorized). Please check your token.');
+                    } else if (error.response?.status === 403) {
+                        throw new Error('Token lacks write permissions to repository. Needs "repo" scope.');
+                    } else if (error.response?.status === 404) {
+                        throw new Error(`Repository not found: ${GITHUB.owner}/${GITHUB.repo}. Please create it first.`);
+                    } else {
+                        throw error;
+                    }
+                }
+            }
+
+            // === UPLOAD PDFs ===
+            async function uploadPDFs(folder) {
+                const pdfs = [
+                    {key: 'demand_notice', filename: 'Demand_Notice.pdf'},
+                    {key: 'affidavit',     filename: 'Dispossessory_Affidavit.pdf'},
+                    {key: 'summons',       filename: 'Summons.pdf'},
+                    {key: 'scra_form',     filename: 'SCRA_Verification.pdf'}
+                ];
+
+                for (const pdf of pdfs) {
+                    if (generatedDocuments[pdf.key]) {
+                        try {
+                            const pdfOutput = generatedDocuments[pdf.key].output('datauristring');
+                            if (pdfOutput) {
+                                const base64 = pdfOutput.split(',')[1];
+                                await uploadToGitHub(folder + pdf.filename, base64, 
+                                    `Add ${pdf.filename} for ${caseId}`, true);
+                            }
+                        } catch (pdfError) {
+                            console.warn(`Failed to upload ${pdf.filename}:`, pdfError);
+                            // Skip this PDF but continue with others
+                        }
+                    }
                 }
             }
 
@@ -2160,7 +2262,8 @@
                 try {
                     const headers = {
                         'Accept': 'application/vnd.github.v3+json',
-                        'Authorization': `token ${githubToken}`
+                        'Authorization': `Bearer ${githubToken}`,
+                        'User-Agent': 'EvictionSystem/2.0'
                     };
                     
                     // Try to get existing file
@@ -2225,7 +2328,11 @@
                     
                 } catch (error) {
                     console.error('Error updating master case file:', error);
-                    throw new Error(`Failed to update case_data.json: ${error.message}`);
+                    if (error.response?.status === 401) {
+                        throw new Error('Invalid GitHub token (401). Please check your token.');
+                    } else {
+                        throw new Error(`Failed to update case_data.json: ${error.message}`);
+                    }
                 }
             }
 
@@ -2241,7 +2348,8 @@
 
                 const headers = {
                     'Accept': 'application/vnd.github.v3+json',
-                    'Authorization': `token ${githubToken}`,
+                    'Authorization': `Bearer ${githubToken}`,
+                    'User-Agent': 'EvictionSystem/2.0',
                     'Content-Type': 'application/json'
                 };
 
@@ -2258,13 +2366,97 @@
                     }
                     
                     // Upload the file
-                    await axios.put(url, payload, { headers });
-                    console.log(`Uploaded to GitHub: ${path}`);
+                    const response = await axios.put(url, payload, { headers, timeout: 15000 });
+                    console.log(`Uploaded to GitHub: ${path}`, response.status);
+                    return response.data;
                     
                 } catch (err) {
-                    console.error(`GitHub upload failed for ${path}:`, err);
-                    throw err;
+                    console.error(`GitHub upload failed for ${path}:`, err.response?.status, err.message);
+                    
+                    if (err.response?.status === 401) {
+                        throw new Error('Invalid GitHub token. Please update your token.');
+                    } else if (err.response?.status === 403) {
+                        throw new Error('Rate limit exceeded or insufficient permissions.');
+                    } else if (err.response?.status === 404) {
+                        throw new Error('Repository or path not found.');
+                    } else {
+                        throw err;
+                    }
                 }
+            }
+
+            // === SUCCESS/ERROR MESSAGES ===
+            function showUploadSuccess() {
+                successMessage.innerHTML = `
+                    <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                    <h3 style="color: #28a745;">Case Successfully Saved to GitHub!</h3>
+                    <p>Your eviction case has been saved to GitHub and documents are ready for download.</p>
+                    <p><strong>Case ID:</strong> ${caseId}</p>
+                    <p><strong>Status:</strong> Pending Court Filing</p>
+                    <p><strong>Repository:</strong> <a href="https://github.com/${GITHUB.owner}/${GITHUB.repo}/tree/main/${GITHUB.basePath}${caseId}" target="_blank">cases/${caseId}/</a></p>
+                `;
+                
+                // Show success box
+                const resultDiv = document.getElementById('githubResultMessage');
+                resultDiv.innerHTML = `
+                    <div class="info-box success">
+                        <h4><i class="fas fa-check-circle"></i> GitHub Upload Successful</h4>
+                        <p><strong>Case ID:</strong> ${caseId}</p>
+                        <p><strong>View on GitHub:</strong> <a href="https://github.com/${GITHUB.owner}/${GITHUB.repo}/tree/main/${GITHUB.basePath}${caseId}" target="_blank">${GITHUB.basePath}${caseId}/</a></p>
+                        <p><strong>Master file:</strong> <a href="https://github.com/${GITHUB.owner}/${GITHUB.repo}/blob/main/${GITHUB.basePath}case_data.json" target="_blank">case_data.json</a></p>
+                        <p><em>Your dashboard will automatically show this case</em></p>
+                    </div>
+                `;
+                resultDiv.style.display = 'block';
+                
+                document.getElementById('openDashboardBtn').style.display = 'inline-block';
+            }
+
+            function showUploadError(err) {
+                successMessage.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>
+                    <h3 style="color: #dc3545;">GitHub Upload Failed</h3>
+                    <p>Your documents were generated but could not be saved to GitHub.</p>
+                    <p><strong>Case ID:</strong> ${caseId}</p>
+                    <p><strong>Error:</strong> ${err.message || 'Unknown error'}</p>
+                    <p style="margin-top: 10px; font-size: 0.9em;">You can still download documents locally.</p>
+                `;
+                
+                const resultDiv = document.getElementById('githubResultMessage');
+                resultDiv.innerHTML = `
+                    <div class="info-box warning">
+                        <h4><i class="fas fa-exclamation-triangle"></i> GitHub Upload Failed</h4>
+                        <p><strong>Error:</strong> ${err.message || 'Unknown error'}</p>
+                        <p><strong>Solution:</strong></p>
+                        <ol style="margin: 10px 0 0 20px;">
+                            <li>Check your GitHub token at the top of the form</li>
+                            <li>Make sure repository <code>${GITHUB.owner}/${GITHUB.repo}</code> exists</li>
+                            <li>Token needs <strong>repo</strong> scope (full repository access)</li>
+                            <li>Try generating a new token at: <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a></li>
+                        </ol>
+                    </div>
+                `;
+                resultDiv.style.display = 'block';
+            }
+
+            function showNoBackupMessage() {
+                successMessage.innerHTML = `
+                    <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                    <h3 style="color: #28a745;">Documents Generated Successfully!</h3>
+                    <p>Your eviction documents have been generated.</p>
+                    <p><strong>Case ID:</strong> ${caseId}</p>
+                    <p><strong>Note:</strong> GitHub backup is disabled. Enable it at the top of the form to save to repository.</p>
+                `;
+            }
+
+            function showTokenError(error) {
+                successMessage.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>
+                    <h3 style="color: #dc3545;">Invalid GitHub Token</h3>
+                    <p>${error}</p>
+                    <p><strong>Case ID:</strong> ${caseId}</p>
+                    <p>Please enter a valid GitHub token at the top of the form.</p>
+                `;
             }
             
             // Signature Pad Functions
