@@ -1,0 +1,45 @@
+{
+  "caseId": "HOU-2026-841052-7683",
+  "status": "Pending Court Filing",
+  "filingDate": "2026-01-27T16:04:01.052Z",
+  "landlord": {
+    "name": "JOHN SMITH",
+    "phone": "478-123-4565",
+    "email": "TEST@TESTMAN.COM",
+    "type": "owner",
+    "address": "108 Ridge Circle N",
+    "city": "Perry",
+    "state": "GA",
+    "zip": "31069"
+  },
+  "property": {
+    "address": "108 Ridge Circle N",
+    "city": "Perry",
+    "zip": "31069",
+    "type": "single_family",
+    "unit": ""
+  },
+  "tenant": {
+    "name": "BOB SANS",
+    "phone": "478-856-5225",
+    "email": "BOB@GMAIL.COM",
+    "altAddress": "",
+    "militaryCheck": false
+  },
+  "case": {
+    "leaseType": "month_to_month",
+    "reason": "non_payment",
+    "rentAmount": 500,
+    "amountOwed": 1000,
+    "lastPaymentDate": "2026-01-15",
+    "noticeDate": "2026-01-21",
+    "noticeDetails": "LETTER ON DOOR"
+  },
+  "signature": {
+    "name": "JOHN SMITH",
+    "timestamp": "2026-01-27T16:03:55.837Z"
+  },
+  "timestamp": "2026-01-27T16:04:03.006Z",
+  "documentsGenerated": true,
+  "version": "2.0"
+}
