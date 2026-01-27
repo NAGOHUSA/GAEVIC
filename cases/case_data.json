@@ -1,5 +1,50 @@
 [
   {
+    "caseId": "HOU-2026-216512-7102",
+    "status": "Pending Court Filing",
+    "filingDate": "2026-01-27T16:26:57.596Z",
+    "landlord": {
+      "name": "GREG HOGAN",
+      "phone": "4783351222",
+      "email": "gregoryhogan@gmail.com",
+      "type": "owner",
+      "address": "108 Ridge Circle N",
+      "city": "Perry",
+      "state": "GA",
+      "zip": "31069"
+    },
+    "tenant": {
+      "name": "Gregory",
+      "phone": "4783351222",
+      "email": "gregoryhogan@gmail.com",
+      "altAddress": "gregoryhogan@gmail.com",
+      "militaryCheck": false
+    },
+    "property": {
+      "address": "108 Ridge Circle N",
+      "city": "Perry",
+      "zip": "31069",
+      "type": "single_family",
+      "unit": ""
+    },
+    "case": {
+      "leaseType": "month_to_month",
+      "reason": "non_payment",
+      "rentAmount": 1000,
+      "amountOwed": 2000,
+      "lastPaymentDate": "2026-01-01",
+      "noticeDate": "2026-01-26",
+      "noticeDetails": "LEFT NOTE ON DOOR"
+    },
+    "signature": {
+      "name": "GREG HOGAN",
+      "timestamp": "2026-01-27T16:26:44.775Z"
+    },
+    "timestamp": "2026-01-27T16:26:57.596Z",
+    "documentsGenerated": true,
+    "version": "2.0"
+  },
+  {
     "caseId": "HOU-2026-841052-7683",
     "status": "Pending Court Filing",
     "filingDate": "2026-01-27T16:04:02.333Z",
