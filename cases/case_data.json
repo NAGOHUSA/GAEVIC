@@ -1,5 +1,50 @@
 [
   {
+    "caseId": "HOU-2026-208121-6711",
+    "status": "Pending Court Filing",
+    "filingDate": "2026-01-27T01:10:08.834Z",
+    "landlord": {
+      "name": "",
+      "phone": "",
+      "email": "",
+      "type": "owner",
+      "address": "",
+      "city": "",
+      "state": "GA",
+      "zip": ""
+    },
+    "tenant": {
+      "name": "",
+      "phone": "",
+      "email": "",
+      "altAddress": "",
+      "militaryCheck": false
+    },
+    "property": {
+      "address": "",
+      "city": "Warner Robins",
+      "zip": "",
+      "type": "single_family",
+      "unit": ""
+    },
+    "case": {
+      "leaseType": "month_to_month",
+      "reason": "non_payment",
+      "rentAmount": 0,
+      "amountOwed": 0,
+      "lastPaymentDate": "",
+      "noticeDate": "2026-01-27",
+      "noticeDetails": ""
+    },
+    "signature": {
+      "name": "DDD",
+      "timestamp": "2026-01-27T01:10:04.992Z"
+    },
+    "timestamp": "2026-01-27T01:10:08.834Z",
+    "documentsGenerated": true,
+    "version": "2.0"
+  },
+  {
     "caseId": "HOU-2024-123456-0001",
     "status": "Pending Court Filing",
     "filingDate": "2024-03-15T14:30:00Z",
@@ -30,8 +75,8 @@
     "case": {
       "leaseType": "month_to_month",
       "reason": "non_payment",
-      "rentAmount": 1200.00,
-      "amountOwed": 3600.00,
+      "rentAmount": 1200,
+      "amountOwed": 3600,
       "lastPaymentDate": "2024-01-15",
       "noticeDate": "2024-03-10",
       "noticeDetails": "Posted on front door on 03/10/2024"
@@ -68,8 +113,8 @@
     "case": {
       "leaseType": "fixed_term",
       "reason": "lease_violation",
-      "rentAmount": 950.00,
-      "amountOwed": 2850.00,
+      "rentAmount": 950,
+      "amountOwed": 2850,
       "lastPaymentDate": "2024-02-01",
       "noticeDate": "2024-03-05",
       "noticeDetails": "Certified mail #70123456789012345678"
@@ -106,8 +151,8 @@
     "case": {
       "leaseType": "fixed_term",
       "reason": "property_damage",
-      "rentAmount": 1350.00,
-      "amountOwed": 2700.00,
+      "rentAmount": 1350,
+      "amountOwed": 2700,
       "lastPaymentDate": "2024-02-15",
       "noticeDate": "2024-03-01",
       "noticeDetails": "Personally delivered on 03/01/2024"
@@ -144,8 +189,8 @@
     "case": {
       "leaseType": "month_to_month",
       "reason": "non_payment",
-      "rentAmount": 600.00,
-      "amountOwed": 1800.00,
+      "rentAmount": 600,
+      "amountOwed": 1800,
       "lastPaymentDate": "2024-01-01",
       "noticeDate": "2024-02-25",
       "noticeDetails": "Posted on mobile home door on 02/25/2024"
@@ -182,8 +227,8 @@
     "case": {
       "leaseType": "fixed_term",
       "reason": "non_payment",
-      "rentAmount": 2500.00,
-      "amountOwed": 7500.00,
+      "rentAmount": 2500,
+      "amountOwed": 7500,
       "lastPaymentDate": "2023-12-15",
       "noticeDate": "2024-02-20",
       "noticeDetails": "Delivered to business manager on 02/20/2024"
@@ -220,8 +265,8 @@
     "case": {
       "leaseType": "fixed_term",
       "reason": "holdover",
-      "rentAmount": 1100.00,
-      "amountOwed": 2200.00,
+      "rentAmount": 1100,
+      "amountOwed": 2200,
       "lastPaymentDate": "2024-01-31",
       "noticeDate": "2024-02-15",
       "noticeDetails": "Certified mail #70123456789012345679"
@@ -258,8 +303,8 @@
     "case": {
       "leaseType": "month_to_month",
       "reason": "non_payment",
-      "rentAmount": 850.00,
-      "amountOwed": 1700.00,
+      "rentAmount": 850,
+      "amountOwed": 1700,
       "lastPaymentDate": "2024-01-15",
       "noticeDate": "2024-02-10",
       "noticeDetails": "Posted on apartment door on 02/10/2024"
@@ -296,8 +341,8 @@
     "case": {
       "leaseType": "fixed_term",
       "reason": "non_payment",
-      "rentAmount": 1250.00,
-      "amountOwed": 3750.00,
+      "rentAmount": 1250,
+      "amountOwed": 3750,
       "lastPaymentDate": "2023-12-01",
       "noticeDate": "2024-02-05",
       "noticeDetails": "Personally delivered on 02/05/2024"
@@ -334,8 +379,8 @@
     "case": {
       "leaseType": "week_to_week",
       "reason": "lease_violation",
-      "rentAmount": 300.00,
-      "amountOwed": 900.00,
+      "rentAmount": 300,
+      "amountOwed": 900,
       "lastPaymentDate": "2024-01-20",
       "noticeDate": "2024-01-31",
       "noticeDetails": "Posted on property on 01/31/2024"
@@ -372,8 +417,8 @@
     "case": {
       "leaseType": "fixed_term",
       "reason": "illegal_activity",
-      "rentAmount": 1400.00,
-      "amountOwed": 2800.00,
+      "rentAmount": 1400,
+      "amountOwed": 2800,
       "lastPaymentDate": "2024-01-01",
       "noticeDate": "2024-01-25",
       "noticeDetails": "Posted and mailed on 01/25/2024"
