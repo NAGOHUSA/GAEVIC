@@ -326,6 +326,12 @@
             gap: 20px;
         }
         
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+        
         label {
             display: block;
             margin-bottom: 8px;
@@ -349,6 +355,13 @@
             box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.1);
         }
         
+        .form-text {
+            display: block;
+            margin-top: 5px;
+            font-size: 0.85em;
+            color: #666;
+        }
+        
         .form-actions {
             display: flex;
             justify-content: space-between;
@@ -366,6 +379,11 @@
             transition: all 0.3s ease;
             border: none;
             font-family: 'Open Sans', sans-serif;
+        }
+        
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 14px;
         }
         
         .btn-primary {
@@ -784,6 +802,29 @@
             100% { transform: rotate(360deg); }
         }
         
+        /* Photo Preview */
+        .photo-preview-container {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+        }
+        
+        .photo-preview {
+            max-width: 300px;
+            max-height: 200px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+        
+        /* Required field indicator */
+        .required::after {
+            content: " *";
+            color: var(--houston-red);
+        }
+        
         /* Responsive Design */
         @media (max-width: 768px) {
             .header-top {
@@ -806,7 +847,7 @@
                 font-size: 28px;
             }
             
-            .form-row {
+            .form-row, .form-row-3 {
                 grid-template-columns: 1fr;
             }
             
@@ -963,19 +1004,23 @@
                 </div>
                 <div class="progress-step">
                     <div class="step-circle" id="step3Circle">3</div>
-                    <div class="step-label">Tenant Info</div>
+                    <div class="step-label">3-Day Notice</div>
                 </div>
                 <div class="progress-step">
                     <div class="step-circle" id="step4Circle">4</div>
-                    <div class="step-label">Case Details</div>
+                    <div class="step-label">Tenant Info</div>
                 </div>
                 <div class="progress-step">
                     <div class="step-circle" id="step5Circle">5</div>
-                    <div class="step-label">E-Signature</div>
+                    <div class="step-label">Case Details</div>
                 </div>
                 <div class="progress-step">
                     <div class="step-circle" id="step6Circle">6</div>
-                    <div class="step-label">Submit & Save to GitHub</div>
+                    <div class="step-label">E-Signature</div>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle" id="step7Circle">7</div>
+                    <div class="step-label">Submit & Save</div>
                 </div>
             </div>
             
@@ -990,18 +1035,18 @@
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="landlordName">Full Legal Name *</label>
+                        <label for="landlordName" class="required">Full Legal Name</label>
                         <input type="text" id="landlordName" placeholder="Enter your full name as it appears on the deed" required>
                     </div>
                     <div class="form-group">
-                        <label for="landlordPhone">Phone Number *</label>
+                        <label for="landlordPhone" class="required">Phone Number</label>
                         <input type="tel" id="landlordPhone" placeholder="(478) 123-4567" required>
                     </div>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="landlordEmail">Email Address *</label>
+                        <label for="landlordEmail" class="required">Email Address</label>
                         <input type="email" id="landlordEmail" placeholder="your@email.com" required>
                     </div>
                     <div class="form-group">
@@ -1016,24 +1061,30 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="landlordAddress">Mailing Address *</label>
+                    <label for="landlordAddress" class="required">Mailing Address Line 1</label>
                     <input type="text" id="landlordAddress" placeholder="Street Address" required>
                 </div>
                 
-                <div class="form-row">
+                <div class="form-group">
+                    <label for="landlordAddress2">Mailing Address Line 2</label>
+                    <input type="text" id="landlordAddress2" placeholder="Suite, Unit, Building, etc. (Optional)">
+                </div>
+                
+                <div class="form-row-3">
                     <div class="form-group">
-                        <label for="landlordCity">City *</label>
+                        <label for="landlordCity" class="required">City</label>
                         <input type="text" id="landlordCity" placeholder="City" required>
                     </div>
                     <div class="form-group">
-                        <label for="landlordState">State *</label>
+                        <label for="landlordState" class="required">State</label>
                         <select id="landlordState">
                             <option value="GA" selected>Georgia</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="landlordZip">ZIP Code *</label>
-                        <input type="text" id="landlordZip" placeholder="31088" required>
+                        <label for="landlordZip" class="required">ZIP Code</label>
+                        <input type="text" id="landlordZip" placeholder="31088" required maxlength="5">
+                        <small class="form-text" id="zipValidation"></small>
                     </div>
                 </div>
                 
@@ -1053,13 +1104,13 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="propertyAddress">Property Address *</label>
+                    <label for="propertyAddress" class="required">Property Address</label>
                     <input type="text" id="propertyAddress" placeholder="Street Address of the rental property" required>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="propertyCity">City *</label>
+                        <label for="propertyCity" class="required">City</label>
                         <select id="propertyCity" required>
                             <option value="Warner Robins" selected>Warner Robins</option>
                             <option value="Perry">Perry</option>
@@ -1070,8 +1121,9 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="propertyZip">ZIP Code *</label>
-                        <input type="text" id="propertyZip" placeholder="31088" required>
+                        <label for="propertyZip" class="required">ZIP Code</label>
+                        <input type="text" id="propertyZip" placeholder="31088" required maxlength="5">
+                        <small class="form-text" id="propertyZipValidation"></small>
                     </div>
                 </div>
                 
@@ -1095,12 +1147,78 @@
                 
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" id="prevStep2">Previous</button>
-                    <button type="button" class="btn btn-primary" id="nextStep2">Next: Tenant Information</button>
+                    <button type="button" class="btn btn-primary" id="nextStep2">Next: 3-Day Notice Documentation</button>
                 </div>
             </div>
             
-            <!-- Step 3: Tenant Information -->
+            <!-- Step 3: Notice Documentation -->
             <div class="form-step" id="step3">
+                <h2 class="form-title">3-Day Notice Documentation</h2>
+                
+                <div class="info-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Georgia 3-Day Notice Requirement</h4>
+                    <p><strong>NEW GEORGIA LAW:</strong> Landlords must now post the 3-day "Pay or Quit" notice 
+                    <strong>physically on the front door</strong> of the rental property prior to filing for eviction.</p>
+                    <p>The 3-day notice period runs from when you post the notice. The court will then serve 
+                    the eviction notice, giving the tenant 7 days to respond.</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="noticePostingDate" class="required">Date Notice Was Posted on Property</label>
+                    <input type="date" id="noticePostingDate" required>
+                    <small class="form-text">Must be at least 3 days before today's date</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="noticeMethod" class="required">How Was Notice Delivered?</label>
+                    <select id="noticeMethod" required>
+                        <option value="posted_door">Posted on Front Door (Required)</option>
+                        <option value="posted_door_certified">Posted on Door + Certified Mail</option>
+                        <option value="personal_delivery">Personal Delivery to Tenant</option>
+                        <option value="other">Other Method</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="noticeDetails" class="required">Details of Notice Delivery</label>
+                    <textarea id="noticeDetails" rows="3" placeholder="Describe exactly how and when the notice was delivered (e.g., 'Posted on bright orange paper on front door at 2:00 PM on 10/15/2023. Photo taken as evidence.')" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="noticePhoto">Upload Photo of Posted Notice (Strongly Recommended)</label>
+                    <div class="photo-preview-container">
+                        <i class="fas fa-camera" style="font-size: 40px; color: #666; margin-bottom: 10px;"></i>
+                        <p style="margin-bottom: 15px;">Upload a clear photo showing the notice posted on the front door</p>
+                        <input type="file" id="noticePhoto" accept="image/*" capture="environment">
+                        <div id="photoPreview" style="margin-top: 15px; display: none;">
+                            <img id="previewImage" src="" alt="Notice Photo Preview" class="photo-preview">
+                            <button type="button" id="removePhoto" class="btn btn-danger btn-sm" style="margin-top: 10px;">
+                                <i class="fas fa-trash"></i> Remove Photo
+                            </button>
+                        </div>
+                    </div>
+                    <small class="form-text">Photo evidence can prevent delays if the tenant claims they never received notice</small>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-lightbulb"></i> Best Practices</h4>
+                    <ol style="margin: 10px 0 0 20px;">
+                        <li>Use bright-colored paper (orange or red recommended)</li>
+                        <li>Post at eye level on the main entry door</li>
+                        <li>Take photo with timestamp showing clearly</li>
+                        <li>Keep copy for your records</li>
+                        <li>Wait full 3 business days before filing</li>
+                    </ol>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="prevStep3">Previous</button>
+                    <button type="button" class="btn btn-primary" id="nextStep3">Next: Tenant Information</button>
+                </div>
+            </div>
+            
+            <!-- Step 4: Tenant Information -->
+            <div class="form-step" id="step4">
                 <h2 class="form-title">Tenant Information</h2>
                 
                 <div class="info-box">
@@ -1110,7 +1228,7 @@
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="tenantName">Tenant Full Name *</label>
+                        <label for="tenantName" class="required">Tenant Full Name</label>
                         <input type="text" id="tenantName" placeholder="Tenant's legal name" required>
                     </div>
                     <div class="form-group">
@@ -1139,13 +1257,13 @@
                 </div>
                 
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" id="prevStep3">Previous</button>
-                    <button type="button" class="btn btn-primary" id="nextStep3">Next: Case Details</button>
+                    <button type="button" class="btn btn-secondary" id="prevStep4">Previous</button>
+                    <button type="button" class="btn btn-primary" id="nextStep4">Next: Case Details</button>
                 </div>
             </div>
             
-            <!-- Step 4: Case Details -->
-            <div class="form-step" id="step4">
+            <!-- Step 5: Case Details -->
+            <div class="form-step" id="step5">
                 <h2 class="form-title">Case Details</h2>
                 
                 <div class="info-box">
@@ -1155,7 +1273,7 @@
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="leaseType">Lease Type *</label>
+                        <label for="leaseType" class="required">Lease Type</label>
                         <select id="leaseType" required>
                             <option value="month_to_month">Month-to-Month</option>
                             <option value="fixed_term">Fixed Term Lease</option>
@@ -1165,7 +1283,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="reason">Reason for Eviction *</label>
+                        <label for="reason" class="required">Reason for Eviction</label>
                         <select id="reason" required>
                             <option value="non_payment">Non-Payment of Rent</option>
                             <option value="lease_violation">Lease Violation</option>
@@ -1179,14 +1297,14 @@
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="rentAmount">Monthly Rent Amount *</label>
+                        <label for="rentAmount" class="required">Monthly Rent Amount</label>
                         <div style="position: relative;">
                             <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%);">$</span>
                             <input type="number" id="rentAmount" placeholder="0.00" style="padding-left: 30px;" min="0" step="0.01" required>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="amountOwed">Total Amount Owed *</label>
+                        <label for="amountOwed" class="required">Total Amount Owed</label>
                         <div style="position: relative;">
                             <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%);">$</span>
                             <input type="number" id="amountOwed" placeholder="0.00" style="padding-left: 30px;" min="0" step="0.01" required>
@@ -1200,24 +1318,25 @@
                         <input type="date" id="lastPaymentDate">
                     </div>
                     <div class="form-group">
-                        <label for="noticeDate">Date Notice Was Served *</label>
+                        <label for="noticeDate" class="required">Date 3-Day Notice Expires</label>
                         <input type="date" id="noticeDate" required>
+                        <small class="form-text">3 days after posting notice on property</small>
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="noticeDetails">Details of Notice Served</label>
-                    <textarea id="noticeDetails" rows="3" placeholder="Describe how and when the notice was delivered to the tenant (e.g., 'Posted on front door on 10/15/2023' or 'Certified mail #1234567890')"></textarea>
+                    <label for="caseDetails">Additional Case Details</label>
+                    <textarea id="caseDetails" rows="3" placeholder="Any additional information about the case (lease violations, property damage, etc.)"></textarea>
                 </div>
                 
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" id="prevStep4">Previous</button>
-                    <button type="button" class="btn btn-primary" id="nextStep4">Next: E-Signature</button>
+                    <button type="button" class="btn btn-secondary" id="prevStep5">Previous</button>
+                    <button type="button" class="btn btn-primary" id="nextStep5">Next: E-Signature</button>
                 </div>
             </div>
             
-            <!-- Step 5: E-Signature -->
-            <div class="form-step" id="step5">
+            <!-- Step 6: E-Signature -->
+            <div class="form-step" id="step6">
                 <h2 class="form-title">E-Sign Documents</h2>
                 
                 <div class="info-box">
@@ -1236,7 +1355,7 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="signerName">Full Name (as it will appear on signature)</label>
+                        <label for="signerName" class="required">Full Name (as it will appear on signature)</label>
                         <input type="text" id="signerName" placeholder="Enter your full legal name" required>
                     </div>
                     
@@ -1277,13 +1396,13 @@
                 </div>
                 
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" id="prevStep5">Previous</button>
-                    <button type="button" class="btn btn-primary" id="nextStep5" disabled>Next: Save to GitHub</button>
+                    <button type="button" class="btn btn-secondary" id="prevStep6">Previous</button>
+                    <button type="button" class="btn btn-primary" id="nextStep6" disabled>Next: Save to GitHub</button>
                 </div>
             </div>
             
-            <!-- Step 6: Submit & Save to GitHub -->
-            <div class="form-step" id="step6">
+            <!-- Step 7: Submit & Save to GitHub -->
+            <div class="form-step" id="step7">
                 <h2 class="form-title">Save to GitHub & Download Documents</h2>
                 
                 <div class="success-message" id="successMessage">
@@ -1295,8 +1414,16 @@
                 <div id="githubResultMessage" style="display: none;"></div>
                 
                 <div class="info-box">
-                    <h4><i class="fas fa-file-invoice-dollar"></i> Filing Fee Information</h4>
-                    <p>Houston County filing fee: <strong>$99.00</strong>. Payment can be made directly to the court when you file these documents.</p>
+                    <h4><i class="fas fa-file-invoice-dollar"></i> Houston County Filing Fee Information</h4>
+                    <p><strong>Current Filing Fees (2024):</strong></p>
+                    <ul style="margin: 10px 0 10px 20px;">
+                        <li>One Defendant: <strong>$109.00</strong> (plus 3 copies of all supporting documents)</li>
+                        <li>Two Defendants: <strong>$159.00</strong> (plus 5 copies of all supporting documents)</li>
+                        <li>Three Defendants: <strong>$209.00</strong> (plus 7 copies of all supporting documents)</li>
+                        <li>Each additional Defendant: <strong>$50.00</strong></li>
+                        <li>Re-Serve Fee: <strong>$50.00</strong> per Defendant</li>
+                    </ul>
+                    <p><strong>Payment Methods Accepted:</strong> Cash (exact amount), Company Checks, Money Orders</p>
                     <p><em>Note: This system generates the required documents. You must take them to the Houston County Magistrate Court to file and pay the fee.</em></p>
                 </div>
                 
@@ -1305,6 +1432,17 @@
                     <p style="margin-bottom: 30px;">All required Houston County eviction forms have been generated with your information. Download each document individually or get all documents in a single ZIP file.</p>
                     
                     <div class="download-grid">
+                        <div class="download-card">
+                            <div class="download-icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <h3>Complete Houston County Package</h3>
+                            <p>Official court forms with all sections: Affidavit, Application, Military Form, and Instructions</p>
+                            <button class="btn btn-primary download-doc" data-doc="houston_package">
+                                <i class="fas fa-download"></i> Download Complete PDF
+                            </button>
+                        </div>
+                        
                         <div class="download-card">
                             <div class="download-icon">
                                 <i class="fas fa-file-contract"></i>
@@ -1357,19 +1495,27 @@
                     </div>
                     
                     <div class="info-box warning" style="margin-top: 30px;">
-                        <h4><i class="fas fa-exclamation-triangle"></i> Next Steps</h4>
+                        <h4><i class="fas fa-exclamation-triangle"></i> Next Steps for Court Filing</h4>
                         <ol style="margin: 10px 0 0 20px;">
-                            <li>Print all downloaded documents</li>
+                            <li>Print ALL downloaded documents (minimum copies required based on number of defendants)</li>
                             <li>Sign the printed documents (if not already e-signed)</li>
-                            <li>Take documents to Houston County Magistrate Court</li>
-                            <li>Pay the $99 filing fee at the court</li>
+                            <li>Make copies of your lease agreement and payment ledger</li>
+                            <li>Take all documents to Houston County Magistrate Court: 89 Cohen Walker Drive, Warner Robins, GA 31088</li>
+                            <li>Pay the filing fee at the court (see fee schedule above)</li>
                             <li>The court will issue a case number and schedule service</li>
                         </ol>
+                    </div>
+                    
+                    <div class="info-box" style="margin-top: 20px;">
+                        <h4><i class="fas fa-search"></i> Online Case Search</h4>
+                        <p>After filing, you can check your case status online:</p>
+                        <p><a href="http://www.houstoncountyga.gov" target="_blank">http://www.houstoncountyga.gov</a></p>
+                        <p>Click "Online Services" tab → Select "Magistrate Court Case Search"</p>
                     </div>
                 </div>
                 
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" id="prevStep6">Previous</button>
+                    <button type="button" class="btn btn-secondary" id="prevStep7">Previous</button>
                     <button type="button" class="btn btn-outline" id="startNewBtn">
                         <i class="fas fa-plus"></i> Start New Filing
                     </button>
@@ -1387,10 +1533,11 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <h3>Houston County Magistrate Court</h3>
-                    <p>202 Carl Vinson Parkway<br>
+                    <p>89 Cohen Walker Drive<br>
                     Warner Robins, GA 31088<br>
-                    Phone: (478) 542-2100<br>
-                    Hours: Monday-Friday, 8:00 AM - 5:00 PM</p>
+                    Phone: (478) 987-4695<br>
+                    Fax: (478) 987-5255<br>
+                    Hours: Monday-Friday, 8:30 AM - 4:30 PM</p>
                 </div>
                 
                 <div class="footer-section">
@@ -1418,7 +1565,7 @@
             </div>
             
             <div class="copyright">
-                <p>© 2026 This is a system for filing eviction cases in Houston County. Unauthorized use is prohibited.</p>
+                <p>© 2026 Houston County Eviction Filing System. This is a system for filing eviction cases in Houston County. Unauthorized use is prohibited.</p>
                 <p style="margin-top: 10px;">This system is designed to assist with proper filing but does not constitute legal advice. Consult an attorney for legal questions.</p>
             </div>
         </div>
@@ -1432,6 +1579,7 @@
         let generatedDocuments = {};
         let signatureData = null;
         let caseId = null;
+        let noticePhotoData = null;
 
         // === GITHUB CONFIG ===
         const GITHUB = {
@@ -1638,15 +1786,15 @@
                 }
                 
                 // Clear completed status for steps after current
-                for (let i = currentStep + 1; i <= 6; i++) {
+                for (let i = currentStep + 1; i <= 7; i++) {
                     document.getElementById(`step${i}Circle`).classList.remove('completed');
                 }
                 
                 // Handle step-specific initialization
-                if (currentStep === 5) {
+                if (currentStep === 6) {
                     initializeSignaturePad();
                     document.getElementById('signerName').value = document.getElementById('landlordName').value;
-                } else if (currentStep === 6) {
+                } else if (currentStep === 7) {
                     generateCaseId();
                     generateAllDocuments();
                     
@@ -1674,9 +1822,31 @@
             
             // Next Step Buttons
             document.getElementById('nextStep1').addEventListener('click', () => goToStep(2));
-            document.getElementById('nextStep2').addEventListener('click', () => goToStep(3));
-            document.getElementById('nextStep3').addEventListener('click', () => goToStep(4));
+            document.getElementById('nextStep2').addEventListener('click', () => {
+                // Validate property is in Houston County
+                const zip = document.getElementById('propertyZip').value.trim();
+                const houstonZips = ['31088', '31069', '31028', '31005', '31047'];
+                
+                if (!houstonZips.includes(zip)) {
+                    alert('Warning: The ZIP code entered is not a recognized Houston County ZIP code. Please verify the property is located in Houston County, Georgia.');
+                }
+                goToStep(3);
+            });
+            document.getElementById('nextStep3').addEventListener('click', () => {
+                // Validate notice date is at least 3 days ago
+                const noticeDate = new Date(document.getElementById('noticePostingDate').value);
+                const today = new Date();
+                const threeDaysAgo = new Date();
+                threeDaysAgo.setDate(today.getDate() - 3);
+                
+                if (noticeDate > threeDaysAgo) {
+                    alert('Warning: The notice posting date must be at least 3 days before today. Georgia law requires a 3-day notice period before filing.');
+                    return;
+                }
+                goToStep(4);
+            });
             document.getElementById('nextStep4').addEventListener('click', () => goToStep(5));
+            document.getElementById('nextStep5').addEventListener('click', () => goToStep(6));
             
             // Previous Step Buttons
             document.getElementById('prevStep2').addEventListener('click', () => goToStep(1));
@@ -1684,6 +1854,86 @@
             document.getElementById('prevStep4').addEventListener('click', () => goToStep(3));
             document.getElementById('prevStep5').addEventListener('click', () => goToStep(4));
             document.getElementById('prevStep6').addEventListener('click', () => goToStep(5));
+            document.getElementById('prevStep7').addEventListener('click', () => goToStep(6));
+            
+            // Zip code auto-fill for Houston County
+            document.getElementById('landlordZip').addEventListener('blur', function() {
+                const zip = this.value.trim();
+                const cityField = document.getElementById('landlordCity');
+                const validationText = document.getElementById('zipValidation');
+                
+                const houstonCountyZips = {
+                    '31088': 'Warner Robins',
+                    '31069': 'Perry',
+                    '31028': 'Centerville',
+                    '31005': 'Bonaire',
+                    '31047': 'Kathleen'
+                };
+                
+                if (houstonCountyZips[zip]) {
+                    cityField.value = houstonCountyZips[zip];
+                    validationText.textContent = '✓ Houston County zip code';
+                    validationText.style.color = 'var(--success-green)';
+                } else if (zip.length === 5) {
+                    validationText.textContent = '⚠ Not a recognized Houston County zip code';
+                    validationText.style.color = 'var(--warning-orange)';
+                }
+            });
+            
+            // Property zip validation
+            document.getElementById('propertyZip').addEventListener('blur', function() {
+                const zip = this.value.trim();
+                const validationText = document.getElementById('propertyZipValidation');
+                const houstonZips = ['31088', '31069', '31028', '31005', '31047'];
+                
+                if (houstonZips.includes(zip)) {
+                    validationText.textContent = '✓ Valid Houston County ZIP';
+                    validationText.style.color = 'var(--success-green)';
+                } else if (zip.length === 5) {
+                    validationText.textContent = '⚠ Property must be in Houston County, GA';
+                    validationText.style.color = 'var(--warning-orange)';
+                }
+            });
+            
+            // Photo upload handling
+            const noticePhoto = document.getElementById('noticePhoto');
+            const previewImage = document.getElementById('previewImage');
+            const photoPreview = document.getElementById('photoPreview');
+            const removePhoto = document.getElementById('removePhoto');
+
+            noticePhoto.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validate file size (max 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File size must be less than 5MB');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    // Validate file type
+                    if (!file.type.startsWith('image/')) {
+                        alert('Please upload an image file');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImage.src = e.target.result;
+                        photoPreview.style.display = 'block';
+                        noticePhotoData = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            removePhoto.addEventListener('click', function() {
+                noticePhoto.value = '';
+                previewImage.src = '';
+                photoPreview.style.display = 'none';
+                noticePhotoData = null;
+            });
             
             // Generate Case ID
             function generateCaseId() {
@@ -1695,6 +1945,11 @@
             
             // Collect Form Data
             function collectFormData() {
+                // Calculate notice expiry date (3 days after posting)
+                const noticePostingDate = new Date(document.getElementById('noticePostingDate').value);
+                const noticeExpiryDate = new Date(noticePostingDate);
+                noticeExpiryDate.setDate(noticeExpiryDate.getDate() + 3);
+                
                 formData = {
                     caseId: caseId,
                     status: 'Pending Court Filing',
@@ -1705,6 +1960,7 @@
                         email: document.getElementById('landlordEmail').value,
                         type: document.getElementById('landlordType').value,
                         address: document.getElementById('landlordAddress').value,
+                        address2: document.getElementById('landlordAddress2').value,
                         city: document.getElementById('landlordCity').value,
                         state: document.getElementById('landlordState').value,
                         zip: document.getElementById('landlordZip').value
@@ -1715,6 +1971,13 @@
                         zip: document.getElementById('propertyZip').value,
                         type: document.getElementById('propertyType').value,
                         unit: document.getElementById('unitNumber').value
+                    },
+                    notice: {
+                        postingDate: document.getElementById('noticePostingDate').value,
+                        expiryDate: noticeExpiryDate.toISOString().split('T')[0],
+                        method: document.getElementById('noticeMethod').value,
+                        details: document.getElementById('noticeDetails').value,
+                        photo: noticePhotoData
                     },
                     tenant: {
                         name: document.getElementById('tenantName').value,
@@ -1730,7 +1993,7 @@
                         amountOwed: parseFloat(document.getElementById('amountOwed').value) || 0,
                         lastPaymentDate: document.getElementById('lastPaymentDate').value,
                         noticeDate: document.getElementById('noticeDate').value,
-                        noticeDetails: document.getElementById('noticeDetails').value
+                        details: document.getElementById('caseDetails').value
                     },
                     signature: signatureData ? {
                         name: signatureData.name,
@@ -1738,7 +2001,7 @@
                     } : null,
                     timestamp: new Date().toISOString(),
                     documentsGenerated: true,
-                    version: '2.0'
+                    version: '2.1'
                 };
                 return formData;
             }
@@ -1747,6 +2010,7 @@
             function generateAllDocuments() {
                 collectFormData();
                 generatedDocuments = {
+                    houston_package: generateHoustonCountyPackage(),
                     demand_notice: generateDemandNotice(),
                     affidavit: generateAffidavit(),
                     summons: generateSummons(),
@@ -1758,6 +2022,427 @@
             }
             
             // Document Generation Functions
+            function generateHoustonCountyPackage() {
+                const doc = new jsPDF();
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                
+                // ===== PAGE 1: COURT HEADER AND FEE SCHEDULE =====
+                doc.setFontSize(10);
+                doc.text("89 Cohen Walker Drive  Warner Robins, Georgia 31088", 20, 10);
+                doc.text("Phone (478) 987-4695  Fax (478) 987-5255", 20, 15);
+                doc.text("Hours: 8:30 am - 4:30 pm", 20, 20);
+                doc.text("magistrate@houstoncountyga.gov", 20, 25);
+                
+                // Fee Schedule
+                doc.setFontSize(14);
+                doc.setFont("helvetica", "bold");
+                doc.text("DISPOSSESSORY FILING FEES:", 20, 40);
+                
+                doc.setFontSize(11);
+                doc.setFont("helvetica", "normal");
+                doc.text("One Defendant: $109.00 plus (3) COPIES OF ALL SUPPORTING DOCUMENTS", 20, 50);
+                doc.text("Two Defendants: $159.00 plus (5) COPIES OF ALL SUPPORTING DOCUMENTS", 20, 57);
+                doc.text("Three Defendants: $209.00 plus (7) COPIES OF ALL SUPPORTING DOCUMENTS", 20, 64);
+                doc.text("Each additional Defendant to be served: $50.00", 20, 71);
+                doc.text("Re-Serve Fee: $50.00 per Defendant", 20, 78);
+                
+                doc.text("Please Note: The Plaintiff must provide copies of the lease or note,", 20, 90);
+                doc.text("payment ledger, notices, and all other supporting documents.", 20, 95);
+                
+                doc.setFont("helvetica", "bold");
+                doc.text("MILITARY AFFIDAVITS ARE REQUIRED ON ALL DEFENDANTS", 20, 105);
+                
+                // ===== PAGE 2: AFFIDAVIT FOR DISPOSSESSORY WARRANT =====
+                doc.addPage();
+                
+                // Court Header
+                doc.setFontSize(12);
+                doc.setFont("helvetica", "bold");
+                doc.text("IN THE MAGISTRATE COURT OF HOUSTON COUNTY, GEORGIA", 20, 20);
+                doc.text(`Case No.: ${caseId}`, 150, 20);
+                doc.text(`Date Filed: ${new Date().toLocaleDateString()}`, 150, 27);
+                
+                // Parties
+                doc.text("PLAINTIFF(S):", 20, 40);
+                doc.setFont("helvetica", "normal");
+                doc.text(formData.landlord.name, 60, 40);
+                const landlordAddressLine2 = formData.landlord.address2 ? `, ${formData.landlord.address2}` : '';
+                doc.text(`${formData.landlord.address}${landlordAddressLine2}`, 60, 45);
+                doc.text(`${formData.landlord.city}, ${formData.landlord.state} ${formData.landlord.zip}`, 60, 50);
+                
+                doc.setFont("helvetica", "bold");
+                doc.text("VS.", 20, 60);
+                
+                doc.text("DEFENDANT(S):", 20, 70);
+                doc.setFont("helvetica", "normal");
+                doc.text(formData.tenant.name, 60, 70);
+                doc.text(formData.property.address, 60, 75);
+                doc.text(`${formData.property.city}, GA ${formData.property.zip}`, 60, 80);
+                
+                // Affidavit Title
+                doc.setFontSize(14);
+                doc.setFont("helvetica", "bold");
+                doc.text("AFFIDAVIT FOR DISPOSSESSORY WARRANT", 20, 100);
+                
+                // Affidavit Content
+                doc.setFontSize(11);
+                doc.setFont("helvetica", "normal");
+                doc.text("Personally appeared affiant, who on oath says:", 20, 110);
+                
+                // Paragraph 1
+                doc.text("1. That Plaintiff herein, is the owner of premises situated and known as:", 20, 120);
+                doc.text(`Apt./St. No.: ${formData.property.unit || 'N/A'}`, 40, 127);
+                doc.text(`Address: ${formData.property.address}`, 40, 134);
+                doc.text(`${formData.property.city}, Houston County, Georgia; and affiant is (X) the Plaintiff`, 40, 141);
+                
+                // Paragraph 2
+                doc.text("2. That Defendant(s) herein, is/are in possession, as tenants, of the", 20, 155);
+                doc.text("   subject premises, indicated above.", 20, 162);
+                
+                // Paragraph 3 - Tenancy Type
+                doc.text("3. That Defendant's tenancy was", 20, 175);
+                const leaseType = formData.case.leaseType;
+                if (leaseType === 'fixed_term' || leaseType === 'month_to_month' || leaseType === 'week_to_week') {
+                    doc.text("   ( ) at will ( ) at sufferance (X) under a written agreement.", 20, 182);
+                } else if (leaseType === 'verbal') {
+                    doc.text("   (X) at will ( ) at sufferance ( ) under a written agreement.", 20, 182);
+                } else {
+                    doc.text("   ( ) at will (X) at sufferance ( ) under a written agreement.", 20, 182);
+                }
+                
+                // Paragraph 4 - Reason for Eviction
+                doc.text("4. That", 20, 195);
+                const reason = formData.case.reason;
+                if (reason === 'non_payment') {
+                    doc.text("   (X) tenant fails to pay rent now due thereon;", 20, 202);
+                    doc.text("   ( ) tenant is holding said premises over and beyond the term;", 20, 209);
+                    doc.text("   ( ) the term has been terminated by the Plaintiff, for the reason that", 20, 216);
+                } else if (reason === 'holdover') {
+                    doc.text("   ( ) tenant fails to pay rent now due thereon;", 20, 202);
+                    doc.text("   (X) tenant is holding said premises over and beyond the term;", 20, 209);
+                    doc.text("   ( ) the term has been terminated by the Plaintiff, for the reason that", 20, 216);
+                } else {
+                    doc.text("   ( ) tenant fails to pay rent now due thereon;", 20, 202);
+                    doc.text("   ( ) tenant is holding said premises over and beyond the term;", 20, 209);
+                    doc.text("   (X) the term has been terminated by the Plaintiff, for the reason that", 20, 216);
+                    doc.text(`   ${reason}`, 40, 223);
+                }
+                
+                // Paragraph 5
+                doc.text("5. That Plaintiff desires possession of said premises; and, after", 20, 235);
+                doc.text("   expiration, termination of default Plaintiff has demanded possession", 20, 242);
+                doc.text("   of said premises and the same has been refused by said defendant(s);", 20, 249);
+                
+                // Continue on next page if needed
+                if (pageHeight - 249 < 50) {
+                    doc.addPage();
+                    doc.text("   and, this affidavit is made that a warrant may issue for the removal", 20, 20);
+                } else {
+                    doc.text("   and, this affidavit is made that a warrant may issue for the removal", 20, 256);
+                }
+                
+                let yPos = pageHeight - 249 < 50 ? 27 : 263;
+                doc.text("   of said defendant(s) together with his property from said premises.", 20, yPos);
+                
+                // Paragraph 6 - Attorney Fees
+                yPos += 15;
+                doc.text("6. That attorney's fees are provided for in said lease, and pursuant", 20, yPos);
+                yPos += 7;
+                doc.text("   to O.C.G.A 13-1-11, Plaintiff has advised Defendant of Plaintiff's", 20, yPos);
+                yPos += 7;
+                doc.text("   intention to enforce this provision. Yes ( ) No (X)", 20, yPos);
+                
+                // Wherefore clause
+                yPos += 20;
+                doc.text("WHEREFORE, Plaintiff demands:", 20, yPos);
+                yPos += 10;
+                doc.text("(a) Possession of the premises;", 40, yPos);
+                yPos += 10;
+                doc.text(`(b) past due rent of $${formData.case.amountOwed.toFixed(2)};`, 40, yPos);
+                yPos += 10;
+                doc.text("(c) rent accruing up to the date of judgment or vacancy at the rate", 40, yPos);
+                yPos += 7;
+                doc.text(`   of $${(formData.case.rentAmount / 30).toFixed(2)} per day as computed from ${formData.case.lastPaymentDate || 'last payment date'};`, 40, yPos);
+                yPos += 10;
+                doc.text("(d) accrued interest at the rate of ______% from ____________;", 40, yPos);
+                yPos += 10;
+                doc.text("(e) attorney's fees in the amount of $__________;", 40, yPos);
+                yPos += 10;
+                doc.text("and, (f) $______ court cost.", 40, yPos);
+                
+                // Signature section
+                yPos += 20;
+                doc.text("AFFIANT", 20, yPos);
+                yPos += 10;
+                doc.line(20, yPos, 120, yPos);
+                doc.text(`${formData.landlord.name}`, 20, yPos + 10);
+                doc.text("Landlord", 20, yPos + 20);
+                
+                // Filed date
+                doc.text(`Filed in office This ${new Date().getDate()} day of ${new Date().toLocaleString('default', { month: 'long' })}, ${new Date().getFullYear()}`, 20, yPos + 40);
+                
+                // Notary section
+                yPos += 60;
+                doc.text("Sworn to and subscribed before me", 20, yPos);
+                yPos += 10;
+                doc.text(`This ${new Date().getDate()} day of ${new Date().toLocaleString('default', { month: 'long' })}, ${new Date().getFullYear()}`, 20, yPos);
+                yPos += 20;
+                doc.line(20, yPos, 120, yPos);
+                doc.text("(DEPUTY) Clerk, Magistrate Court of Houston County or Notary Public", 20, yPos + 10);
+                
+                // Add signature if available
+                if (signatureData && signatureData.dataUrl) {
+                    try {
+                        const signatureImg = new Image();
+                        signatureImg.src = signatureData.dataUrl;
+                        doc.addImage(signatureImg, 'PNG', 20, yPos - 25, 50, 20);
+                    } catch(e) {
+                        console.log("Could not add signature to PDF");
+                    }
+                }
+                
+                // ===== PAGE 3: NOTICE AND SUMMONS =====
+                doc.addPage();
+                
+                doc.setFontSize(14);
+                doc.setFont("helvetica", "bold");
+                doc.text("NOTICE AND SUMMONS", 105, 30, { align: "center" });
+                
+                doc.setFontSize(11);
+                doc.setFont("helvetica", "normal");
+                doc.text("TO THE ABOVE-NAMED DEFENDANT(s):", 20, 50);
+                
+                const summonsText = [
+                    "You are hereby commanded and required, either personally or by attorney, to appear",
+                    "and present an answer to the affidavit, on the reverse side hereof, during the regular",
+                    "business hours, Monday through Friday, at the Magistrate Court of Houston County,",
+                    "89 Cohen Walker Drive, Warner Robins (31088) on or before the SEVENTH (7th) day",
+                    "from the date of service of this summons upon you (or on the first business day",
+                    "thereafter IF the seventh day falls on a Saturday, Sunday, or Legal Holiday).",
+                    "",
+                    "Your answer may be given either orally or in writing; and may contain any legal or",
+                    "equitable defenses or counterclaim against the plaintiff. The SEVENTH (7th) day after",
+                    "the date of service of this summons is the last possible date for your answer.",
+                    "",
+                    "If you fail to answer as required, a Writ of Possession and judgment for the amount",
+                    "claimed due by plaintiff will be granted without further notice to you."
+                ];
+                
+                let textY = 70;
+                summonsText.forEach(line => {
+                    doc.text(line, 20, textY);
+                    textY += 7;
+                });
+                
+                doc.text("WITNESS THE HONORABLE JUDGES, MAGISTRATE COURT OF HOUSTON COUNTY, GEORGIA", 20, textY + 10);
+                doc.text(`This ${new Date().getDate()} day of ${new Date().toLocaleString('default', { month: 'long' })}, ${new Date().getFullYear()}`, 20, textY + 25);
+                doc.line(20, textY + 30, 120, textY + 30);
+                doc.text("(DEPUTY) Clerk of Court", 20, textY + 40);
+                
+                // ===== PAGE 4: DISPOSSESSORY APPLICATION =====
+                doc.addPage();
+                
+                doc.setFontSize(12);
+                doc.setFont("helvetica", "bold");
+                doc.text("DISPOSESSORY APPLICATION", 20, 20);
+                
+                // Application Form Fields
+                doc.setFont("helvetica", "normal");
+                let appY = 40;
+                doc.text(`1. Plaintiff (Landlord): ${formData.landlord.name}`, 20, appY);
+                appY += 10;
+                doc.text(`2. Legal name of titleholder: ${formData.landlord.name}`, 20, appY);
+                appY += 10;
+                doc.text(`3. Applicant: ${formData.landlord.name}`, 20, appY);
+                appY += 10;
+                doc.text("4. Is an interpreter needed in this case? If so, provide the language(s) required.", 20, appY);
+                appY += 10;
+                doc.text("   _________________________________________________________", 20, appY);
+                appY += 15;
+                
+                doc.text("5. Mailing address for Plaintiff:", 20, appY);
+                appY += 7;
+                doc.text(`   Street Address: ${formData.landlord.address}`, 20, appY);
+                appY += 7;
+                if (formData.landlord.address2) {
+                    doc.text(`   ${formData.landlord.address2}`, 20, appY);
+                    appY += 7;
+                }
+                doc.text(`   City: ${formData.landlord.city} State: ${formData.landlord.state} Zip: ${formData.landlord.zip}`, 20, appY);
+                appY += 7;
+                doc.text(`   Phone # for Plaintiff: ${formData.landlord.phone}`, 20, appY);
+                appY += 7;
+                doc.text(`   Email Address: ${formData.landlord.email}`, 20, appY);
+                appY += 15;
+                
+                doc.text(`6. Name of Defendant(s) / Tenants(s): ${formData.tenant.name}`, 20, appY);
+                appY += 15;
+                
+                doc.text("7. Leased Premises:", 20, appY);
+                appY += 7;
+                doc.text(`   Street Address: ${formData.property.address}`, 20, appY);
+                appY += 7;
+                doc.text(`   City: ${formData.property.city} State: GA Zip: ${formData.property.zip}`, 20, appY);
+                appY += 7;
+                doc.text(`   Phone # for Defendant(s): ${formData.tenant.phone || 'N/A'}`, 20, appY);
+                appY += 15;
+                
+                // Type of Tenancy
+                doc.text("8. Type of Tenancy:", 20, appY);
+                const tenancyTypes = {
+                    'written': 'Written Lease',
+                    'at_will': 'At Will (Verbal)',
+                    'at_sufferance': 'At Sufferance'
+                };
+                let tenancyType = 'at_will';
+                if (formData.case.leaseType === 'fixed_term' || formData.case.leaseType === 'month_to_month' || formData.case.leaseType === 'week_to_week') {
+                    tenancyType = 'written';
+                } else if (formData.case.leaseType === 'verbal') {
+                    tenancyType = 'at_will';
+                } else {
+                    tenancyType = 'at_sufferance';
+                }
+                
+                appY += 7;
+                doc.text(`   (${tenancyType === 'written' ? 'X' : ' '}) Written Lease`, 40, appY);
+                doc.text(`   (${tenancyType === 'at_will' ? 'X' : ' '}) At Will (Verbal)`, 100, appY);
+                doc.text(`   (${tenancyType === 'at_sufferance' ? 'X' : ' '}) At Sufferance`, 160, appY);
+                appY += 15;
+                
+                // Reason for Eviction
+                doc.text("9. Reason for Eviction:", 20, appY);
+                const reasons = {
+                    'non_payment': 'Failure to Pay Rent',
+                    'holdover': 'Term Expired',
+                    'lease_violation': 'Breach of Lease',
+                    'other': 'Other'
+                };
+                let selectedReason = reasons[formData.case.reason] || 'Other';
+                
+                appY += 7;
+                doc.text(`   (${selectedReason === 'Failure to Pay Rent' ? 'X' : ' '}) Failure to Pay Rent`, 40, appY);
+                doc.text(`   (${selectedReason === 'Term Expired' ? 'X' : ' '}) Term Expired`, 100, appY);
+                appY += 7;
+                doc.text(`   (${selectedReason === 'Breach of Lease' ? 'X' : ' '}) Breach of Lease`, 40, appY);
+                doc.text(`   (${selectedReason === 'Other' ? 'X' : ' '}) Other`, 100, appY);
+                if (selectedReason === 'Other') {
+                    appY += 7;
+                    doc.text(`   Explain: ${formData.case.reason}`, 40, appY);
+                }
+                appY += 15;
+                
+                // Continue with remaining application fields...
+                // [Additional application fields would continue here]
+                
+                // ===== PAGE 5: MILITARY AFFIDAVIT =====
+                doc.addPage();
+                doc.setFontSize(14);
+                doc.setFont("helvetica", "bold");
+                doc.text("MILITARY AFFIDAVIT", 105, 30, { align: "center" });
+                
+                doc.setFontSize(11);
+                doc.setFont("helvetica", "normal");
+                doc.text("The undersigned, after first being duly sworn, states the following:", 20, 50);
+                
+                doc.text(`1. I am of age, of sound mind, and legally authorized to sign this`, 20, 65);
+                doc.text(`   affidavit on behalf of the Plaintiff.`, 20, 72);
+                
+                doc.text("2. This affidavit is executed pursuant to the Service Members Civil", 20, 85);
+                doc.text("   Relief Act, 50 U.S.C. App. 521.", 20, 92);
+                
+                // Military status check
+                doc.text("3. Affiant states the Defendant,", 20, 105);
+                if (formData.tenant.militaryCheck) {
+                    doc.text("   ( ) is, (X) is not, or ( ) unable to determine,", 20, 112);
+                } else {
+                    doc.text("   (X) is, ( ) is not, or ( ) unable to determine,", 20, 112);
+                }
+                doc.text("   a member of the military forces of the United States.", 20, 119);
+                
+                doc.text("4. Affiant is personally knowledgeable of the facts contained in", 20, 132);
+                doc.text("   this affidavit and affirms the information contained herein is", 20, 139);
+                doc.text("   true and correct.", 20, 146);
+                
+                // Signature section
+                doc.text(`This ______ day of ${new Date().toLocaleString('default', { month: 'long' })}, ${new Date().getFullYear()}`, 20, 165);
+                doc.line(20, 180, 120, 180);
+                doc.text("Signature", 20, 187);
+                doc.text(`Printed name: ${formData.landlord.name}`, 20, 194);
+                doc.text("Title: Landlord", 20, 201);
+                
+                // Notary section
+                doc.text("Sworn to and subscribed before me", 20, 215);
+                doc.text(`this ______ day of ${new Date().toLocaleString('default', { month: 'long' })}, ${new Date().getFullYear()}`, 20, 225);
+                doc.line(20, 235, 120, 235);
+                doc.text("NOTARY PUBLIC", 20, 242);
+                doc.text("www.dmdc.osd.mil/appj/scra", 20, 252);
+                
+                // Add signature if available
+                if (signatureData && signatureData.dataUrl) {
+                    try {
+                        const signatureImg = new Image();
+                        signatureImg.src = signatureData.dataUrl;
+                        doc.addImage(signatureImg, 'PNG', 20, 175, 50, 20);
+                    } catch(e) {
+                        console.log("Could not add signature to PDF");
+                    }
+                }
+                
+                // ===== PAGE 6-7: INSTRUCTIONS =====
+                doc.addPage();
+                doc.text("89 Cohen Walker Drive  Warner Robins, Georgia 31088", 20, 20);
+                doc.text("Phone (478) 987-4695  Fax (478) 987-5255", 20, 27);
+                doc.text("Hours: 8:30 am - 4:30 pm", 20, 34);
+                
+                doc.setFont("helvetica", "bold");
+                doc.text("INSTRUCTIONS FOR FILING A DISPOSSESSORY CASE", 20, 50);
+                doc.text("IN THE MAGISTRATE COURT OF HOUSTON COUNTY", 20, 57);
+                
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(10);
+                const instructions = [
+                    "Welcome to the Magistrate Court of Houston County. The information contained",
+                    "herein is intended to provide you with general knowledge of the process for",
+                    "filing a dispossessory case in the Magistrate Court. It is not a complete",
+                    "disclosure of all legal action available to you. Therefore, you should carefully",
+                    "research your options and understand the consequences of any action you",
+                    "undertake. The clerks are available to assist you. However, they cannot advise",
+                    "you how to handle your case, nor are they authorized to offer legal advice.",
+                    "If you are unsure how to proceed with your case, please seek counsel from",
+                    "an attorney.",
+                    "",
+                    "Definitions:",
+                    "1. Tenancy at Will: Any rental agreement with no set date of termination.",
+                    "2. Tenancy at Sufferance: Arises when one comes into possession of land by",
+                    "   lawful right, whether as a tenant or otherwise, but wrongfully remains in",
+                    "   possession of the property.",
+                    "3. Leasehold Tenant: Is a tenant who has a written lease with all the necessary",
+                    "   terms of a lease in the contract.",
+                    "4. Tenant Holding Over: Is a tenant who holds possession of property beyond",
+                    "   the term for which the premises were leased.",
+                    "",
+                    "General Provisions:",
+                    "There are three common grounds for dispossession of a tenant:",
+                    "1. The tenant's failure to pay rent when due",
+                    "2. The tenant's holding over beyond the term of the lease or rental agreement; or",
+                    "3. The landowner desires return of the property being held by a tenant at will",
+                    "   or at sufferance."
+                ];
+                
+                let instY = 80;
+                instructions.forEach(line => {
+                    if (instY > pageHeight - 20) {
+                        doc.addPage();
+                        instY = 20;
+                    }
+                    doc.text(line, 20, instY);
+                    instY += line === "" ? 5 : 7;
+                });
+                
+                return doc;
+            }
+            
             function generateDemandNotice() {
                 const doc = new jsPDF();
                 const pageWidth = doc.internal.pageSize.getWidth();
@@ -2104,6 +2789,12 @@
                     const formDataJson = JSON.stringify(formData, null, 2);
                     caseFolder.file('case_data.json', formDataJson);
                     
+                    // Add photo if available
+                    if (noticePhotoData) {
+                        const base64Data = noticePhotoData.replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
+                        caseFolder.file('notice_photo.jpg', base64Data, {base64: true});
+                    }
+                    
                     // Generate and download ZIP
                     zip.generateAsync({type: 'blob'})
                         .then(function(content) {
@@ -2126,6 +2817,7 @@
             // Get filename for document type
             function getFilename(docType) {
                 const filenames = {
+                    houston_package: 'Houston_County_Dispossessory_Package.pdf',
                     demand_notice: '7-Day_Demand_Notice.pdf',
                     affidavit: 'Dispossessory_Affidavit.pdf',
                     summons: 'Summons.pdf',
@@ -2169,7 +2861,7 @@
                         caseId,
                         timestamp: new Date().toISOString(),
                         status: 'Pending Court Filing',
-                        version: '2.0'
+                        version: '2.1'
                     }, null, 2);
 
                     await uploadToGitHub(folder + 'case.json', 
@@ -2200,7 +2892,7 @@
                 const headers = {
                     'Accept': 'application/vnd.github.v3+json',
                     'Authorization': `Bearer ${githubToken}`,
-                    'User-Agent': 'EvictionSystem/2.0'
+                    'User-Agent': 'EvictionSystem/2.1'
                 };
                 
                 try {
@@ -2231,6 +2923,7 @@
             // === UPLOAD PDFs ===
             async function uploadPDFs(folder) {
                 const pdfs = [
+                    {key: 'houston_package', filename: 'Houston_County_Dispossessory_Package.pdf'},
                     {key: 'demand_notice', filename: 'Demand_Notice.pdf'},
                     {key: 'affidavit',     filename: 'Dispossessory_Affidavit.pdf'},
                     {key: 'summons',       filename: 'Summons.pdf'},
@@ -2263,7 +2956,7 @@
                     const headers = {
                         'Accept': 'application/vnd.github.v3+json',
                         'Authorization': `Bearer ${githubToken}`,
-                        'User-Agent': 'EvictionSystem/2.0'
+                        'User-Agent': 'EvictionSystem/2.1'
                     };
                     
                     // Try to get existing file
@@ -2292,11 +2985,12 @@
                         landlord: formData.landlord,
                         tenant: formData.tenant,
                         property: formData.property,
+                        notice: formData.notice,
                         case: formData.case,
                         signature: formData.signature,
                         timestamp: new Date().toISOString(),
                         documentsGenerated: true,
-                        version: '2.0'
+                        version: '2.1'
                     };
                     
                     // Remove any existing entry with same caseId
@@ -2349,7 +3043,7 @@
                 const headers = {
                     'Accept': 'application/vnd.github.v3+json',
                     'Authorization': `Bearer ${githubToken}`,
-                    'User-Agent': 'EvictionSystem/2.0',
+                    'User-Agent': 'EvictionSystem/2.1',
                     'Content-Type': 'application/json'
                 };
 
@@ -2529,7 +3223,7 @@
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     ctx.strokeRect(0, 0, canvas.width, canvas.height);
                     document.getElementById('signaturePreview').style.display = 'none';
-                    document.getElementById('nextStep5').disabled = true;
+                    document.getElementById('nextStep6').disabled = true;
                     signatureData = null;
                     updateSignatureStatus();
                 });
@@ -2552,7 +3246,7 @@
                 
                 // Legal certification checkbox
                 document.getElementById('legalCertify').addEventListener('change', function() {
-                    const signBtn = document.getElementById('nextStep5');
+                    const signBtn = document.getElementById('nextStep6');
                     signBtn.disabled = !(this.checked && signatureData);
                 });
             }
@@ -2597,7 +3291,7 @@
                 preview.style.display = 'flex';
                 
                 // Enable next button if legal certification is checked
-                const signBtn = document.getElementById('nextStep5');
+                const signBtn = document.getElementById('nextStep6');
                 const legalCertify = document.getElementById('legalCertify');
                 signBtn.disabled = !legalCertify.checked;
                 
@@ -2650,14 +3344,21 @@
                         if (input.id !== 'githubToken') {
                             input.value = '';
                         }
+                    } else if (input.type === 'file') {
+                        input.value = '';
                     } else if (input.type !== 'button' && input.type !== 'submit') {
                         input.value = '';
                     }
                 });
                 
+                // Clear photo preview
+                document.getElementById('previewImage').src = '';
+                document.getElementById('photoPreview').style.display = 'none';
+                noticePhotoData = null;
+                
                 // Reset signature
                 document.getElementById('legalCertify').checked = false;
-                document.getElementById('nextStep5').disabled = true;
+                document.getElementById('nextStep6').disabled = true;
                 signatureData = null;
                 document.getElementById('signaturePreview').style.display = 'none';
                 
@@ -2679,25 +3380,38 @@
                 
                 // Hide dashboard button
                 document.getElementById('openDashboardBtn').style.display = 'none';
+                
+                // Reset validation text
+                document.getElementById('zipValidation').textContent = '';
+                document.getElementById('propertyZipValidation').textContent = '';
+                
+                // Set today's date for notice date
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('noticePostingDate').value = today;
+                
+                // Set notice expiry date (3 days from today)
+                const noticeExpiry = new Date();
+                noticeExpiry.setDate(noticeExpiry.getDate() + 3);
+                document.getElementById('noticeDate').value = noticeExpiry.toISOString().split('T')[0];
+                
+                // Set max date for last payment
+                document.getElementById('lastPaymentDate').max = today;
             }
             
-            // Pre-fill today's date in notice date field
+            // Pre-fill dates
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById('noticeDate').value = today;
+            document.getElementById('noticePostingDate').value = today;
             
-            // Set minimum date for notice date (30 days ago)
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            document.getElementById('noticeDate').min = thirtyDaysAgo.toISOString().split('T')[0];
+            // Set notice expiry date (3 days from today)
+            const noticeExpiry = new Date();
+            noticeExpiry.setDate(noticeExpiry.getDate() + 3);
+            document.getElementById('noticeDate').value = noticeExpiry.toISOString().split('T')[0];
             
-            // Set maximum date for notice date (today)
-            document.getElementById('noticeDate').max = today;
-            
-            // Set last payment date max to today
+            // Set max date for last payment
             document.getElementById('lastPaymentDate').max = today;
             
             // Form validation
-            document.getElementById('nextStep5').addEventListener('click', function() {
+            document.getElementById('nextStep6').addEventListener('click', function() {
                 if (!signatureData) {
                     alert('Please save your signature before proceeding.');
                     return;
@@ -2706,7 +3420,7 @@
                     alert('Please certify the legal information before proceeding.');
                     return;
                 }
-                goToStep(6);
+                goToStep(7);
             });
         });
     </script>
